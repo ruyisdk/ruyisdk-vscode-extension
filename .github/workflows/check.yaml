@@ -1,0 +1,37 @@
+name: Code Check
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+jobs:
+  eslint:
+    runs-on: ubuntu-latest
+    name: ESLint Check
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.20.0
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+  dco:
+    runs-on: ubuntu-latest
+    name: DCO Check
+    steps:
+      - name: Run dco-check
+        uses: christophebedard/dco-check@0.5.0
+        with:
+            python-version: '3.12'
+            args: '--verbose'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
