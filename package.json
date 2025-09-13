@@ -1,0 +1,36 @@
+{
+  "name": "ruyisdk-vscode-extension",
+  "displayName": "Ruyi SDK",
+  "description": "Ruyi 包管理器的 VS Code 集成：检测、安装、包视图、新闻展示等。",
+  "version": "0.1.0",
+  "publisher": "ddsfda99",
+  "license": "Apache-2.0",
+  "engines": { "vscode": "^1.88.0" },
+  "categories": ["Other"],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:ruyi.detect",
+    "onCommand:ruyi.install"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      { "command": "ruyi.detect", "title": "Ruyi: 检测安装与版本", "category": "Ruyi" },
+      { "command": "ruyi.install", "title": "Ruyi: 安装 RuyiSDK", "category": "Ruyi" }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p .",
+    "watch": "tsc -w -p .",
+    "lint": "eslint src"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.88.0",
+    "@types/node": "22.x",
+    "@typescript-eslint/eslint-plugin": "^8.42.0",
+    "@typescript-eslint/parser": "^8.42.0",
+    "eslint": "^9.34.0",
+    "typescript": "^5.9.2"
+  }
+}
