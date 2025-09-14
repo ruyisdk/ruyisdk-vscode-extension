@@ -9,7 +9,6 @@
  */
 
 import * as vscode from 'vscode';
-
 import {registerDetectCommand} from './commands/detect';
 import {registerInstallCommand} from './commands/installRuyi';
 
@@ -18,13 +17,7 @@ export function activate(context: vscode.ExtensionContext) {
   registerInstallCommand(context);
 
   setTimeout(() => {
-    vscode.commands.executeCommand('ruyi.detect', {silent: true})
-        .then(
-            () => {},
-            (err) => {
-              console.error(`Startup detect failed: ${String(err)}`);
-            },
-        );
+    void vscode.commands.executeCommand('ruyi.detect');
   }, 0);
 }
 
