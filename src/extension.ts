@@ -5,7 +5,6 @@
  * - Registers commands:
  *   - ruyi.detect      (see ./commands/detect)
  *   - ruyi.install     (see ./commands/installRuyi)
- *   - news commands    (see ./commands/news)
  * - Triggers a silent detect once on startup.
  */
 
@@ -27,8 +26,6 @@ export function activate(context: vscode.ExtensionContext) {
             },
         );
   }, 0);
-
-  console.log('Ruyi SDK VS Code extension activated.');
 }
 
 export function deactivate() {}

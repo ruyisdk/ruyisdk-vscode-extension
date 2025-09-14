@@ -4,56 +4,35 @@
  * hint.
  */
 
+import * as cp from 'child_process';
+import * as util from 'util';
 import * as vscode from 'vscode';
-import {ERR_NOT_SUPPORTED, ERR_RUYI_NOT_FOUND} from '../common/constants';
-import {runRuyi} from '../utils/exec';
+
+import {SHORT_CMD_TIMEOUT_MS} from '../common/constants';
+
+const execAsync = util.promisify(cp.exec);
 
 export function registerDetectCommand(context: vscode.ExtensionContext) {
-  const cmd = vscode.commands.registerCommand(
-      'ruyi.detect',
-      async (opts?: {silent?: boolean}) => {
-        const silent = !!opts?.silent;
-        const res = await runRuyi(['--version']);
-
-        if (res.code === ERR_RUYI_NOT_FOUND) {
-          if (!silent) {
-            const pick = await vscode.window.showWarningMessage(
-                'Ruyi SDK was not detected. Do you want to open the installation guide?',
-                'Open Guide',
-                'Cancel',
-            );
-            if (pick === 'Open Guide') {
-              vscode.env.openExternal(
-                  vscode.Uri.parse('https://ruyisdk.org/en/download/'),
-              );
-            }
-          }
+  const disposable = vscode.commands.registerCommand(
+      'ruyi.detect', async (opts?: {silent?: boolean}) => {
+        if (process.platform !== 'linux') {
+          if (!opts?.silent)
+            vscode.window.showErrorMessage(
+                'This extension currently supports Linux only.');
           return;
         }
-
-        if (res.code === 0) {
-          // Only show the first line of stdout
-          const firstLine =
-              res.stdout.trim().split(/\r?\n/, 1)[0] || '(no output)';
-          if (!silent) {
-            vscode.window.showInformationMessage(`Ruyi detected: ${firstLine}`);
-          }
-        } else if (res.code === ERR_NOT_SUPPORTED) {
-          if (!silent) {
-            vscode.window.showWarningMessage(
-                'This platform is not supported. The Ruyi SDK extension currently supports Linux only.',
-            );
-          }
-        } else {
-          if (!silent) {
-            vscode.window.showWarningMessage(
-                `Ruyi was found but execution failed (code=${
-                    res.code}). See Ruyi output for details.`,
-            );
-          }
+        try {
+          const {stdout} = await execAsync(
+              'ruyi --version', {timeout: SHORT_CMD_TIMEOUT_MS});
+          if (!opts?.silent)
+            vscode.window.showInformationMessage(
+                `Ruyi detected: ${stdout.trim()}`);
+        } catch (e: any) {
+          const msg = (e?.stderr || e?.message || String(e)).trim();
+          if (!opts?.silent)
+            vscode.window.showErrorMessage(`Ruyi not found: ${msg}`);
         }
-      },
-  );
+      });
 
-  context.subscriptions.push(cmd);
+  context.subscriptions.push(disposable);
 }
