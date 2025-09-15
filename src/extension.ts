@@ -16,9 +16,9 @@ export function activate(context: vscode.ExtensionContext) {
   registerDetectCommand(context);
   registerInstallCommand(context);
 
-  setTimeout(() => {
+  setImmediate(() => {
     void vscode.commands.executeCommand('ruyi.detect');
-  }, 0);
+  });
 }
 
 export function deactivate() {}
