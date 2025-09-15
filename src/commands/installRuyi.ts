@@ -53,10 +53,20 @@ export function registerInstallCommand(context: vscode.ExtensionContext) {
           await execAsync(
               `${py} -m pip install -U ruyi`, {timeout: LONG_CMD_TIMEOUT_MS});
           vscode.window.showInformationMessage('Ruyi installation completed.');
-        } catch (e: any) {
-          const stderr = typeof e?.stderr === 'string' ? e.stderr.trim() : '';
-          const message =
-              (typeof e?.message === 'string' ? e.message : String(e)).trim();
+        } catch (e: unknown) {
+          let stderr = '';
+          let message = '';
+          if (typeof e === 'object' && e !== null) {
+            if ('stderr' in e && typeof (e as {stderr?: unknown}).stderr === 'string') {
+              stderr = ((e as {stderr: string}).stderr).trim();
+            }
+            if ('message' in e && typeof (e as {message?: unknown}).message === 'string') {
+              message = ((e as {message: string}).message).trim();
+            }
+          }
+          if (!message) {
+            message = String(e).trim();
+          }
           vscode.window.showErrorMessage(`Ruyi installation failed: ${
               stderr || message || 'Unknown error.'}`);
         }
