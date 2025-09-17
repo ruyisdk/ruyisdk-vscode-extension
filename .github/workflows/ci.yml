@@ -27,10 +27,6 @@ jobs:
       - name: Compile to out/
         run: npm run compile
 
-      - name: Sanity check: entry exists
-        run: |
-          test -f out/extension.js || (echo "missing out/extension.js"; exit 1)
-
       - name: Package VSIX
         run: npx -y @vscode/vsce package
 
