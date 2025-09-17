@@ -52,7 +52,7 @@ export default function registerDetectCommand(
 
         if (!opts?.silent) {
           const choice = await vscode.window.showErrorMessage(
-              'Ruyi not found. If you installed with pip --user, ensure ~/.local/bin is in PATH.',
+              'Ruyi not found.',
               'Install Ruyi',
               'Open Guide',
               'Cancel',
