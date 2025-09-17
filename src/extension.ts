@@ -9,16 +9,16 @@
  */
 
 import * as vscode from 'vscode';
-import {registerDetectCommand} from './commands/detect';
-import {registerInstallCommand} from './commands/installRuyi';
+import registerDetectCommand from './commands/detect';
+import registerInstallCommand from './commands/installRuyi';
 
 export function activate(context: vscode.ExtensionContext) {
   registerDetectCommand(context);
   registerInstallCommand(context);
 
-  setTimeout(() => {
+  setImmediate(() => {
     void vscode.commands.executeCommand('ruyi.detect');
-  }, 0);
+  });
 }
 
 export function deactivate() {}
