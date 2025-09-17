@@ -31,8 +31,7 @@ async function resolvePython(): Promise<string|null> {
   return null;
 }
 
-export default function registerInstallCommand(
-    context: vscode.ExtensionContext) {
+export function registerInstallCommand(context: vscode.ExtensionContext) {
   const disposable = vscode.commands.registerCommand('ruyi.install', async () => {
     if (!isSupportedPlatform()) {
       vscode.window.showErrorMessage(
