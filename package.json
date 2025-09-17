@@ -6,6 +6,7 @@
   "publisher": "ddsfda99",
   "license": "Apache-2.0",
   "engines": { "vscode": "^1.88.0" },
+  "icon": "icon.png",
   "categories": ["Other", "Programming Languages", "Debuggers"],
   "activationEvents": [
     "onStartupFinished"
