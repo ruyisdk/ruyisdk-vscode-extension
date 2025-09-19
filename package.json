@@ -1,0 +1,60 @@
+{
+  "name": "ruyisdk-vscode-extension",
+  "displayName": "RuyiSDK",
+  "description": "VS Code integration for the Ruyi package manager: detection, installation, package view, and news display.",
+  "version": "0.1.0",
+  "publisher": "ddsfda99",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ruyisdk/ruyisdk-vscode-extension.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ruyisdk/ruyisdk-vscode-extension/issues"
+  },
+  "homepage": "https://github.com/ruyisdk/ruyisdk-vscode-extension#readme",
+  "engines": {
+    "vscode": "^1.88.0"
+  },
+  "icon": "icon.png",
+  "categories": [
+    "Other",
+    "Programming Languages",
+    "Debuggers"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "ruyi.detect",
+        "title": "Ruyi: Detect Installation and Version",
+        "category": "Ruyi"
+      },
+      {
+        "command": "ruyi.install",
+        "title": "Ruyi: Install RuyiSDK",
+        "category": "Ruyi"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p .",
+    "watch": "tsc -w -p .",
+    "lint": "eslint src"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.35.0",
+    "@types/node": "22.x",
+    "@types/vscode": "^1.88.0",
+    "@typescript-eslint/eslint-plugin": "^8.42.0",
+    "@typescript-eslint/parser": "^8.42.0",
+    "eslint": "^9.35.0",
+    "globals": "^16.4.0",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.44.0"
+  }
+}
