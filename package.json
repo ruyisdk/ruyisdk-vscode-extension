@@ -27,18 +27,60 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ruyi",             
+          "title": "Ruyi",           
+          "icon": "icon.png"      
+        }
+      ]
+    },
+    "views": {
+      "ruyi": [
+        { "id": "ruyiNewsView", "name": "News" }
+      ]
+    },
     "commands": [
       {
         "command": "ruyi.detect",
-        "title": "Ruyi: Detect Installation and Version",
+        "title": "Detect Installation and Version",
         "category": "Ruyi"
       },
       {
         "command": "ruyi.install",
-        "title": "Ruyi: Install RuyiSDK",
+        "title": "Install RuyiSDK",
+        "category": "Ruyi"
+      },
+      { 
+        "command": "ruyi.news.showAll",       
+        "title": "Show All News",      
+        "category": "Ruyi" 
+      },
+      {
+        "command": "ruyi.news.showUnread",
+        "title": "Show Unread News",
         "category": "Ruyi"
       }
-    ]
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "ruyi.news.showUnread",
+          "when": "view == ruyiNewsView && !ruyiNews.showUnreadOnly",
+          "group": "navigation@0"
+        },
+        {
+          "command": "ruyi.news.showAll",
+          "when": "view == ruyiNewsView && ruyiNews.showUnreadOnly",
+          "group": "navigation@0"
+        }
+      ],
+      "commandPalette": [
+        { "command": "ruyi.news.showUnread", "when": "false" },
+        { "command": "ruyi.news.showAll",    "when": "false" }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
