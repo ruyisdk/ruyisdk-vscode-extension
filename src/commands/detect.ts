@@ -4,29 +4,9 @@
  * hint.
  */
 
-import * as cp from 'child_process';
-import * as util from 'util';
 import * as vscode from 'vscode';
-import {SHORT_CMD_TIMEOUT_MS} from '../common/constants';
-import {isSupportedPlatform, pythonCandidates} from '../common/utils';
-
-const execAsync = util.promisify(cp.exec);
-
-/** Try `python -m ruyi --version` with several interpreter candidates. */
-async function detectRuyiVersion(): Promise<string|null> {
-  for (const py of pythonCandidates()) {
-    try {
-      const {stdout} = await execAsync(`${py} -m ruyi --version`, {
-        timeout: SHORT_CMD_TIMEOUT_MS,
-      });
-      const v = stdout.trim();
-      if (v) return v;
-    } catch {
-      // ignore and try next candidate
-    }
-  }
-  return null;
-}
+import {isSupportedPlatform} from '../common/utils';
+import {detectRuyiVersion} from '../features/detect/DetectService';
 
 export default function registerDetectCommand(
     context: vscode.ExtensionContext) {
