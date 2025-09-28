@@ -32,10 +32,10 @@ export default function registerNewsCommands(ctx: vscode.ExtensionContext) {
         }
         try {
           const body = await svc.read(n);
-          createNewsPanel(body, title || `Ruyi News #${n}`);
-        } catch (e: any) {
-          vscode.window.showErrorMessage(
-              `Failed to read: ${e?.message ?? String(e)}`);
+          createNewsPanel(body, title || `Ruyi News #${n}`, ctx);
+        } catch (e: unknown) {
+          const msg = e instanceof Error ? e.message : String(e);
+          vscode.window.showErrorMessage(`Failed to read: ${msg}`);
         }
       });
 

@@ -3,35 +3,45 @@
  * RuyiSDK VS Code Extension - News Webview Panel
  *
  * Opens a webview panel to render news content as Markdown
- * using marked.js from CDN.
+ * Uses a locally packaged "media/marked.min.js"
  */
 
 import * as vscode from 'vscode';
 
-export default function createNewsPanel(content: string, title = 'Ruyi News') {
+export default function createNewsPanel(
+    content: string, title = 'Ruyi News', ctx: vscode.ExtensionContext) {
   const panel = vscode.window.createWebviewPanel(
       'ruyiNewsReader', title, vscode.ViewColumn.One, {
         enableScripts: true,
         retainContextWhenHidden: true,
+        localResourceRoots: [vscode.Uri.joinPath(ctx.extensionUri, 'media')],
       });
-
-  const html = getHtml(panel.webview, content, title);
-  panel.webview.html = html;
+  panel.webview.html = getHtml(panel.webview, content, title, ctx);
   return panel;
 }
 
 function getHtml(
-    webview: vscode.Webview, markdownText: string, title: string): string {
+    webview: vscode.Webview, markdownText: string, title: string,
+    ctx: vscode.ExtensionContext): string {
   const nonce = getNonce();
+
+  // Local script: /media/marked.umd.js
+  const markedJs = webview.asWebviewUri(
+      vscode.Uri.joinPath(ctx.extensionUri, 'media', 'marked.umd.js'));
+
+  // Strict CSP: no remote sources, scripts must carry the nonce
+  const csp = [
+    `default-src 'none';`,
+    `img-src ${webview.cspSource} https:;`,
+    `style-src 'unsafe-inline' ${webview.cspSource};`,
+    `script-src 'nonce-${nonce}';`,
+  ].join(' ');
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy"
-  content="default-src 'none';
-           img-src ${webview.cspSource} https:;
-           style-src 'unsafe-inline' ${webview.cspSource};
-           script-src 'nonce-${nonce}' https://cdn.jsdelivr.net;">
+<meta http-equiv="Content-Security-Policy" content="${csp}">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${titleEscape(title)}</title>
 <style>
@@ -43,8 +53,7 @@ function getHtml(
 </head>
 <body>
   <div id="content"></div>
-  <script nonce="${
-      nonce}" src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script nonce="${nonce}" src="${markedJs}"></script>
   <script nonce="${nonce}">
     const raw = ${JSON.stringify(markdownText)};
     document.getElementById('content').innerHTML = marked.parse(raw);
