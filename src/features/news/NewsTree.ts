@@ -50,9 +50,9 @@ export default class NewsTree implements
             this.showUnreadOnly ? 'No unread news.' : 'No news items.')];
       }
       return rows.map(this.rowToItem);
-    } catch (err: any) {
-      void vscode.window.showErrorMessage(
-          `Failed to load news: ${err?.message ?? String(err)}`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      void vscode.window.showErrorMessage(`Failed to load news: ${msg}`);
       return [this.infoItem('Failed to load news. See OUTPUT for details.')];
     }
   }

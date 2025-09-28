@@ -30,15 +30,18 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "ruyi",             
-          "title": "Ruyi",           
-          "icon": "icon.png"      
+          "id": "ruyi",
+          "title": "Ruyi",
+          "icon": "icon.png"
         }
       ]
     },
     "views": {
       "ruyi": [
-        { "id": "ruyiNewsView", "name": "News" }
+        {
+          "id": "ruyiNewsView",
+          "name": "News"
+        }
       ]
     },
     "commands": [
@@ -52,14 +55,19 @@
         "title": "Install RuyiSDK",
         "category": "Ruyi"
       },
-      { 
-        "command": "ruyi.news.showAll",       
-        "title": "Show All News",      
-        "category": "Ruyi" 
+      {
+        "command": "ruyi.news.showAll",
+        "title": "Show All News",
+        "category": "Ruyi"
       },
       {
         "command": "ruyi.news.showUnread",
         "title": "Show Unread News",
+        "category": "Ruyi"
+      },
+      {
+        "command": "ruyi.news.read",
+        "title": "Read News",
         "category": "Ruyi"
       }
     ],
@@ -77,8 +85,14 @@
         }
       ],
       "commandPalette": [
-        { "command": "ruyi.news.showUnread", "when": "false" },
-        { "command": "ruyi.news.showAll",    "when": "false" }
+        {
+          "command": "ruyi.news.showUnread",
+          "when": "false"
+        },
+        {
+          "command": "ruyi.news.showAll",
+          "when": "false"
+        }
       ]
     }
   },
@@ -98,5 +112,8 @@
     "globals": "^16.4.0",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.44.0"
+  },
+  "dependencies": {
+    "marked": "^16.3.0"
   }
 }
