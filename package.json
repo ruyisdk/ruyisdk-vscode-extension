@@ -112,8 +112,5 @@
     "globals": "^16.4.0",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.44.0"
-  },
-  "dependencies": {
-    "marked": "^16.3.0"
   }
 }
