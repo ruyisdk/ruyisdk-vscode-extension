@@ -1,36 +1,118 @@
 {
   "name": "ruyisdk-vscode-extension",
-  "displayName": "Ruyi SDK",
-  "description": "Ruyi 包管理器的 VS Code 集成：检测、安装、包视图、新闻展示等。",
+  "displayName": "RuyiSDK",
+  "description": "VS Code integration for the Ruyi package manager: detection, installation, package view, and news display.",
   "version": "0.1.0",
   "publisher": "ddsfda99",
   "license": "Apache-2.0",
-  "engines": { "vscode": "^1.88.0" },
-  "categories": ["Other"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ruyisdk/ruyisdk-vscode-extension.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ruyisdk/ruyisdk-vscode-extension/issues"
+  },
+  "homepage": "https://github.com/ruyisdk/ruyisdk-vscode-extension#readme",
+  "engines": {
+    "vscode": "^1.88.0"
+  },
+  "icon": "icon.png",
+  "categories": [
+    "Other",
+    "Programming Languages",
+    "Debuggers"
+  ],
   "activationEvents": [
-    "onStartupFinished",
-    "onCommand:ruyi.detect",
-    "onCommand:ruyi.install"
+    "onStartupFinished"
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ruyi",
+          "title": "Ruyi",
+          "icon": "icon.png"
+        }
+      ]
+    },
+    "views": {
+      "ruyi": [
+        {
+          "id": "ruyiNewsView",
+          "name": "News"
+        }
+      ]
+    },
     "commands": [
-      { "command": "ruyi.detect", "title": "Ruyi: 检测安装与版本", "category": "Ruyi" },
-      { "command": "ruyi.install", "title": "Ruyi: 安装 RuyiSDK", "category": "Ruyi" }
-    ]
+      {
+        "command": "ruyi.detect",
+        "title": "Detect Installation and Version",
+        "category": "Ruyi"
+      },
+      {
+        "command": "ruyi.install",
+        "title": "Install RuyiSDK",
+        "category": "Ruyi"
+      },
+      {
+        "command": "ruyi.news.showAll",
+        "title": "Show All News",
+        "category": "Ruyi"
+      },
+      {
+        "command": "ruyi.news.showUnread",
+        "title": "Show Unread News",
+        "category": "Ruyi"
+      },
+      {
+        "command": "ruyi.news.read",
+        "title": "Read News",
+        "category": "Ruyi"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "ruyi.news.showUnread",
+          "when": "view == ruyiNewsView && !ruyiNews.showUnreadOnly",
+          "group": "navigation@0"
+        },
+        {
+          "command": "ruyi.news.showAll",
+          "when": "view == ruyiNewsView && ruyiNews.showUnreadOnly",
+          "group": "navigation@0"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "ruyi.news.showUnread",
+          "when": "false"
+        },
+        {
+          "command": "ruyi.news.showAll",
+          "when": "false"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p .",
+    "build": "npm run compile",
     "watch": "tsc -w -p .",
     "lint": "eslint src"
   },
   "devDependencies": {
-    "@types/vscode": "^1.88.0",
+    "@eslint/js": "^9.35.0",
     "@types/node": "22.x",
+    "@types/vscode": "^1.88.0",
     "@typescript-eslint/eslint-plugin": "^8.42.0",
     "@typescript-eslint/parser": "^8.42.0",
-    "eslint": "^9.34.0",
-    "typescript": "^5.9.2"
+    "@vscode/vsce": "^3.6.2",
+    "eslint": "^9.35.0",
+    "globals": "^16.4.0",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.44.0"
   }
 }

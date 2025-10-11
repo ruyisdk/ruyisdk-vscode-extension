@@ -1,66 +1,69 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
- * RuyiSDK VS Code Extension - Install via PyPI
+ * InstallCommand
  *
- * Command: ruyi.install
- * Workflow:
- *   1) Check if Python is available
- *   2) If Python is available → run `python -m pip install -U ruyi`
- *   3) Success → show "Ruyi installation completed."
- *   4) Failure → show error message
+ * VS Code command: `ruyi.install`
+ *
+ * Responsibilities:
+ * - Check platform support
+ * - Resolve Python via features/install service
+ * - Ask user for confirmation and show progress
+ * - Call features/install service to perform pip install and report result
  */
 
-import * as cp from 'child_process';
-import * as util from 'util';
 import * as vscode from 'vscode';
-import {LONG_CMD_TIMEOUT_MS, SHORT_CMD_TIMEOUT_MS} from '../common/constants';
 
-const execAsync = util.promisify(cp.exec);
+import {isSupportedPlatform} from '../common/utils';
+import {installViaPip, resolvePython} from '../features/install/InstallService';
 
-async function resolvePython(): Promise<string|null> {
-  for (const cmd of ['python3', 'python']) {
-    try {
-      await execAsync(`${cmd} --version`, {timeout: SHORT_CMD_TIMEOUT_MS});
-      return cmd;
-    } catch {
+export default function registerInstallCommand(
+    context: vscode.ExtensionContext) {
+  const disposable = vscode.commands.registerCommand('ruyi.install', async () => {
+    if (!isSupportedPlatform()) {
+      vscode.window.showErrorMessage(
+          'This extension currently supports Windows, macOS, and Linux.');
+      return;
     }
-  }
-  return null;
-}
 
-export function registerInstallCommand(context: vscode.ExtensionContext) {
-  const disposable =
-      vscode.commands.registerCommand('ruyi.install', async () => {
-        if (process.platform !== 'linux') {
-          vscode.window.showErrorMessage(
-              'This extension currently supports Linux only.');
-          return;
-        }
+    const py = await resolvePython();
+    if (!py) {
+      vscode.window.showErrorMessage(
+          'No Python interpreter found (python3/python/py).');
+      return;
+    }
 
-        const py = await resolvePython();
-        if (!py) {
-          vscode.window.showErrorMessage(
-              'Python not detected. Please install Python first.');
-          return;
-        }
+    const choice = await vscode.window.showInformationMessage(
+        'Python detected. Install/upgrade Ruyi via PyPI?',
+        'Install',
+        'Cancel',
+    );
+    if (choice !== 'Install') return;
 
-        const choice = await vscode.window.showInformationMessage(
-            'Python detected. Install/upgrade Ruyi via PyPI?', 'Install',
-            'Cancel');
-        if (choice !== 'Install') return;
+    await vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title: 'Installing/Upgrading Ruyi via pip...',
+          cancellable: false,
+        },
+        async () => {
+          const result = await installViaPip(py);
 
-        try {
-          await execAsync(
-              `${py} -m pip install -U ruyi`, {timeout: LONG_CMD_TIMEOUT_MS});
-          vscode.window.showInformationMessage('Ruyi installation completed.');
-        } catch (e: any) {
-          const stderr = typeof e?.stderr === 'string' ? e.stderr.trim() : '';
-          const message =
-              (typeof e?.message === 'string' ? e.message : String(e)).trim();
-          vscode.window.showErrorMessage(`Ruyi installation failed: ${
-              stderr || message || 'Unknown error.'}`);
-        }
-      });
+          if (result.errorMsg) {
+            vscode.window.showErrorMessage(result.errorMsg);
+            return;
+          }
+          if (result.warnPath) {
+            vscode.window.showWarningMessage(
+                'Ruyi was installed, but the executable may not be discoverable. Add it to PATH or set RUYI_BIN to the full path.');
+            return;
+          }
+          if (result.version) {
+            vscode.window.showInformationMessage(
+                `Ruyi installed: ${result.version}`);
+          }
+        },
+    );
+  });
 
   context.subscriptions.push(disposable);
 }

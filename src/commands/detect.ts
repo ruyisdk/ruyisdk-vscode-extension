@@ -4,42 +4,50 @@
  * hint.
  */
 
-import * as cp from 'child_process';
-import * as util from 'util';
 import * as vscode from 'vscode';
-import {SHORT_CMD_TIMEOUT_MS} from '../common/constants';
+import {isSupportedPlatform} from '../common/utils';
+import {detectRuyiVersion} from '../features/detect/DetectService';
 
-const execAsync = util.promisify(cp.exec);
-
-export function registerDetectCommand(context: vscode.ExtensionContext) {
+export default function registerDetectCommand(
+    context: vscode.ExtensionContext) {
   const disposable = vscode.commands.registerCommand(
-      'ruyi.detect', async (opts?: {silent?: boolean}) => {
-        if (process.platform !== 'linux') {
-          if (!opts?.silent)
+      'ruyi.detect',
+      async (opts?: {silent?: boolean}) => {
+        if (!isSupportedPlatform()) {
+          if (!opts?.silent) {
             vscode.window.showErrorMessage(
-                'This extension currently supports Linux only.');
+                'This extension currently supports Windows, macOS, and Linux.');
+          }
           return;
         }
 
-        try {
-          const {stdout} = await execAsync(
-              'ruyi --version', {timeout: SHORT_CMD_TIMEOUT_MS});
-          if (!opts?.silent)
-            vscode.window.showInformationMessage(
-                `Ruyi detected: ${stdout.trim()}`);
-        } catch {
+        const version = await detectRuyiVersion();
+
+        if (version) {
           if (!opts?.silent) {
-            const choice = await vscode.window.showErrorMessage(
-                'Ruyi not found', 'Install Ruyi', 'Open Guide', 'Cancel');
-            if (choice === 'Install Ruyi') {
-              vscode.commands.executeCommand('ruyi.install');
-            } else if (choice === 'Open Guide') {
-              vscode.env.openExternal(vscode.Uri.parse(
-                  'https://ruyisdk.org/en/docs/Package-Manager/installation'));
-            }
+            vscode.window.showInformationMessage(`Ruyi detected: ${version}`);
+          }
+          return;
+        }
+
+        if (!opts?.silent) {
+          const choice = await vscode.window.showErrorMessage(
+              'Ruyi not found.',
+              'Install Ruyi',
+              'Open Guide',
+              'Cancel',
+          );
+          if (choice === 'Install Ruyi') {
+            void vscode.commands.executeCommand('ruyi.install');
+          } else if (choice === 'Open Guide') {
+            void vscode.env.openExternal(
+                vscode.Uri.parse(
+                    'https://ruyisdk.org/en/docs/Package-Manager/installation'),
+            );
           }
         }
-      });
+      },
+  );
 
   context.subscriptions.push(disposable);
 }
