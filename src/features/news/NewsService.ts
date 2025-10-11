@@ -9,11 +9,8 @@
  *   - Extract optional date prefix (yyyy-mm-dd) from ID
  */
 
-import {exec} from 'child_process';
-import {promisify} from 'util';
 import {DEFAULT_CMD_TIMEOUT_MS} from '../../common/constants';
-
-const execAsync = promisify(exec);
+import {runRuyi} from '../../common/RuyiInvoker';
 
 export type NewsRow = {
   no: number; id: string; title: string;
@@ -27,9 +24,12 @@ export default class NewsService {
    *               true  → list only unread news (`ruyi news list --new`)
    */
   async list(unread = false): Promise<NewsRow[]> {
-    const cmd = unread ? 'ruyi news list --new' : 'ruyi news list';
-    const {stdout} = await execAsync(cmd, {timeout: DEFAULT_CMD_TIMEOUT_MS});
-    return this.parseList(stdout);
+    const args = unread ? ['news', 'list', '--new'] : ['news', 'list'];
+    const result = await runRuyi(args, {timeout: DEFAULT_CMD_TIMEOUT_MS});
+    if (result.code !== 0) {
+      throw new Error(result.stderr || 'ruyi news list failed');
+    }
+    return this.parseList(result.stdout);
   }
 
   /**
@@ -37,10 +37,12 @@ export default class NewsService {
    * Example: `ruyi news read 1`
    */
   async read(no: number): Promise<string> {
-    const {stdout} = await execAsync(`ruyi news read ${no}`, {
-      timeout: DEFAULT_CMD_TIMEOUT_MS,
-    });
-    return stdout;
+    const result = await runRuyi(
+        ['news', 'read', String(no)], {timeout: DEFAULT_CMD_TIMEOUT_MS});
+    if (result.code !== 0) {
+      throw new Error(result.stderr || 'ruyi news read failed');
+    }
+    return result.stdout;
   }
 
   /**

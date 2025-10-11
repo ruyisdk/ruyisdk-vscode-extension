@@ -16,7 +16,7 @@ export default function registerDetectCommand(
         if (!isSupportedPlatform()) {
           if (!opts?.silent) {
             vscode.window.showErrorMessage(
-                'This extension currently supports Linux only.');
+                'This extension currently supports Windows, macOS, and Linux.');
           }
           return;
         }

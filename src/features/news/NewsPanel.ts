@@ -34,7 +34,7 @@ function getHtml(
     `default-src 'none';`,
     `img-src ${webview.cspSource} https:;`,
     `style-src 'unsafe-inline' ${webview.cspSource};`,
-    `script-src 'nonce-${nonce}';`,
+    `script-src ${webview.cspSource} 'nonce-${nonce}';`,
   ].join(' ');
 
   return `<!DOCTYPE html>

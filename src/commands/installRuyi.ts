@@ -21,7 +21,7 @@ export default function registerInstallCommand(
   const disposable = vscode.commands.registerCommand('ruyi.install', async () => {
     if (!isSupportedPlatform()) {
       vscode.window.showErrorMessage(
-          'This extension currently supports Linux only.');
+          'This extension currently supports Windows, macOS, and Linux.');
       return;
     }
 
@@ -54,9 +54,7 @@ export default function registerInstallCommand(
           }
           if (result.warnPath) {
             vscode.window.showWarningMessage(
-                'Ruyi was installed, but the executable may not be in your PATH. ' +
-                    'If you used pip --user, add ~/.local/bin to PATH (e.g., export PATH="$HOME/.local/bin:$PATH").',
-            );
+                'Ruyi was installed, but the executable may not be discoverable. Add it to PATH or set RUYI_BIN to the full path.');
             return;
           }
           if (result.version) {
