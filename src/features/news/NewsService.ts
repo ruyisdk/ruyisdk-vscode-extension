@@ -9,7 +9,6 @@
  *   - Extract optional date prefix (yyyy-mm-dd) from ID
  */
 
-import {DEFAULT_CMD_TIMEOUT_MS} from '../../common/constants';
 import {runRuyi} from '../../common/RuyiInvoker';
 
 export type NewsRow = {
@@ -25,7 +24,7 @@ export default class NewsService {
    */
   async list(unread = false): Promise<NewsRow[]> {
     const args = unread ? ['news', 'list', '--new'] : ['news', 'list'];
-    const result = await runRuyi(args, {timeout: DEFAULT_CMD_TIMEOUT_MS});
+    const result = await runRuyi(args);
     if (result.code !== 0) {
       throw new Error(result.stderr || 'ruyi news list failed');
     }
@@ -38,7 +37,7 @@ export default class NewsService {
    */
   async read(no: number): Promise<string> {
     const result = await runRuyi(
-        ['news', 'read', String(no)], {timeout: DEFAULT_CMD_TIMEOUT_MS});
+        ['news', 'read', String(no)]);
     if (result.code !== 0) {
       throw new Error(result.stderr || 'ruyi news read failed');
     }

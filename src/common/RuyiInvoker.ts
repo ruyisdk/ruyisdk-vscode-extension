@@ -9,6 +9,8 @@
 import {spawn} from 'child_process';
 import type {SpawnOptions} from 'child_process';
 
+import {DEFAULT_CMD_TIMEOUT_MS} from './constants';
+
 export type RuyiResult = {
   stdout: string; stderr: string; code: number;
 };
@@ -32,6 +34,8 @@ export function runRuyi(
       env: options?.env ?? process.env,
     };
 
+    const timeout = options?.timeout ?? DEFAULT_CMD_TIMEOUT_MS;
+
     const child = spawn('python3', ['-m', 'ruyi', ...args], spawnOptions);
     let stdout = '';
     let stderr = '';
@@ -39,11 +43,11 @@ export function runRuyi(
     let timedOut = false;
     let settled = false;
 
-    if (options?.timeout && options.timeout > 0) {
+    if (timeout > 0) {
       timer = setTimeout(() => {
         timedOut = true;
         child.kill();
-      }, options.timeout);
+      }, timeout);
     }
 
     child.stdout?.on('data', (chunk: Buffer|string) => {
