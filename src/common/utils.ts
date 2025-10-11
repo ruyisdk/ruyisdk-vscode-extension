@@ -9,11 +9,13 @@
  *
  * Supported Node.js `process.platform` values:
  *  - 'linux'   → Linux
+ *  - 'darwin'  → macOS
+ *  - 'win32'   → Windows
  */
 
 import type {ExecException} from 'node:child_process';
 
-const SUPPORTED_PLATFORMS: NodeJS.Platform[] = ['linux'];
+const SUPPORTED_PLATFORMS: NodeJS.Platform[] = ['linux', 'darwin', 'win32'];
 
 export function isSupportedPlatform(): boolean {
   return SUPPORTED_PLATFORMS.includes(process.platform);
