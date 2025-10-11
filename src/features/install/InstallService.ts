@@ -34,7 +34,7 @@ export async function installViaPip(py: string):
         `${py} -m pip install --user -U ruyi`, {timeout: LONG_CMD_TIMEOUT_MS});
 
     const direct = await ruyiVersion({timeout: SHORT_CMD_TIMEOUT_MS});
-    const version = direct.stdout.trim();
+    const version = direct.stdout;
     if (direct.code === 0 && version) {
       return {version, warnPath: false};
     }

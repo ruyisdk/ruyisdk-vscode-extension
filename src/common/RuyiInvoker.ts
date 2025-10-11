@@ -21,29 +21,9 @@ export type RuyiRunOptions = Pick<SpawnOptions, 'cwd'|'env'>&{
   timeout?: number;
 };
 
-// Resolve Ruyi executable path
-function resolveRuyiBinary(): string {
-  const envValue = process.env.RUYI_BIN?.trim();
-  if (envValue) return envValue;
-  return process.platform === 'win32' ? 'ruyi.exe' : 'ruyi';
-}
-
-// Generate helpful hint for PATH or permission issues
-function buildPathHint(bin: string): string {
-  const shown = bin.includes(' ') ? `"${bin}"` : bin;
-  const base =
-      `Ensure the Ruyi executable is available at ${shown} or set RUYI_BIN.`;
-  const extra = process.platform === 'win32' ?
-      'Verify it is on your PATH and that ruyi.exe can run without elevated permissions.' :
-      'Verify it is on your PATH and has execute permission for the current user.';
-  return `${base}\n${extra}`;
-}
-
 // Execute Ruyi CLI command
 export function runRuyi(
     args: string[], options?: RuyiRunOptions): Promise<RuyiResult> {
-  const bin = resolveRuyiBinary();
-
   return new Promise((resolve) => {
     const spawnOptions: SpawnOptions = {
       shell: true,
@@ -52,7 +32,7 @@ export function runRuyi(
       env: options?.env ?? process.env,
     };
 
-    const child = spawn(bin, args, spawnOptions);
+    const child = spawn('python3', ['-m', 'ruyi', ...args], spawnOptions);
     let stdout = '';
     let stderr = '';
     let timer: NodeJS.Timeout|undefined;
@@ -77,8 +57,7 @@ export function runRuyi(
       if (settled) return;
       settled = true;
       if (timer) clearTimeout(timer);
-      const hint = buildPathHint(bin);
-      const message = `${err.message || 'Failed to execute Ruyi.'}\n${hint}`;
+      const message = err.message || 'Failed to execute Ruyi.';
       resolve({stdout, stderr: message, code: 1});
     });
 
@@ -93,37 +72,52 @@ export function runRuyi(
         stderr += (stderr ? '\n' : '') + 'Ruyi command timed out.';
       }
 
-      if (resultCode !== 0) {
-        const hint = buildPathHint(bin);
-        if (!stderr.includes(hint)) stderr += '\n' + hint;
-      }
-
       resolve({stdout, stderr, code: resultCode});
     });
   });
 }
 
+function normalizeRuyiResult(result: RuyiResult): RuyiResult {
+  return {
+    ...result,
+    stdout: result.stdout.trim(),
+    stderr: result.stderr.trim(),
+  };
+}
+
 // High-level wrappers for Ruyi commands
 export function ruyiList(
     args: string[] = [], options?: RuyiRunOptions): Promise<RuyiResult> {
-  return runRuyi(['list', ...args], options);
+  return runRuyi(['list', ...args], options).then(normalizeRuyiResult);
 }
 
 export function ruyiInstall(
     args: string[] = [], options?: RuyiRunOptions): Promise<RuyiResult> {
-  return runRuyi(['install', ...args], options);
+  return runRuyi(['install', ...args], options).then(normalizeRuyiResult);
 }
 
 export function ruyiRemove(
     args: string[] = [], options?: RuyiRunOptions): Promise<RuyiResult> {
-  return runRuyi(['remove', ...args], options);
+  return runRuyi(['remove', ...args], options).then(normalizeRuyiResult);
 }
 
 export function ruyiUpdate(
     args: string[] = [], options?: RuyiRunOptions): Promise<RuyiResult> {
-  return runRuyi(['update', ...args], options);
+  return runRuyi(['update', ...args], options).then(normalizeRuyiResult);
 }
 
 export function ruyiVersion(options?: RuyiRunOptions): Promise<RuyiResult> {
-  return runRuyi(['--version'], options);
+  return runRuyi(['--version'], options).then(normalizeRuyiResult);
+}
+
+export async function getRuyiVersion(options?: RuyiRunOptions):
+    Promise<string> {
+  try {
+    const result = await ruyiVersion(options);
+    if (result.code !== 0) return '';
+    const firstLine = result.stdout.split('\n', 1)[0]?.trim();
+    return firstLine ?? '';
+  } catch {
+    return '';
+  }
 }

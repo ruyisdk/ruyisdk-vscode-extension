@@ -15,15 +15,14 @@
 import * as cp from 'child_process';
 import * as util from 'util';
 import {SHORT_CMD_TIMEOUT_MS} from '../../common/constants';
-import {ruyiVersion} from '../../common/RuyiInvoker';
+import {getRuyiVersion} from '../../common/RuyiInvoker';
 import {pythonCandidates} from '../../common/utils';
 
 const execAsync = util.promisify(cp.exec);
 
 export async function detectRuyiVersion(): Promise<string|null> {
-  const cliResult = await ruyiVersion({timeout: SHORT_CMD_TIMEOUT_MS});
-  const cliVersion = cliResult.stdout.trim();
-  if (cliResult.code === 0 && cliVersion) return cliVersion;
+  const cliVersion = await getRuyiVersion({timeout: SHORT_CMD_TIMEOUT_MS});
+  if (cliVersion) return cliVersion;
 
   for (const py of pythonCandidates()) {
     try {
