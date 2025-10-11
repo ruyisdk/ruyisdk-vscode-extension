@@ -10,6 +10,7 @@
 import * as cp from 'child_process';
 import * as util from 'util';
 import {LONG_CMD_TIMEOUT_MS, SHORT_CMD_TIMEOUT_MS} from '../../common/constants';
+import {ruyiVersion} from '../../common/RuyiInvoker';
 import {formatExecError, pythonCandidates} from '../../common/utils';
 
 const execAsync = util.promisify(cp.exec);
@@ -20,7 +21,7 @@ export async function resolvePython(): Promise<string|null> {
       await execAsync(`${cmd} --version`, {timeout: SHORT_CMD_TIMEOUT_MS});
       return cmd;
     } catch {
-      // try next candidate
+      continue;
     }
   }
   return null;
@@ -32,15 +33,14 @@ export async function installViaPip(py: string):
     await execAsync(
         `${py} -m pip install --user -U ruyi`, {timeout: LONG_CMD_TIMEOUT_MS});
 
-    try {
-      const {stdout} = await execAsync(
-          `${py} -m ruyi --version`, {timeout: SHORT_CMD_TIMEOUT_MS});
-      return {version: stdout.trim(), warnPath: false};
-    } catch {
-      return {
-        warnPath: true,
-      };
+    const direct = await ruyiVersion({timeout: SHORT_CMD_TIMEOUT_MS});
+    const version = direct.stdout;
+    if (direct.code === 0 && version) {
+      return {version, warnPath: false};
     }
+    return {
+      warnPath: true,
+    };
   } catch (e: unknown) {
     return {errorMsg: `Failed to install Ruyi: ${formatExecError(e)}`};
   }
