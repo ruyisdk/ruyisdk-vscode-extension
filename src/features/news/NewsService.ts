@@ -9,12 +9,14 @@
  *   - Extract optional date prefix (yyyy-mm-dd) from ID
  */
 
-import {runRuyi} from '../../common/RuyiInvoker';
+import { runRuyi } from '../../common/RuyiInvoker'
 
 export type NewsRow = {
-  no: number; id: string; title: string;
-  date?: string;
-};
+  no: number
+  id: string
+  title: string
+  date?: string
+}
 
 export default class NewsService {
   /**
@@ -23,12 +25,12 @@ export default class NewsService {
    *               true  → list only unread news (`ruyi news list --new`)
    */
   async list(unread = false): Promise<NewsRow[]> {
-    const args = unread ? ['news', 'list', '--new'] : ['news', 'list'];
-    const result = await runRuyi(args);
+    const args = unread ? ['news', 'list', '--new'] : ['news', 'list']
+    const result = await runRuyi(args)
     if (result.code !== 0) {
-      throw new Error(result.stderr || 'ruyi news list failed');
+      throw new Error(result.stderr || 'ruyi news list failed')
     }
-    return this.parseList(result.stdout);
+    return this.parseList(result.stdout)
   }
 
   /**
@@ -37,11 +39,11 @@ export default class NewsService {
    */
   async read(no: number): Promise<string> {
     const result = await runRuyi(
-        ['news', 'read', String(no)]);
+      ['news', 'read', String(no)])
     if (result.code !== 0) {
-      throw new Error(result.stderr || 'ruyi news read failed');
+      throw new Error(result.stderr || 'ruyi news read failed')
     }
-    return result.stdout;
+    return result.stdout
   }
 
   /**
@@ -49,17 +51,17 @@ export default class NewsService {
    * Matches lines like: "1   2024-01-14-ruyi-news   Some title..."
    */
   private parseList(out: string): NewsRow[] {
-    const rowRe = /^\s*(\d+)\s+(\S+)\s+(.+)\s*$/;
-    const dateRe = /^(\d{4}-\d{2}-\d{2})\b/;
+    const rowRe = /^\s*(\d+)\s+(\S+)\s+(.+)\s*$/
+    const dateRe = /^(\d{4}-\d{2}-\d{2})\b/
 
     return out.split(/\r?\n/)
-        .map(l => rowRe.exec(l))
-        .filter((m): m is RegExpExecArray => !!m)
-        .map(([, no, id, title]) => ({
-               no: +no,
-               id,
-               title: title.trim(),
-               date: dateRe.exec(id)?.[1],
-             }));
+      .map(l => rowRe.exec(l))
+      .filter((m): m is RegExpExecArray => !!m)
+      .map(([, no, id, title]) => ({
+        no: +no,
+        id,
+        title: title.trim(),
+        date: dateRe.exec(id)?.[1],
+      }))
   }
 }

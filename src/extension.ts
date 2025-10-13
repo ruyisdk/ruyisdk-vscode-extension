@@ -13,19 +13,20 @@
  * - Run an automatic detect on activation.
  */
 
-import * as vscode from 'vscode';
-import registerDetectCommand from './commands/detect';
-import registerInstallCommand from './commands/installRuyi';
-import registerNewsCommands from './commands/news';
+import * as vscode from 'vscode'
+
+import registerDetectCommand from './commands/detect'
+import registerInstallCommand from './commands/installRuyi'
+import registerNewsCommands from './commands/news'
 
 export function activate(context: vscode.ExtensionContext) {
-  registerDetectCommand(context);
-  registerInstallCommand(context);
-  registerNewsCommands(context);
+  registerDetectCommand(context)
+  registerInstallCommand(context)
+  registerNewsCommands(context)
 
   setImmediate(() => {
-    void vscode.commands.executeCommand('ruyi.detect');
-  });
+    void vscode.commands.executeCommand('ruyi.detect')
+  })
 }
 
 export function deactivate() {}

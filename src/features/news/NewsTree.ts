@@ -7,17 +7,18 @@
  * - Filter: unread only / all (uses `ruyi news list --new`)
  */
 
-import * as vscode from 'vscode';
-import NewsService, {NewsRow} from './NewsService';
+import * as vscode from 'vscode'
 
-const CTX_KEY = 'ruyiNews.showUnreadOnly';
+import NewsService, { NewsRow } from './NewsService'
+
+const CTX_KEY = 'ruyiNews.showUnreadOnly'
 
 export default class NewsTree implements
     vscode.TreeDataProvider<vscode.TreeItem> {
-  private readonly _onDidChangeTreeData = new vscode.EventEmitter<void>();
-  readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
+  private readonly _onDidChangeTreeData = new vscode.EventEmitter<void>()
+  readonly onDidChangeTreeData = this._onDidChangeTreeData.event
 
-  private showUnreadOnly = false;
+  private showUnreadOnly = false
 
   constructor(private readonly svc: NewsService) {}
 
@@ -25,7 +26,7 @@ export default class NewsTree implements
    * Toggle filter state between "all" and "unread only".
    */
   toggleFilter() {
-    this.setFilterUnreadOnly(!this.showUnreadOnly);
+    this.setFilterUnreadOnly(!this.showUnreadOnly)
   }
 
   /**
@@ -33,54 +34,55 @@ export default class NewsTree implements
    * @param flag false → show all news; true → show only unread news
    */
   setFilterUnreadOnly(flag: boolean) {
-    this.showUnreadOnly = flag;
-    void vscode.commands.executeCommand('setContext', CTX_KEY, flag);
-    this.refresh();
+    this.showUnreadOnly = flag
+    void vscode.commands.executeCommand('setContext', CTX_KEY, flag)
+    this.refresh()
   }
 
   refresh() {
-    this._onDidChangeTreeData.fire();
+    this._onDidChangeTreeData.fire()
   }
 
   async getChildren(): Promise<vscode.TreeItem[]> {
     try {
-      const rows = await this.svc.list(this.showUnreadOnly);
+      const rows = await this.svc.list(this.showUnreadOnly)
       if (rows.length === 0) {
         return [this.infoItem(
-            this.showUnreadOnly ? 'No unread news.' : 'No news items.')];
+          this.showUnreadOnly ? 'No unread news.' : 'No news items.')]
       }
-      return rows.map(this.rowToItem);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      void vscode.window.showErrorMessage(`Failed to load news: ${msg}`);
-      return [this.infoItem('Failed to load news. See OUTPUT for details.')];
+      return rows.map(this.rowToItem)
+    }
+    catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      void vscode.window.showErrorMessage(`Failed to load news: ${msg}`)
+      return [this.infoItem('Failed to load news. See OUTPUT for details.')]
     }
   }
 
   getTreeItem(e: vscode.TreeItem) {
-    return e;
+    return e
   }
 
   private rowToItem(r: NewsRow): vscode.TreeItem {
-    const label = r.title?.trim() || `#${r.no}`;
-    const item =
-        new vscode.TreeItem(label, vscode.TreeItemCollapsibleState.None);
-    item.description = r.date || '';
+    const label = r.title?.trim() || `#${r.no}`
+    const item
+      = new vscode.TreeItem(label, vscode.TreeItemCollapsibleState.None)
+    item.description = r.date || ''
     item.tooltip = `${r.title || `#${r.no}`}${
-        r.date ? `\n\nDate: ${r.date}` : ''}\nNo.: ${r.no}\nID: ${r.id}`;
+      r.date ? `\n\nDate: ${r.date}` : ''}\nNo.: ${r.no}\nID: ${r.id}`
     item.command = {
       command: 'ruyi.news.read',
       title: 'Read News',
       arguments: [r.no, r.title],
-    };
-    return item;
+    }
+    return item
   }
 
   private infoItem(text: string): vscode.TreeItem {
-    const item =
-        new vscode.TreeItem(text, vscode.TreeItemCollapsibleState.None);
-    item.contextValue = 'info';
-    item.iconPath = new vscode.ThemeIcon('info');
-    return item;
+    const item
+      = new vscode.TreeItem(text, vscode.TreeItemCollapsibleState.None)
+    item.contextValue = 'info'
+    item.iconPath = new vscode.ThemeIcon('info')
+    return item
   }
 }
