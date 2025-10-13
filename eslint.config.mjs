@@ -8,7 +8,7 @@ export default tseslint.config(
   { ignores: ['out/**', 'dist/**', 'build/**', 'node_modules/**'] },
   js.configs.recommended,
   tseslint.configs.recommended,
-  stylistic.configs.customize({ indent: 2, quotes: 'single', semi: true, jsx: false, braceStyle: '1tbs', arrowParens: true }),
+  stylistic.configs.recommended,
   {
     files: ['**/*.ts'],
     extends: [importPlugin.flatConfigs.recommended, importPlugin.flatConfigs.typescript],
