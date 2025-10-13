@@ -12,28 +12,30 @@
  * Returns the detected version string on success, or null if Ruyi is not found.
  */
 
-import * as cp from 'child_process';
-import * as util from 'util';
-import {SHORT_CMD_TIMEOUT_MS} from '../../common/constants';
-import {getRuyiVersion} from '../../common/RuyiInvoker';
-import {pythonCandidates} from '../../common/utils';
+import * as cp from 'child_process'
+import * as util from 'util'
 
-const execAsync = util.promisify(cp.exec);
+import { SHORT_CMD_TIMEOUT_MS } from '../../common/constants'
+import { getRuyiVersion } from '../../common/RuyiInvoker'
+import { pythonCandidates } from '../../common/utils'
 
-export async function detectRuyiVersion(): Promise<string|null> {
-  const cliVersion = await getRuyiVersion({timeout: SHORT_CMD_TIMEOUT_MS});
-  if (cliVersion) return cliVersion;
+const execAsync = util.promisify(cp.exec)
+
+export async function detectRuyiVersion(): Promise<string | null> {
+  const cliVersion = await getRuyiVersion({ timeout: SHORT_CMD_TIMEOUT_MS })
+  if (cliVersion) return cliVersion
 
   for (const py of pythonCandidates()) {
     try {
-      const {stdout} = await execAsync(`${py} -m ruyi --version`, {
+      const { stdout } = await execAsync(`${py} -m ruyi --version`, {
         timeout: SHORT_CMD_TIMEOUT_MS,
-      });
-      const pyVersion = stdout.trim();
-      if (pyVersion) return pyVersion;
-    } catch {
-      continue;
+      })
+      const pyVersion = stdout.trim()
+      if (pyVersion) return pyVersion
+    }
+    catch {
+      continue
     }
   }
-  return null;
+  return null
 }

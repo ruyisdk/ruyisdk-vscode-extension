@@ -7,43 +7,47 @@
  * - Registers filter commands: `ruyi.news.showUnread` / `ruyi.news.showAll`
  */
 
-import * as vscode from 'vscode';
-import createNewsPanel from '../features/news/NewsPanel';
-import NewsService from '../features/news/NewsService';
-import NewsTree from '../features/news/NewsTree';
+import * as vscode from 'vscode'
+
+import createNewsPanel from '../features/news/NewsPanel'
+import NewsService from '../features/news/NewsService'
+import NewsTree from '../features/news/NewsTree'
 
 export default function registerNewsCommands(ctx: vscode.ExtensionContext) {
-  const svc = new NewsService();
-  const provider = new NewsTree(svc);
+  const svc = new NewsService()
+  const provider = new NewsTree(svc)
 
   const view = vscode.window.createTreeView('ruyiNewsView', {
     treeDataProvider: provider,
-  });
+  })
 
   const readCmd = vscode.commands.registerCommand(
-      'ruyi.news.read', async (no?: number|string, title?: string) => {
-        const n = typeof no === 'number' ? no :
-            typeof no === 'string'       ? Number(no) :
-                                           NaN;
+    'ruyi.news.read', async (no?: number | string, title?: string) => {
+      const n = typeof no === 'number'
+        ? no
+        : typeof no === 'string'
+          ? Number(no)
+          : NaN
 
-        if (!Number.isFinite(n)) {
-          vscode.window.showWarningMessage('Select a news item to read.');
-          return;
-        }
-        try {
-          const body = await svc.read(n);
-          createNewsPanel(body, title || `Ruyi News #${n}`, ctx);
-        } catch (e: unknown) {
-          const msg = e instanceof Error ? e.message : String(e);
-          vscode.window.showErrorMessage(`Failed to read: ${msg}`);
-        }
-      });
+      if (!Number.isFinite(n)) {
+        vscode.window.showWarningMessage('Select a news item to read.')
+        return
+      }
+      try {
+        const body = await svc.read(n)
+        createNewsPanel(body, title || `Ruyi News #${n}`, ctx)
+      }
+      catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e)
+        vscode.window.showErrorMessage(`Failed to read: ${msg}`)
+      }
+    })
 
   const showUnreadCmd = vscode.commands.registerCommand(
-      'ruyi.news.showUnread', () => provider.setFilterUnreadOnly(true));
+    'ruyi.news.showUnread', () => provider.setFilterUnreadOnly(true))
 
   const showAllCmd = vscode.commands.registerCommand(
-      'ruyi.news.showAll', () => provider.setFilterUnreadOnly(false));
+    'ruyi.news.showAll', () => provider.setFilterUnreadOnly(false))
 
-  ctx.subscriptions.push(view, readCmd, showUnreadCmd, showAllCmd);
+  ctx.subscriptions.push(view, readCmd, showUnreadCmd, showAllCmd)
 }

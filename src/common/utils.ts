@@ -13,25 +13,25 @@
  *  - 'win32'   → Windows
  */
 
-import type {ExecException} from 'node:child_process';
+import type { ExecException } from 'node:child_process'
 
-const SUPPORTED_PLATFORMS: NodeJS.Platform[] = ['linux', 'darwin', 'win32'];
+const SUPPORTED_PLATFORMS: NodeJS.Platform[] = ['linux', 'darwin', 'win32']
 
 export function isSupportedPlatform(): boolean {
-  return SUPPORTED_PLATFORMS.includes(process.platform);
+  return SUPPORTED_PLATFORMS.includes(process.platform)
 }
 
 export function pythonCandidates(): string[] {
-  return ['python3', 'python', 'py'];
+  return ['python3', 'python', 'py']
 }
 
 export function formatExecError(e: unknown): string {
   const err = e as ExecException & {
-    stderr?: string;
+    stderr?: string
     stdout?: string
-  };
+  }
   return (
-      err.stderr?.trim() ||
-      (typeof err.message === 'string' ? err.message.trim() : '') ||
-      String(e) || 'Unknown error.');
+    err.stderr?.trim()
+    || (typeof err.message === 'string' ? err.message.trim() : '')
+    || String(e) || 'Unknown error.')
 }
