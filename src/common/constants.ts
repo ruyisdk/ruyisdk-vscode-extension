@@ -17,3 +17,13 @@ export const SHORT_CMD_TIMEOUT_MS
 export const DEFAULT_CMD_TIMEOUT_MS = 10_000 // most commands
 export const LONG_CMD_TIMEOUT_MS
   = 60_000 // long tasks (e.g. pip install/upgrade)
+
+/** Valid package categories */
+export const VALID_PACKAGE_CATEGORIES = [
+  'toolchain',
+  'source',
+  'emulator',
+  'board-image',
+  'analyzer',
+  'extra',
+] as const

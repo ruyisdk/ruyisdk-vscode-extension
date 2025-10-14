@@ -39,8 +39,14 @@
     "views": {
       "ruyi": [
         {
+          "id": "ruyiPackagesView",
+          "name": "Packages",
+          "icon": "$(package)"
+        },
+        {
           "id": "ruyiNewsView",
-          "name": "News"
+          "name": "News",
+          "icon": "$(rss)"
         }
       ]
     },
@@ -69,10 +75,33 @@
         "command": "ruyi.news.read",
         "title": "Read News",
         "category": "Ruyi"
+      },
+      {
+        "command": "ruyi.packages.install",
+        "title": "Install Package",
+        "category": "Ruyi",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "ruyi.packages.uninstall",
+        "title": "Uninstall Package",
+        "category": "Ruyi",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "ruyi.packages.refresh",
+        "title": "Refresh Package List",
+        "category": "Ruyi",
+        "icon": "$(refresh)"
       }
     ],
     "menus": {
       "view/title": [
+        {
+          "command": "ruyi.packages.refresh",
+          "when": "view == ruyiPackagesView",
+          "group": "navigation@0"
+        },
         {
           "command": "ruyi.news.showUnread",
           "when": "view == ruyiNewsView && !ruyiNews.showUnreadOnly",
@@ -84,7 +113,27 @@
           "group": "navigation@0"
         }
       ],
+      "view/item/context": [
+        {
+          "command": "ruyi.packages.install",
+          "when": "view == ruyiPackagesView && viewItem == ruyiPackage.available",
+          "group": "inline@1"
+        },
+        {
+          "command": "ruyi.packages.uninstall",
+          "when": "view == ruyiPackagesView && viewItem == ruyiPackage.installed",
+          "group": "inline@1"
+        }
+      ],
       "commandPalette": [
+        {
+          "command": "ruyi.packages.install",
+          "when": "false"
+        },
+        {
+          "command": "ruyi.packages.uninstall",
+          "when": "false"
+        },
         {
           "command": "ruyi.news.showUnread",
           "when": "false"
