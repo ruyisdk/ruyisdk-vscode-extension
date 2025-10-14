@@ -94,7 +94,7 @@ function normalizeRuyiResult(result: RuyiResult): RuyiResult {
 // High-level wrappers for Ruyi commands
 export function ruyiList(
   args: string[] = [], options?: RuyiRunOptions): Promise<RuyiResult> {
-  return runRuyi(['list', ...args], options).then(normalizeRuyiResult)
+  return runRuyi(['--porcelain', 'list', ...args], options).then(normalizeRuyiResult)
 }
 
 export function ruyiInstall(
