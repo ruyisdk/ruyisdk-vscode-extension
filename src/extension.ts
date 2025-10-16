@@ -19,20 +19,29 @@
 import * as vscode from 'vscode'
 
 import registerDetectCommand from './commands/detect'
+import registerHomeCommand from './commands/home'
 import registerInstallCommand from './commands/installRuyi'
 import registerNewsCommands from './commands/news'
 import registerPackagesCommands from './commands/packages'
 
 export function activate(context: vscode.ExtensionContext) {
   // Register commands
+  registerHomeCommand(context)
   registerDetectCommand(context)
   registerInstallCommand(context)
   registerNewsCommands(context)
   registerPackagesCommands(context)
 
   // Run initial detection
-  setImmediate(() => {
-    void vscode.commands.executeCommand('ruyi.detect')
+  setImmediate(async () => {
+    const hasShownHome = context.globalState.get<boolean>('ruyi.home.shown') === true
+
+    if (!hasShownHome) {
+      await context.globalState.update('ruyi.home.shown', true)
+      await vscode.commands.executeCommand('ruyi.home.show')
+    }
+
+    await vscode.commands.executeCommand('ruyi.detect')
   })
 }
 
