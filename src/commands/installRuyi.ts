@@ -13,15 +13,21 @@
 
 import * as vscode from 'vscode'
 
-import { isSupportedPlatform } from '../common/utils'
 import { installViaPip, resolvePython } from '../features/install/InstallService'
 
-export default function registerInstallCommand(
-  context: vscode.ExtensionContext) {
+export default function registerInstallCommand(context: vscode.ExtensionContext) {
   const disposable = vscode.commands.registerCommand('ruyi.install', async () => {
-    if (!isSupportedPlatform()) {
-      vscode.window.showErrorMessage(
-        'This extension currently supports Windows, macOS, and Linux.')
+    if (process.platform !== 'linux') {
+      const choice = await vscode.window.showWarningMessage(
+        'Automatic installation is only supported on Linux. Please install Ruyi manually.',
+        'Open Installation Guide',
+        'Cancel',
+      )
+      if (choice === 'Open Installation Guide') {
+        vscode.env.openExternal(
+          vscode.Uri.parse('https://ruyisdk.org/en/docs/Package-Manager/installation'),
+        )
+      }
       return
     }
 
@@ -39,31 +45,27 @@ export default function registerInstallCommand(
     )
     if (choice !== 'Install') return
 
-    await vscode.window.withProgress(
-      {
-        location: vscode.ProgressLocation.Notification,
-        title: 'Installing/Upgrading Ruyi via pip...',
-        cancellable: false,
-      },
-      async () => {
-        const result = await installViaPip(py)
+    await vscode.window.withProgress({
+      location: vscode.ProgressLocation.Notification,
+      title: 'Installing/Upgrading Ruyi via pip...',
+      cancellable: false,
+    }, async () => {
+      const result = await installViaPip(py)
 
-        if (result.errorMsg) {
-          vscode.window.showErrorMessage(result.errorMsg)
-          return
-        }
-        if (result.warnPath) {
-          vscode.window.showWarningMessage(
-            'Ruyi was installed, but the executable may not be discoverable. Add it to PATH or set RUYI_BIN to the full path.')
-          return
-        }
-        if (result.version) {
-          vscode.window.showInformationMessage(
-            `Ruyi installed: ${result.version}`)
-        }
-      },
-    )
+      if (result.errorMsg) {
+        vscode.window.showErrorMessage(result.errorMsg)
+        return
+      }
+      if (result.warnPath) {
+        vscode.window.showWarningMessage(
+          'Ruyi was installed, but the executable may not be discoverable. Add it to PATH or set RUYI_BIN to the full path.')
+        return
+      }
+      if (result.version) {
+        vscode.window.showInformationMessage(
+          `Ruyi installed: ${result.version}`)
+      }
+    })
   })
-
   context.subscriptions.push(disposable)
 }
