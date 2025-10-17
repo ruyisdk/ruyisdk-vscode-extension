@@ -35,14 +35,11 @@ Promise<{ version?: string, warnPath?: boolean, errorMsg?: string }> {
     await execAsync(
       `${py} -m pip install --user -U ruyi`, { timeout: LONG_CMD_TIMEOUT_MS })
 
-    const direct = await ruyiVersion({ timeout: SHORT_CMD_TIMEOUT_MS })
-    const version = direct.stdout
-    if (direct.code === 0 && version) {
-      return { version, warnPath: false }
+    const version = await ruyiVersion()
+    if (!version) {
+      return { warnPath: true }
     }
-    return {
-      warnPath: true,
-    }
+    return { version, warnPath: false }
   }
   catch (e: unknown) {
     return { errorMsg: `Failed to install Ruyi: ${formatExecError(e)}` }

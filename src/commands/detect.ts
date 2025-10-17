@@ -6,11 +6,11 @@
 
 import * as vscode from 'vscode'
 
-import { detectRuyiVersion } from '../features/detect/DetectService'
+import { ruyiVersion } from '../common/RuyiInvoker'
 
 export default function registerDetectCommand(context: vscode.ExtensionContext) {
   const disposable = vscode.commands.registerCommand('ruyi.detect', async () => {
-    const version = await detectRuyiVersion()
+    const version = await ruyiVersion()
     if (version) {
       vscode.window.showInformationMessage(`Ruyi detected: ${version}`)
       return
