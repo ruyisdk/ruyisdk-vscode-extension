@@ -4,7 +4,6 @@
  *
  * Responsibilities:
  *  - Define supported platforms
- *  - Provide a list of Python interpreter candidates
  *  - Centralize small reusable functions shared across commands
  *
  * Supported Node.js `process.platform` values:
@@ -13,10 +12,23 @@
  *  - 'win32'   → Windows
  */
 
+import * as cp from 'child_process'
 import type { ExecException } from 'node:child_process'
+import * as util from 'util'
 
-export function pythonCandidates(): string[] {
-  return ['python3', 'python', 'py']
+const execAsync = util.promisify(cp.exec)
+
+export async function resolvePython(): Promise<string | null> {
+  for (const cmd of ['python3', 'python', 'py']) {
+    try {
+      await execAsync(`${cmd} --version`)
+      return cmd
+    }
+    catch {
+      continue
+    }
+  }
+  return null
 }
 
 export function formatExecError(e: unknown): string {

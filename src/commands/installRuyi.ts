@@ -6,14 +6,20 @@
  *
  * Responsibilities:
  * - Check platform support
- * - Resolve Python via features/install service
+ * - Resolve Python interpreter from candidates (python3/python/py)
  * - Ask user for confirmation and show progress
- * - Call features/install service to perform pip install and report result
+ * - Perform pip install and report result
  */
 
+import * as cp from 'child_process'
+import * as util from 'util'
 import * as vscode from 'vscode'
 
-import { installViaPip, resolvePython } from '../features/install/InstallService'
+import { LONG_CMD_TIMEOUT_MS } from '../common/constants'
+import { ruyiVersion } from '../common/RuyiInvoker'
+import { formatExecError, resolvePython } from '../common/utils'
+
+const execAsync = util.promisify(cp.exec)
 
 export default function registerInstallCommand(context: vscode.ExtensionContext) {
   const disposable = vscode.commands.registerCommand('ruyi.install', async () => {
@@ -50,20 +56,20 @@ export default function registerInstallCommand(context: vscode.ExtensionContext)
       title: 'Installing/Upgrading Ruyi via pip...',
       cancellable: false,
     }, async () => {
-      const result = await installViaPip(py)
+      try {
+        await execAsync(
+          `${py} -m pip install --user -U ruyi`, { timeout: LONG_CMD_TIMEOUT_MS })
 
-      if (result.errorMsg) {
-        vscode.window.showErrorMessage(result.errorMsg)
-        return
+        const version = await ruyiVersion()
+        if (!version) {
+          vscode.window.showWarningMessage(
+            'Ruyi was installed, but the executable may not be discoverable. Add it to PATH or set RUYI_BIN to the full path.')
+          return
+        }
+        vscode.window.showInformationMessage(`Ruyi installed: ${version}`)
       }
-      if (result.warnPath) {
-        vscode.window.showWarningMessage(
-          'Ruyi was installed, but the executable may not be discoverable. Add it to PATH or set RUYI_BIN to the full path.')
-        return
-      }
-      if (result.version) {
-        vscode.window.showInformationMessage(
-          `Ruyi installed: ${result.version}`)
+      catch (e: unknown) {
+        vscode.window.showErrorMessage(`Failed to install Ruyi: ${formatExecError(e)}`)
       }
     })
   })
