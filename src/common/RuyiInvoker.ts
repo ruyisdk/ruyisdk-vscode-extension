@@ -112,8 +112,8 @@ export function ruyiUpdate(
   return runRuyi(['update', ...args], options).then(normalizeRuyiResult)
 }
 
-export async function ruyiVersion(): Promise<string> {
+export async function ruyiVersion(): Promise<string | null> {
   const result = await runRuyi(['--version']).then(normalizeRuyiResult)
-  if (result.code !== 0) return ''
+  if (result.code !== 0) return null
   return result.stdout.split('\n', 1)[0]?.trim()
 }
