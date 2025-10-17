@@ -6,10 +6,13 @@
  * result handling.
  */
 
-import { spawn } from 'child_process'
+import { spawn, exec } from 'child_process'
 import type { SpawnOptions } from 'child_process'
+import { promisify } from 'util'
 
-import { DEFAULT_CMD_TIMEOUT_MS } from './constants'
+import { DEFAULT_CMD_TIMEOUT_MS, SHORT_CMD_TIMEOUT_MS } from './constants'
+
+const execAsync = promisify(exec)
 
 export type RuyiResult = {
   stdout: string
@@ -26,8 +29,47 @@ export type RuyiRunOptions = Pick<SpawnOptions, 'cwd' | 'env'> & {
 }
 
 // Execute Ruyi CLI command
-export function runRuyi(
+async function resolvePipxPython(): Promise<string | null> {
+  try {
+    const { stdout: pipxList } = await execAsync('pipx list --json', {
+      timeout: SHORT_CMD_TIMEOUT_MS,
+    })
+    try {
+      const pipxData = JSON.parse(pipxList)
+      const venvPath = pipxData?.venvs?.ruyi?.metadata?.main_package_path
+      if (typeof venvPath === 'string' && venvPath.length > 0) {
+        return `${venvPath}/bin/python`
+      }
+    } catch {
+      // ignore JSON parse errors
+    }
+  } catch {
+    // pipx not available or failed; fall through to common paths
+  }
+
+  const commonPipxPaths = [
+    `${process.env.HOME}/.local/share/pipx/venvs/ruyi/bin/python`,
+    `${process.env.XDG_DATA_HOME || `${process.env.HOME}/.local/share`}/pipx/venvs/ruyi/bin/python`,
+    `/opt/pipx/venvs/ruyi/bin/python`,
+  ]
+  for (const pythonPath of commonPipxPaths) {
+    try {
+      await execAsync(`${pythonPath} -m ruyi --version`, { timeout: SHORT_CMD_TIMEOUT_MS })
+      return pythonPath
+    } catch {
+      // try next path
+    }
+  }
+  return null
+}
+
+export async function runRuyi(
   args: string[], options?: RuyiRunOptions): Promise<RuyiResult> {
+  const pipxPython = await resolvePipxPython()
+  const command = pipxPython ?? 'python3'
+  const baseArgs = pipxPython ? ['-m', 'ruyi'] : ['-m', 'ruyi']
+  const commandArgs = [...baseArgs, ...args]
+
   return new Promise((resolve) => {
     const spawnOptions: SpawnOptions = {
       shell: true,
@@ -38,7 +80,7 @@ export function runRuyi(
 
     const timeout = options?.timeout ?? DEFAULT_CMD_TIMEOUT_MS
 
-    const child = spawn('python3', ['-m', 'ruyi', ...args], spawnOptions)
+    const child = spawn(command, commandArgs, spawnOptions)
     let stdout = ''
     let stderr = ''
     let timer: NodeJS.Timeout | undefined
