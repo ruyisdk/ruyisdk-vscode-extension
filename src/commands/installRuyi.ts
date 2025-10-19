@@ -66,10 +66,19 @@ export default function registerInstallCommand(context: vscode.ExtensionContext)
             'Ruyi was installed, but the executable may not be discoverable. Add it to PATH or set RUYI_BIN to the full path.')
           return
         }
-        vscode.window.showInformationMessage(`Ruyi installed: ${version}`)
+        const action = await vscode.window.showInformationMessage(
+          `Ruyi installed: ${version}`,
+          'Reload Window',
+          'Later',
+        )
+        if (action === 'Reload Window') {
+          await vscode.commands.executeCommand('workbench.action.reloadWindow')
+        }
       }
       catch (e: unknown) {
-        vscode.window.showErrorMessage(`Failed to install Ruyi: ${formatExecError(e)}`)
+        const message = formatExecError(e)
+        vscode.window.showErrorMessage(`Failed to install Ruyi: ${message}`)
+        console.error(`[RuyiSDK] Install error: ${message}`)
       }
     })
   })
