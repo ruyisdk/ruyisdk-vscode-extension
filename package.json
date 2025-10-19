@@ -77,6 +77,18 @@
         "category": "Ruyi"
       },
       {
+        "command": "ruyi.news.search",
+        "title": "Search News",
+        "category": "Ruyi",
+        "icon": "$(search)"
+      },
+      {
+        "command": "ruyi.news.clearSearch",
+        "title": "Clear Search",
+        "category": "Ruyi",
+        "icon": "$(clear-all)"
+      },
+      {
         "command": "ruyi.packages.install",
         "title": "Install Package",
         "category": "Ruyi",
@@ -111,6 +123,16 @@
           "command": "ruyi.news.showAll",
           "when": "view == ruyiNewsView && ruyiNews.showUnreadOnly",
           "group": "navigation@0"
+         },
+        {
+          "command": "ruyi.news.search",
+          "when": "view == ruyiNewsView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "ruyi.news.clearSearch",
+          "when": "view == ruyiNewsView",
+          "group": "navigation@1"
         }
       ],
       "view/item/context": [

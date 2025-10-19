@@ -49,5 +49,21 @@ export default function registerNewsCommands(ctx: vscode.ExtensionContext) {
   const showAllCmd = vscode.commands.registerCommand(
     'ruyi.news.showAll', () => provider.setFilterUnreadOnly(false))
 
-  ctx.subscriptions.push(view, readCmd, showUnreadCmd, showAllCmd)
+  const searchCmd = vscode.commands.registerCommand(
+    'ruyi.news.search', async () => {
+      const query = await vscode.window.showInputBox({
+        prompt: 'Search news by title, date, or ID',
+        placeHolder: 'Enter search term...',
+        value: provider.getSearchQuery(),
+        ignoreFocusOut: true,
+      })
+      if (query !== undefined) {
+        provider.setSearchQuery(query)
+      }
+    })
+
+  const clearSearchCmd = vscode.commands.registerCommand(
+    'ruyi.news.clearSearch', () => provider.setSearchQuery(''))
+
+  ctx.subscriptions.push(view, readCmd, showUnreadCmd, showAllCmd, searchCmd, clearSearchCmd)
 }
