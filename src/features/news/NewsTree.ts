@@ -19,6 +19,7 @@ export default class NewsTree implements
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event
 
   private showUnreadOnly = false
+  private searchQuery = ''
 
   constructor(private readonly svc: NewsService) {}
 
@@ -39,6 +40,22 @@ export default class NewsTree implements
     this.refresh()
   }
 
+  /**
+   * Set search query and refresh the view.
+   * @param query search term for filtering news by title, date, or ID
+   */
+  setSearchQuery(query: string) {
+    this.searchQuery = query.trim().toLowerCase()
+    this.refresh()
+  }
+
+  /**
+   * Get current search query.
+   */
+  getSearchQuery(): string {
+    return this.searchQuery
+  }
+
   refresh() {
     this._onDidChangeTreeData.fire()
   }
@@ -50,7 +67,17 @@ export default class NewsTree implements
         return [this.infoItem(
           this.showUnreadOnly ? 'No unread news.' : 'No news items.')]
       }
-      return rows.map(this.rowToItem)
+
+      // Apply search filter if query exists
+      const filteredRows = this.searchQuery
+        ? rows.filter(row => this.matchesSearch(row))
+        : rows
+
+      if (filteredRows.length === 0 && this.searchQuery) {
+        return [this.infoItem(`No news found matching "${this.searchQuery}"`)]
+      }
+
+      return filteredRows.map(this.rowToItem)
     }
     catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
@@ -84,5 +111,22 @@ export default class NewsTree implements
     item.contextValue = 'info'
     item.iconPath = new vscode.ThemeIcon('info')
     return item
+  }
+
+  /**
+   * Check if a news row matches the current search query.
+   * Searches in title, date, and ID fields.
+   */
+  private matchesSearch(row: NewsRow): boolean {
+    if (!this.searchQuery) return true
+
+    const query = this.searchQuery.toLowerCase()
+    const title = row.title?.toLowerCase() || ''
+    const date = row.date?.toLowerCase() || ''
+    const id = row.id?.toLowerCase() || ''
+
+    return title.includes(query)
+      || date.includes(query)
+      || id.includes(query)
   }
 }
