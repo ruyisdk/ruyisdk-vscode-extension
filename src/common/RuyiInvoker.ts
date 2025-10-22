@@ -8,6 +8,8 @@
 
 import { spawn } from 'child_process'
 import type { SpawnOptions } from 'child_process'
+import * as fs from 'fs'
+import * as path from 'path'
 
 import { DEFAULT_CMD_TIMEOUT_MS } from './constants'
 
@@ -26,8 +28,12 @@ export type RuyiRunOptions = Pick<SpawnOptions, 'cwd' | 'env'> & {
 }
 
 // Execute Ruyi CLI command
-export function runRuyi(
-  args: string[], options?: RuyiRunOptions): Promise<RuyiResult> {
+
+function executeCommand(
+  command: string,
+  args: string[],
+  options?: RuyiRunOptions,
+): Promise<RuyiResult> {
   return new Promise((resolve) => {
     const spawnOptions: SpawnOptions = {
       shell: true,
@@ -38,7 +44,7 @@ export function runRuyi(
 
     const timeout = options?.timeout ?? DEFAULT_CMD_TIMEOUT_MS
 
-    const child = spawn('python3', ['-m', 'ruyi', ...args], spawnOptions)
+    const child = spawn(command, args, spawnOptions)
     let stdout = ''
     let stderr = ''
     let timer: NodeJS.Timeout | undefined
@@ -83,6 +89,17 @@ export function runRuyi(
   })
 }
 
+export async function runRuyi(
+  args: string[], options?: RuyiRunOptions): Promise<RuyiResult> {
+  const ruyiPath = await resolveRuyi()
+  if (ruyiPath) {
+    return executeCommand(ruyiPath, args, options)
+  }
+
+  // Fallback to python3 -m ruyi
+  return executeCommand('python3', ['-m', 'ruyi', ...args], options)
+}
+
 function normalizeRuyiResult(result: RuyiResult): RuyiResult {
   return {
     ...result,
@@ -116,4 +133,40 @@ export async function ruyiVersion(): Promise<string | null> {
   const result = await runRuyi(['--version']).then(normalizeRuyiResult)
   if (result.code !== 0) return null
   return result.stdout.split('\n', 1)[0]?.trim()
+}
+
+/**
+ * Resolve Ruyi executable path
+ * First check ~/.local/bin/ruyi, then check paths in PATH environment variable,
+ */
+
+export async function resolveRuyi(): Promise<string | null> {
+  const homeDir = process.env.HOME
+  if (homeDir) {
+    const localRuyiPath = path.join(homeDir, '.local', 'bin', 'ruyi')
+    if (fs.existsSync(localRuyiPath)) {
+      return localRuyiPath
+    }
+  }
+
+  const pathEnv = process.env.PATH
+  if (pathEnv) {
+    const pathDirs = pathEnv.split(':')
+    for (const dir of pathDirs) {
+      if (!dir.trim()) continue
+
+      try {
+        const localRuyiPath = path.join(dir, 'ruyi')
+        if (fs.existsSync(localRuyiPath)) {
+          return localRuyiPath
+        }
+      }
+      catch {
+        // Skip directories that can't be accessed
+        continue
+      }
+    }
+  }
+
+  return null
 }
