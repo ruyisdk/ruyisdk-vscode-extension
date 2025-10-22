@@ -16,10 +16,31 @@ import * as util from 'util'
 import * as vscode from 'vscode'
 
 import { LONG_CMD_TIMEOUT_MS } from '../common/constants'
-import { ruyiVersion } from '../common/RuyiInvoker'
-import { formatExecError, resolvePython } from '../common/utils'
+import { ruyiVersion, resolveRuyi } from '../common/RuyiInvoker'
+import { formatExecError } from '../common/utils'
 
 const execAsync = util.promisify(cp.exec)
+
+async function showInstallSuccess(method: string, version: string): Promise<void> {
+  const action = await vscode.window.showInformationMessage(
+    `Ruyi installed via ${method}: ${version}`,
+    'Reload Window',
+    'Later',
+  )
+  if (action === 'Reload Window') {
+    await vscode.commands.executeCommand('workbench.action.reloadWindow')
+  }
+}
+
+async function showInstallError(method: string, errorMessage: string, continueMessage?: string): Promise<void> {
+  console.log(`[RuyiSDK] ${method} install failed: ${errorMessage}`)
+
+  const message = continueMessage
+    ? `${method} installation failed: ${errorMessage}. ${continueMessage}`
+    : `${method} installation failed: ${errorMessage}`
+
+  await vscode.window.showWarningMessage(message, 'OK')
+}
 
 export default function registerInstallCommand(context: vscode.ExtensionContext) {
   const disposable = vscode.commands.registerCommand('ruyi.install', async () => {
@@ -37,50 +58,63 @@ export default function registerInstallCommand(context: vscode.ExtensionContext)
       return
     }
 
-    const py = await resolvePython()
-    if (!py) {
-      vscode.window.showErrorMessage(
-        'No Python interpreter found (python3/python/py).')
-      return
+    const existingRuyi = await resolveRuyi()
+    if (existingRuyi) {
+      const version = await ruyiVersion()
+      if (version) {
+        vscode.window.showInformationMessage(`Ruyi already installed: ${version}`)
+        return
+      }
     }
 
     const choice = await vscode.window.showInformationMessage(
-      'Python detected. Install/upgrade Ruyi via PyPI?',
+      'Ruyi not found. Would you like to install it automatically?',
       'Install',
       'Cancel',
     )
     if (choice !== 'Install') return
 
-    await vscode.window.withProgress({
-      location: vscode.ProgressLocation.Notification,
-      title: 'Installing/Upgrading Ruyi via pip...',
-      cancellable: false,
-    }, async () => {
+    const commands = [
+      { name: 'pip', cmd: 'python3 -m pip install --user -U ruyi' },
+      { name: 'pipx', cmd: 'python3 -m pipx install ruyi' },
+    ]
+
+    for (let i = 0; i < commands.length; i++) {
+      const { name, cmd } = commands[i]
       try {
-        await execAsync(
-          `${py} -m pip install --user -U ruyi`, { timeout: LONG_CMD_TIMEOUT_MS })
+        await vscode.window.withProgress({
+          location: vscode.ProgressLocation.Notification,
+          title: `Installing Ruyi via ${name}...`,
+          cancellable: false,
+        }, async () => {
+          await execAsync(cmd, { timeout: LONG_CMD_TIMEOUT_MS })
+        })
 
         const version = await ruyiVersion()
-        if (!version) {
-          vscode.window.showWarningMessage(
-            'Ruyi was installed, but the executable may not be discoverable. Add it to PATH or set RUYI_BIN to the full path.')
+        if (version) {
+          await showInstallSuccess(name, version)
           return
         }
-        const action = await vscode.window.showInformationMessage(
-          `Ruyi installed: ${version}`,
-          'Reload Window',
-          'Later',
-        )
-        if (action === 'Reload Window') {
-          await vscode.commands.executeCommand('workbench.action.reloadWindow')
-        }
       }
-      catch (e: unknown) {
-        const message = formatExecError(e)
-        vscode.window.showErrorMessage(`Failed to install Ruyi: ${message}`)
-        console.error(`[RuyiSDK] Install error: ${message}`)
+      catch (error) {
+        const errorMessage = formatExecError(error)
+        const isLastCommand = i === commands.length - 1
+        const continueMessage = isLastCommand ? 'Will show manual installation options.' : `Trying ${commands[i + 1]?.name} instead...`
+        await showInstallError(name, errorMessage, continueMessage)
       }
-    })
+    }
+
+    const manualChoice = await vscode.window.showErrorMessage(
+      'Automatic installation failed. Please install Ruyi manually.',
+      'Open Installation Guide',
+      'Cancel',
+    )
+
+    if (manualChoice === 'Open Installation Guide') {
+      vscode.env.openExternal(
+        vscode.Uri.parse('https://ruyisdk.org/en/docs/Package-Manager/installation'),
+      )
+    }
   })
   context.subscriptions.push(disposable)
 }
