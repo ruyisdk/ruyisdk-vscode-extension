@@ -18,6 +18,7 @@ import * as vscode from 'vscode'
 import { LONG_CMD_TIMEOUT_MS } from '../common/constants'
 import { ruyiVersion, resolveRuyi } from '../common/RuyiInvoker'
 import { formatExecError } from '../common/utils'
+import { promptForTelemetryConfiguration } from '../features/telemetry/TelemetryService'
 
 const execAsync = util.promisify(cp.exec)
 
@@ -93,6 +94,7 @@ export default function registerInstallCommand(context: vscode.ExtensionContext)
         const version = await ruyiVersion()
         if (version) {
           await showInstallSuccess(name, version)
+          await promptForTelemetryConfiguration()
           return
         }
       }
