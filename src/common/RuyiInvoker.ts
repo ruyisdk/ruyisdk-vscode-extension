@@ -167,6 +167,22 @@ export async function resolveRuyi(): Promise<string | null> {
       }
     }
   }
-
   return null
+}
+
+export async function ruyiTelemetry(enable?: boolean): Promise<{ status: 'on' | 'off' | 'local' | 'unknown' }> {
+  const action: 'status' | 'consent' | 'optout' = enable === undefined ? 'status' : enable ? 'consent' : 'optout'
+
+  const result = await runRuyi(['telemetry', action]).then(normalizeRuyiResult)
+
+  const parseStatus = (text: string): 'on' | 'off' | 'local' | 'unknown' => {
+    const s = text.trim()
+    return (s === 'on' || s === 'off' || s === 'local') ? s : 'unknown'
+  }
+
+  if (action === 'status') {
+    return { status: parseStatus(result.stdout) }
+  }
+
+  return ruyiTelemetry()
 }
