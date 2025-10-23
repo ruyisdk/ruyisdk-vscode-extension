@@ -105,6 +105,26 @@
         "title": "Refresh Package List",
         "category": "Ruyi",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "ruyi.venv.detect",
+        "title": "Detect Ruyi Virtual Environments",
+        "category": "Ruyi"
+      },
+      {
+        "command": "ruyi.venv.create",
+        "title": "Create a New Ruyi Virtual Environment",
+        "category": "Ruyi"
+      },
+      {
+        "command": "ruyi.venv.clean",
+        "title": "Remove a non-activated Ruyi Virtual Environment",
+        "category": "Ruyi"
+      },
+      {
+        "command": "ruyi.venv.switch",
+        "title": "Activate, Deavtivate or Switch Ruyi Virtual Environments",
+        "category": "Ruyi"
       }
     ],
     "menus": {
