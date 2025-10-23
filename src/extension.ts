@@ -23,6 +23,7 @@ import registerHomeCommand from './commands/home'
 import registerInstallCommand from './commands/installRuyi'
 import registerNewsCommands from './commands/news'
 import registerPackagesCommands from './commands/packages'
+import NewsService from './features/news/NewsService'
 
 export function activate(context: vscode.ExtensionContext) {
   // Register commands
@@ -42,6 +43,11 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     await vscode.commands.executeCommand('ruyi.detect')
+
+    const newsService = new NewsService(context)
+    newsService.initialize().catch(err =>
+      console.warn('Failed to initialize news service:', err),
+    )
   })
 }
 
