@@ -15,7 +15,7 @@ import * as cp from 'child_process'
 import * as util from 'util'
 import * as vscode from 'vscode'
 
-import Ruyi, { resolveRuyi } from '../common/ruyi'
+import ruyi, { resolveRuyi } from '../common/ruyi'
 import { formatExecError } from '../common/utils'
 import { promptForTelemetryConfiguration } from '../features/telemetry/TelemetryService'
 
@@ -60,7 +60,7 @@ export default function registerInstallCommand(context: vscode.ExtensionContext)
 
     const existingRuyi = await resolveRuyi()
     if (existingRuyi) {
-      const version = await Ruyi.version()
+      const version = await ruyi.version()
       if (version) {
         vscode.window.showInformationMessage(`Ruyi already installed: ${version}`)
         return
@@ -90,7 +90,7 @@ export default function registerInstallCommand(context: vscode.ExtensionContext)
           await execAsync(cmd, { timeout: 60_000 })
         })
 
-        const version = await Ruyi.version()
+        const version = await ruyi.version()
         if (version) {
           await showInstallSuccess(name, version)
           await promptForTelemetryConfiguration()
