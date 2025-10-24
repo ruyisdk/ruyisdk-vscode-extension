@@ -15,6 +15,7 @@
 import * as cp from 'child_process'
 import type { ExecException } from 'node:child_process'
 import * as util from 'util'
+import * as vscode from 'vscode'
 
 const execAsync = util.promisify(cp.exec)
 
@@ -40,4 +41,19 @@ export function formatExecError(e: unknown): string {
     err.stderr?.trim()
     || (typeof err.message === 'string' ? err.message.trim() : '')
     || String(e) || 'Unknown error.')
+}
+
+/** Get the path of the first workspace folder,
+ *  or return an error message if none is open.
+ *
+ *  @returns The workspace folder path, or an error message string.
+ */
+export function getWorkspaceFolderPath(): string {
+  const workspaceFolder = vscode.workspace.workspaceFolders?.[0]
+  if (!workspaceFolder) {
+    throw `Exception: No workspace folder is open in VSCode. 
+      We need a workspace folder to run the command in context.`
+  }
+  const workspacePath = workspaceFolder.uri.fsPath
+  return workspacePath
 }
