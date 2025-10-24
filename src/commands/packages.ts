@@ -61,7 +61,7 @@ export default function registerPackagesCommands(ctx: vscode.ExtensionContext) {
         async (progress) => {
           progress.report({ message: 'Running ruyi install...' })
 
-          const result = await ruyiInstall([`'${packageId}'`], { timeout: LONG_CMD_TIMEOUT_MS })
+          const result = await ruyiInstall(packageId, {}, { timeout: LONG_CMD_TIMEOUT_MS })
           if (result.code === 0) {
             vscode.window.showInformationMessage(
               `✓ Successfully installed ${packageName} ${item.versionInfo.version}`)
@@ -120,7 +120,7 @@ export default function registerPackagesCommands(ctx: vscode.ExtensionContext) {
         async (progress) => {
           progress.report({ message: 'Running ruyi remove...' })
 
-          const result = await ruyiRemove([`'${packageId}'`, '-y'], { timeout: LONG_CMD_TIMEOUT_MS })
+          const result = await ruyiRemove(packageId, { timeout: LONG_CMD_TIMEOUT_MS })
 
           if (result.code === 0) {
             vscode.window.showInformationMessage(

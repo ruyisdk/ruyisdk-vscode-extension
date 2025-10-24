@@ -61,7 +61,10 @@ export class PackageService {
     }
 
     try {
-      const listResult = await ruyiList(['--name-contains', '\'\''], { timeout: DEFAULT_CMD_TIMEOUT_MS })
+      const listResult = await ruyiList(
+        {},
+        { timeout: DEFAULT_CMD_TIMEOUT_MS },
+      )
       if (listResult.code !== 0) {
         console.error('Failed to list packages:', listResult.stderr)
         return []
