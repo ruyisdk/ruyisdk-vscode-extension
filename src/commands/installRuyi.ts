@@ -12,11 +12,11 @@
  */
 
 import * as cp from 'child_process'
+import type { ExecException } from 'node:child_process'
 import * as util from 'util'
 import * as vscode from 'vscode'
 
 import ruyi, { resolveRuyi } from '../common/ruyi'
-import { formatExecError } from '../common/utils'
 import { promptForTelemetryConfiguration } from '../features/telemetry/TelemetryService'
 
 const execAsync = util.promisify(cp.exec)
@@ -97,8 +97,9 @@ export default function registerInstallCommand(context: vscode.ExtensionContext)
           return
         }
       }
-      catch (error) {
-        const errorMessage = formatExecError(error)
+      catch (e) {
+        const error = e as ExecException
+        const errorMessage = error.stderr || error.message || String(error)
         const isLastCommand = i === commands.length - 1
         const continueMessage = isLastCommand ? 'Will show manual installation options.' : `Trying ${commands[i + 1]?.name} instead...`
         await showInstallError(name, errorMessage, continueMessage)
