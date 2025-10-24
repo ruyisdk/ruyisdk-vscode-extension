@@ -9,7 +9,7 @@
  *   - Extract optional date prefix (yyyy-mm-dd) from ID
  */
 
-import { runRuyi } from '../../common/RuyiInvoker'
+import { ruyiNewsList, ruyiNewsRead } from '../../common/RuyiInvoker'
 
 export type NewsRow = {
   no: number
@@ -25,8 +25,7 @@ export default class NewsService {
    *               true  → list only unread news (`ruyi news list --new`)
    */
   async list(unread = false): Promise<NewsRow[]> {
-    const args = unread ? ['news', 'list', '--new'] : ['news', 'list']
-    const result = await runRuyi(args)
+    const result = await ruyiNewsList({ newOnly: unread })
     if (result.code !== 0) {
       throw new Error(result.stderr || 'ruyi news list failed')
     }
@@ -38,8 +37,7 @@ export default class NewsService {
    * Example: `ruyi news read 1`
    */
   async read(no: number): Promise<string> {
-    const result = await runRuyi(
-      ['news', 'read', String(no)])
+    const result = await ruyiNewsRead(no)
     if (result.code !== 0) {
       throw new Error(result.stderr || 'ruyi news read failed')
     }
