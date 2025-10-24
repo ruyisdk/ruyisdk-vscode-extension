@@ -11,8 +11,6 @@ import type { SpawnOptions } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
 
-import { DEFAULT_CMD_TIMEOUT_MS } from './constants'
-
 // ============================================================================
 // Types
 // ============================================================================
@@ -127,7 +125,7 @@ function executeCommand(
   options?: RuyiRunOptions,
 ): Promise<RuyiResult> {
   return new Promise((resolve) => {
-    const timeout = options?.timeout ?? DEFAULT_CMD_TIMEOUT_MS
+    const timeout = options?.timeout ?? 10_000
     const spawnOptions: SpawnOptions = {
       shell: false, // Don't use shell to avoid argument parsing issues
       cwd: options?.cwd,
