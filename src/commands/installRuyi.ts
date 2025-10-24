@@ -16,7 +16,7 @@ import * as util from 'util'
 import * as vscode from 'vscode'
 
 import { LONG_CMD_TIMEOUT_MS } from '../common/constants'
-import { ruyiVersion, resolveRuyi } from '../common/RuyiInvoker'
+import Ruyi, { resolveRuyi } from '../common/ruyi'
 import { formatExecError } from '../common/utils'
 import { promptForTelemetryConfiguration } from '../features/telemetry/TelemetryService'
 
@@ -61,7 +61,7 @@ export default function registerInstallCommand(context: vscode.ExtensionContext)
 
     const existingRuyi = await resolveRuyi()
     if (existingRuyi) {
-      const version = await ruyiVersion()
+      const version = await Ruyi.version()
       if (version) {
         vscode.window.showInformationMessage(`Ruyi already installed: ${version}`)
         return
@@ -91,7 +91,7 @@ export default function registerInstallCommand(context: vscode.ExtensionContext)
           await execAsync(cmd, { timeout: LONG_CMD_TIMEOUT_MS })
         })
 
-        const version = await ruyiVersion()
+        const version = await Ruyi.version()
         if (version) {
           await showInstallSuccess(name, version)
           await promptForTelemetryConfiguration()
