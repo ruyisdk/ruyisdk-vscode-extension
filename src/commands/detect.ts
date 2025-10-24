@@ -6,7 +6,7 @@
 
 import * as vscode from 'vscode'
 
-import { ruyiVersion, resolveRuyi, ruyiTelemetry } from '../common/RuyiInvoker'
+import Ruyi, { resolveRuyi } from '../common/ruyi'
 import { promptForTelemetryConfiguration } from '../features/telemetry/TelemetryService'
 
 export default function registerDetectCommand(context: vscode.ExtensionContext) {
@@ -25,11 +25,11 @@ export default function registerDetectCommand(context: vscode.ExtensionContext) 
       return
     }
 
-    if ((await ruyiTelemetry()).status === 'local') {
+    if ((await Ruyi.telemetry()).status === 'local') {
       await promptForTelemetryConfiguration()
     }
 
-    const version = await ruyiVersion()
+    const version = await Ruyi.version()
     if (version) {
       vscode.window.showInformationMessage(`Ruyi detected: ${version} (${ruyiPath})`)
     }
