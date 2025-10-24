@@ -7,7 +7,7 @@
 
 import * as vscode from 'vscode'
 
-import Ruyi from '../../common/ruyi'
+import ruyi from '../../common/ruyi'
 
 /**
  * Prompts the user to configure Ruyi telemetry settings.
@@ -24,7 +24,7 @@ export async function promptForTelemetryConfiguration(): Promise<void> {
   switch (choice) {
     case 'Enable (Recommended)':
       try {
-        const result = await Ruyi.telemetry(true)
+        const result = await ruyi.telemetry(true)
         if (result.status === 'on') {
           vscode.window.showInformationMessage('Ruyi telemetry enabled. Thank you!')
         }
@@ -38,7 +38,7 @@ export async function promptForTelemetryConfiguration(): Promise<void> {
       break
     case 'Disable':
       try {
-        const result = await Ruyi.telemetry(false)
+        const result = await ruyi.telemetry(false)
         if (result.status === 'off') {
           vscode.window.showInformationMessage('Ruyi telemetry disabled.')
         }
