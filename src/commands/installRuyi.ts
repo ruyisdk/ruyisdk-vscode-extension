@@ -15,7 +15,6 @@ import * as cp from 'child_process'
 import * as util from 'util'
 import * as vscode from 'vscode'
 
-import { LONG_CMD_TIMEOUT_MS } from '../common/constants'
 import Ruyi, { resolveRuyi } from '../common/ruyi'
 import { formatExecError } from '../common/utils'
 import { promptForTelemetryConfiguration } from '../features/telemetry/TelemetryService'
@@ -88,7 +87,7 @@ export default function registerInstallCommand(context: vscode.ExtensionContext)
           title: `Installing Ruyi via ${name}...`,
           cancellable: false,
         }, async () => {
-          await execAsync(cmd, { timeout: LONG_CMD_TIMEOUT_MS })
+          await execAsync(cmd, { timeout: 60_000 })
         })
 
         const version = await Ruyi.version()
