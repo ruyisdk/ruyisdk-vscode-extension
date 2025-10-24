@@ -10,7 +10,6 @@
 
 import * as vscode from 'vscode'
 
-import { LONG_CMD_TIMEOUT_MS } from '../common/constants'
 import Ruyi from '../common/ruyi'
 import { PackageService } from '../features/packages/PackageService'
 import { PackagesTreeProvider, VersionItem } from '../features/packages/PackagesTree'
@@ -61,7 +60,7 @@ export default function registerPackagesCommands(ctx: vscode.ExtensionContext) {
         async (progress) => {
           progress.report({ message: 'Running ruyi install...' })
 
-          const result = await Ruyi.timeout(LONG_CMD_TIMEOUT_MS).install(packageId)
+          const result = await Ruyi.timeout(60_000).install(packageId)
           if (result.code === 0) {
             vscode.window.showInformationMessage(
               `✓ Successfully installed ${packageName} ${item.versionInfo.version}`)
@@ -120,8 +119,7 @@ export default function registerPackagesCommands(ctx: vscode.ExtensionContext) {
         async (progress) => {
           progress.report({ message: 'Running ruyi remove...' })
 
-          const result = await Ruyi.timeout(LONG_CMD_TIMEOUT_MS).uninstall(packageId)
-
+          const result = await Ruyi.timeout(60_000).uninstall(packageId)
           if (result.code === 0) {
             vscode.window.showInformationMessage(
               `✓ Successfully uninstalled ${packageName} ${item.versionInfo.version}`)
