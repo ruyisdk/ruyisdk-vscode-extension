@@ -14,8 +14,13 @@ import NewsService from '../features/news/NewsService'
 import NewsTree from '../features/news/NewsTree'
 
 export default function registerNewsCommands(ctx: vscode.ExtensionContext) {
-  const svc = new NewsService()
+  const svc = NewsService.getInstance(ctx)
   const provider = new NewsTree(svc)
+
+  // Initialize news service
+  svc.initialize().catch((err: unknown) =>
+    console.warn('Failed to initialize news service:', err),
+  )
 
   const view = vscode.window.createTreeView('ruyiNewsView', {
     treeDataProvider: provider,
@@ -65,5 +70,19 @@ export default function registerNewsCommands(ctx: vscode.ExtensionContext) {
   const clearSearchCmd = vscode.commands.registerCommand(
     'ruyi.news.clearSearch', () => provider.setSearchQuery(''))
 
-  ctx.subscriptions.push(view, readCmd, showUnreadCmd, showAllCmd, searchCmd, clearSearchCmd)
+  const refreshCmd = vscode.commands.registerCommand(
+    'ruyi.news.refresh', async () => {
+      try {
+        // Force refresh from network
+        await svc.list(false, true)
+        provider.refresh()
+        vscode.window.showInformationMessage('News data refreshed successfully')
+      }
+      catch (error) {
+        const msg = error instanceof Error ? error.message : String(error)
+        vscode.window.showErrorMessage(`Failed to refresh news: ${msg}`)
+      }
+    })
+
+  ctx.subscriptions.push(view, readCmd, showUnreadCmd, showAllCmd, searchCmd, clearSearchCmd, refreshCmd)
 }
