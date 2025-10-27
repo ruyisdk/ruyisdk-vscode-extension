@@ -89,6 +89,12 @@
         "icon": "$(clear-all)"
       },
       {
+        "command": "ruyi.news.refresh",
+        "title": "Refresh News",
+        "category": "Ruyi",
+        "icon": "$(refresh)"
+      },
+      {
         "command": "ruyi.packages.install",
         "title": "Install Package",
         "category": "Ruyi",
@@ -133,6 +139,11 @@
           "command": "ruyi.news.clearSearch",
           "when": "view == ruyiNewsView",
           "group": "navigation@1"
+        },
+        {
+          "command": "ruyi.news.refresh",
+          "when": "view == ruyiNewsView",
+          "group": "navigation@2"
         }
       ],
       "view/item/context": [
