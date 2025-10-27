@@ -123,7 +123,7 @@
           "command": "ruyi.news.showAll",
           "when": "view == ruyiNewsView && ruyiNews.showUnreadOnly",
           "group": "navigation@0"
-         },
+        },
         {
           "command": "ruyi.news.search",
           "when": "view == ruyiNewsView",
@@ -188,6 +188,10 @@
     "eslint-plugin-import": "^2.32.0",
     "globals": "^16.4.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.46.0"
+    "typescript-eslint": "^8.46.0",
+    "@types/semver": "^7.7.1"    
+  },
+  "dependencies": {
+    "semver": "^7.7.3"
   }
 }
