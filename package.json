@@ -95,6 +95,12 @@
         "icon": "$(refresh)"
       },
       {
+        "command": "ruyi.news.showCards",
+        "title": "Show News Cards",
+        "category": "Ruyi",
+        "icon": "$(layout)"
+      },
+      {
         "command": "ruyi.packages.install",
         "title": "Install Package",
         "category": "Ruyi",
@@ -144,6 +150,11 @@
           "command": "ruyi.news.refresh",
           "when": "view == ruyiNewsView",
           "group": "navigation@2"
+        },
+        {
+          "command": "ruyi.news.showCards",
+          "when": "view == ruyiNewsView",
+          "group": "navigation@0"
         }
       ],
       "view/item/context": [
@@ -190,6 +201,7 @@
     "@stylistic/eslint-plugin": "^5.4.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
+    "@types/semver": "^7.7.1",
     "@types/vscode": "^1.88.0",
     "@typescript-eslint/eslint-plugin": "^8.45.0",
     "@typescript-eslint/parser": "^8.45.0",
@@ -199,8 +211,7 @@
     "eslint-plugin-import": "^2.32.0",
     "globals": "^16.4.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.46.0",
-    "@types/semver": "^7.7.1"    
+    "typescript-eslint": "^8.46.0"
   },
   "dependencies": {
     "semver": "^7.7.3"

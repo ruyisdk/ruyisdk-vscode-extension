@@ -9,6 +9,7 @@
 
 import * as vscode from 'vscode'
 
+import NewsCards from '../features/news/NewsCards'
 import createNewsPanel from '../features/news/NewsPanel'
 import NewsService from '../features/news/NewsService'
 import NewsTree from '../features/news/NewsTree'
@@ -16,6 +17,7 @@ import NewsTree from '../features/news/NewsTree'
 export default function registerNewsCommands(ctx: vscode.ExtensionContext) {
   const svc = NewsService.getInstance(ctx)
   const provider = new NewsTree(svc)
+  const cardsProvider = new NewsCards(svc)
 
   // Initialize news service
   svc.initialize().catch((err: unknown) =>
@@ -41,6 +43,12 @@ export default function registerNewsCommands(ctx: vscode.ExtensionContext) {
       try {
         const body = await svc.read(n)
         createNewsPanel(body, title || `Ruyi News #${n}`, ctx)
+
+        // Auto-refresh views after reading
+        provider.refresh()
+        if (cardsProvider) {
+          await cardsProvider.updateContent()
+        }
       }
       catch (e: unknown) {
         const msg = e instanceof Error ? e.message : String(e)
@@ -76,6 +84,9 @@ export default function registerNewsCommands(ctx: vscode.ExtensionContext) {
         // Force refresh from network
         await svc.list(false, true)
         provider.refresh()
+        if (cardsProvider) {
+          await cardsProvider.updateContent()
+        }
         vscode.window.showInformationMessage('News data refreshed successfully')
       }
       catch (error) {
@@ -84,5 +95,10 @@ export default function registerNewsCommands(ctx: vscode.ExtensionContext) {
       }
     })
 
-  ctx.subscriptions.push(view, readCmd, showUnreadCmd, showAllCmd, searchCmd, clearSearchCmd, refreshCmd)
+  const showCardsCmd = vscode.commands.registerCommand(
+    'ruyi.news.showCards', async () => {
+      await cardsProvider.showCards(ctx)
+    })
+
+  ctx.subscriptions.push(view, readCmd, showUnreadCmd, showAllCmd, searchCmd, clearSearchCmd, refreshCmd, showCardsCmd)
 }

@@ -68,10 +68,17 @@ export default class NewsTree implements
           this.showUnreadOnly ? 'No unread news.' : 'No news items.')]
       }
 
+      // Sort by date (newest first)
+      const sortedRows = rows.sort((a, b) => {
+        const dateA = a.date ? new Date(a.date).getTime() : 0
+        const dateB = b.date ? new Date(b.date).getTime() : 0
+        return dateB - dateA
+      })
+
       // Apply search filter if query exists
       const filteredRows = this.searchQuery
-        ? rows.filter(row => this.matchesSearch(row))
-        : rows
+        ? sortedRows.filter(row => this.matchesSearch(row))
+        : sortedRows
 
       if (filteredRows.length === 0 && this.searchQuery) {
         return [this.infoItem(`No news found matching "${this.searchQuery}"`)]
@@ -102,6 +109,17 @@ export default class NewsTree implements
       title: 'Read News',
       arguments: [r.no, r.title],
     }
+
+    // Add visual indicators for unread items
+    if (!r.read) {
+      item.iconPath = new vscode.ThemeIcon('mail')
+      item.contextValue = 'unread'
+    }
+    else {
+      item.iconPath = new vscode.ThemeIcon('mail-read')
+      item.contextValue = 'read'
+    }
+
     return item
   }
 
