@@ -22,7 +22,7 @@ export default function showHomePanel(ctx: vscode.ExtensionContext) {
 
 async function handleMessage(msg: { type: string }) {
   if (msg.type === 'openNews') {
-    await vscode.commands.executeCommand('ruyiNewsView.focus')
+    await vscode.commands.executeCommand('ruyi.news.showCards')
   }
   else if (msg.type === 'openPackages') {
     await vscode.commands.executeCommand('ruyiPackagesView.focus')

@@ -42,11 +42,6 @@
           "id": "ruyiPackagesView",
           "name": "Packages",
           "icon": "$(package)"
-        },
-        {
-          "id": "ruyiNewsView",
-          "name": "News",
-          "icon": "$(rss)"
         }
       ]
     },
@@ -62,21 +57,6 @@
         "category": "Ruyi"
       },
       {
-        "command": "ruyi.news.showAll",
-        "title": "Show All News",
-        "category": "Ruyi"
-      },
-      {
-        "command": "ruyi.news.showUnread",
-        "title": "Show Unread News",
-        "category": "Ruyi"
-      },
-      {
-        "command": "ruyi.news.read",
-        "title": "Read News",
-        "category": "Ruyi"
-      },
-      {
         "command": "ruyi.news.search",
         "title": "Search News",
         "category": "Ruyi",
@@ -89,10 +69,10 @@
         "icon": "$(clear-all)"
       },
       {
-        "command": "ruyi.news.refresh",
-        "title": "Refresh News",
+        "command": "ruyi.news.showCards",
+        "title": "Show News Cards",
         "category": "Ruyi",
-        "icon": "$(refresh)"
+        "icon": "$(layout)"
       },
       {
         "command": "ruyi.packages.install",
@@ -139,31 +119,6 @@
           "command": "ruyi.packages.refresh",
           "when": "view == ruyiPackagesView",
           "group": "navigation@0"
-        },
-        {
-          "command": "ruyi.news.showUnread",
-          "when": "view == ruyiNewsView && !ruyiNews.showUnreadOnly",
-          "group": "navigation@0"
-        },
-        {
-          "command": "ruyi.news.showAll",
-          "when": "view == ruyiNewsView && ruyiNews.showUnreadOnly",
-          "group": "navigation@0"
-        },
-        {
-          "command": "ruyi.news.search",
-          "when": "view == ruyiNewsView",
-          "group": "navigation@1"
-        },
-        {
-          "command": "ruyi.news.clearSearch",
-          "when": "view == ruyiNewsView",
-          "group": "navigation@1"
-        },
-        {
-          "command": "ruyi.news.refresh",
-          "when": "view == ruyiNewsView",
-          "group": "navigation@2"
         }
       ],
       "view/item/context": [
@@ -186,14 +141,6 @@
         {
           "command": "ruyi.packages.uninstall",
           "when": "false"
-        },
-        {
-          "command": "ruyi.news.showUnread",
-          "when": "false"
-        },
-        {
-          "command": "ruyi.news.showAll",
-          "when": "false"
         }
       ]
     }
@@ -210,6 +157,7 @@
     "@stylistic/eslint-plugin": "^5.4.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
+    "@types/semver": "^7.7.1",
     "@types/vscode": "^1.88.0",
     "@typescript-eslint/eslint-plugin": "^8.45.0",
     "@typescript-eslint/parser": "^8.45.0",
@@ -219,8 +167,7 @@
     "eslint-plugin-import": "^2.32.0",
     "globals": "^16.4.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.46.0",
-    "@types/semver": "^7.7.1"
+    "typescript-eslint": "^8.46.0"
   },
   "dependencies": {
     "semver": "^7.7.3"

@@ -6,9 +6,9 @@
  * - Register extension commands:
  *   • ruyi.detect       (./commands/detect)
  *   • ruyi.install      (./commands/installRuyi)
- *   • ruyi.news.read    (./commands/news)
- *   • ruyi.news.showAll (./commands/news)
- *   • ruyi.news.showUnread (./commands/news)
+ *   • ruyi.news.search       (./commands/news)
+ *   • ruyi.news.clearSearch  (./commands/news)
+ *   • ruyi.news.showCards    (./commands/news)
  *   • ruyi.packages.install    (./commands/packages)
  *   • ruyi.packages.uninstall  (./commands/packages)
  *   • ruyi.packages.refresh    (./commands/packages)
@@ -49,8 +49,19 @@ export function activate(context: vscode.ExtensionContext) {
   registerSwitchFromVenvsCommand(context)
   registerCleanADeactivatedVenvCommand(context)
 
+  // Create status bar entry for Ruyi News Cards
+  const newsStatusBarItem = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Right,
+    1000,
+  )
+  newsStatusBarItem.text = '$(info) Read RuyiNews'
+  newsStatusBarItem.tooltip = 'Open Ruyi News Cards'
+  newsStatusBarItem.command = 'ruyi.news.showCards'
+  newsStatusBarItem.show()
+  context.subscriptions.push(newsStatusBarItem)
+
   // Run initial detection
-  setImmediate(async () => {
+  setTimeout(async () => {
     const hasShownHome = context.globalState.get<boolean>('ruyi.home.shown') === true
 
     if (!hasShownHome) {
