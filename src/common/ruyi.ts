@@ -11,6 +11,8 @@ import type { SpawnOptions } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
 
+import { getWorkspaceFolderPath } from './helpers'
+
 // ============================================================================
 // Types
 // ============================================================================
@@ -556,6 +558,53 @@ export class Ruyi {
 
     const status = enable ? await this.telemetryConsent() : await this.telemetryOptout()
     return { status }
+  }
+  // ============================================================================
+  // Venv Command
+  // ============================================================================
+
+  async venvCreate(
+    name: string,
+    toolchains: string[],
+    emulator: string | null,
+    sysrootFrom: string | undefined,
+    extraCommandsFrom: string[],
+    profile: string,
+    path: string,
+  ): Promise<RuyiResult> {
+    const args: string[] = ['venv', '--name', name]
+
+    for (const tc of toolchains) {
+      args.push('-t', tc)
+    }
+
+    if (emulator) {
+      args.push('--emulator', emulator)
+    }
+
+    if (sysrootFrom) {
+      args.push('--sysroot-from', sysrootFrom)
+    }
+
+    for (const ex of extraCommandsFrom) {
+      args.push('--extra-commands-from', ex)
+    }
+
+    args.push(profile, path)
+
+    return runRuyi(args, { cwd: getWorkspaceFolderPath(), env: this.options.env, timeout: 247000 })
+  }
+
+  async getEmulators(): Promise<RuyiResult> {
+    return runRuyi(['--porcelain', 'list', '--category-is', 'emulator'], this.options)
+  }
+
+  async getToolchains(): Promise<RuyiResult> {
+    return runRuyi(['--porcelain', 'list', '--category-is', 'toolchain'], this.options)
+  }
+
+  async getProfiles(): Promise<RuyiResult> {
+    return runRuyi(['--porcelain', 'list', 'profiles'], this.options)
   }
 
   // ============================================================================

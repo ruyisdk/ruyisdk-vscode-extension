@@ -89,6 +89,12 @@
         "icon": "$(clear-all)"
       },
       {
+        "command": "ruyi.news.refresh",
+        "title": "Refresh News",
+        "category": "Ruyi",
+        "icon": "$(refresh)"
+      },
+      {
         "command": "ruyi.packages.install",
         "title": "Install Package",
         "category": "Ruyi",
@@ -105,6 +111,26 @@
         "title": "Refresh Package List",
         "category": "Ruyi",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "ruyi.venv.detect",
+        "title": "Detect Ruyi Virtual Environments",
+        "category": "Ruyi"
+      },
+      {
+        "command": "ruyi.venv.create",
+        "title": "Create a New Ruyi Virtual Environment",
+        "category": "Ruyi"
+      },
+      {
+        "command": "ruyi.venv.clean",
+        "title": "Remove a non-activated Ruyi Virtual Environment",
+        "category": "Ruyi"
+      },
+      {
+        "command": "ruyi.venv.switch",
+        "title": "Activate, Deactivate or Switch Ruyi Virtual Environments",
+        "category": "Ruyi"
       }
     ],
     "menus": {
@@ -123,7 +149,7 @@
           "command": "ruyi.news.showAll",
           "when": "view == ruyiNewsView && ruyiNews.showUnreadOnly",
           "group": "navigation@0"
-         },
+        },
         {
           "command": "ruyi.news.search",
           "when": "view == ruyiNewsView",
@@ -133,6 +159,11 @@
           "command": "ruyi.news.clearSearch",
           "when": "view == ruyiNewsView",
           "group": "navigation@1"
+        },
+        {
+          "command": "ruyi.news.refresh",
+          "when": "view == ruyiNewsView",
+          "group": "navigation@2"
         }
       ],
       "view/item/context": [
@@ -188,6 +219,10 @@
     "eslint-plugin-import": "^2.32.0",
     "globals": "^16.4.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.46.0"
+    "typescript-eslint": "^8.46.0",
+    "@types/semver": "^7.7.1"
+  },
+  "dependencies": {
+    "semver": "^7.7.3"
   }
 }
