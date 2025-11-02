@@ -27,6 +27,7 @@ export type NewsRow = {
   title: string
   date?: string
   read?: boolean
+  summary?: string
 }
 
 export type NewsCache = {
@@ -171,6 +172,7 @@ export default class NewsService {
       return {
         ...newItem,
         read: existingItem?.read || false,
+        summary: existingItem?.summary,
       }
     })
 
@@ -228,8 +230,8 @@ export default class NewsService {
       throw new Error(result.stderr || 'ruyi news read failed')
     }
 
-    // Mark this news item as read in cache
-    await this.markAsRead(no)
+    // Mark this news item as read in cache and save summary
+    await this.markAsRead(no, result.stdout)
 
     return result.stdout
   }
@@ -237,7 +239,7 @@ export default class NewsService {
   /**
    * Mark a news item as read by its list number
    */
-  private async markAsRead(no: number): Promise<void> {
+  private async markAsRead(no: number, bodyMarkdown?: string): Promise<void> {
     try {
       const cache = await this.loadCache()
       if (!cache) return
@@ -245,6 +247,12 @@ export default class NewsService {
       const newsItem = cache.data.find(item => item.no === no)
       if (newsItem && !newsItem.read) {
         newsItem.read = true
+        if (bodyMarkdown) {
+          const summary = this.extractSummary(bodyMarkdown)
+          if (summary) {
+            newsItem.summary = summary
+          }
+        }
         await this.saveCache(cache.data)
       }
     }
@@ -271,5 +279,54 @@ export default class NewsService {
         date: dateRe.exec(id)?.[1],
         read: false,
       }))
+  }
+
+  /**
+   * Extract a concise summary from markdown body. Picks the first non-empty
+   * paragraph-like block, strips markdown, trims to ~160 chars.
+   */
+  private extractSummary(markdown: string): string | undefined {
+    try {
+      const lines = markdown.split(/\r?\n/)
+      const blocks: string[] = []
+      let current: string[] = []
+      for (const line of lines) {
+        if (line.trim() === '') {
+          if (current.length) {
+            blocks.push(current.join(' ').trim())
+            current = []
+          }
+          continue
+        }
+        // Skip headings, code fences, list bullets, blockquotes, tables, images
+        if (/^\s*(```|#{1,6}\s|[-*+]\s|>\s|\|.+\||!\[[^\]]*\]\([^)]*\))/.test(line)) {
+          continue
+        }
+        current.push(line.trim())
+      }
+      if (current.length) blocks.push(current.join(' ').trim())
+
+      const first = blocks.find(b => b.length > 0)
+      if (!first) return undefined
+
+      // Strip simple markdown emphasis/links/images inline
+      let text = first
+        .replace(/\*\*([^*]+)\*\*/g, '$1')
+        .replace(/\*([^*]+)\*/g, '$1')
+        .replace(/`([^`]+)`/g, '$1')
+        .replace(/\[(.*?)\]\((.*?)\)/g, '$1')
+        .replace(/!\[(.*?)\]\((.*?)\)/g, '$1')
+        .replace(/\s+/g, ' ')
+        .trim()
+
+      const limit = 160
+      if (text.length > limit) {
+        text = text.slice(0, limit - 1).trimEnd() + '…'
+      }
+      return text
+    }
+    catch {
+      return undefined
+    }
   }
 }
