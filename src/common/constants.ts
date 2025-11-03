@@ -20,3 +20,10 @@ export const VALID_PACKAGE_CATEGORIES = [
   'analyzer',
   'extra',
 ] as const
+
+/** Configuration keys */
+export const CONFIG_KEYS = {
+  CHECK_FOR_UPDATES: 'checkForUpdates',
+  RUYI_PATH: 'ruyiPath',
+  TELEMETRY: 'telemetry',
+} as const
