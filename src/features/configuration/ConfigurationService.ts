@@ -76,6 +76,14 @@ class ConfigurationService implements vscode.Disposable {
   }
 
   /**
+   * Sets the telemetry configuration.
+   * @param enabled True to enable telemetry, false to disable
+   */
+  public setTelemetry(enabled: boolean): void {
+    this.config.update(CONFIG_KEYS.TELEMETRY, enabled, true)
+  }
+
+  /**
    * Reloads the configuration by firing change events.
    * This can be useful when you want to notify all listeners of potential configuration updates.
    */

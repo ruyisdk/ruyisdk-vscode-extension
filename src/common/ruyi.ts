@@ -11,6 +11,8 @@ import type { SpawnOptions } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
 
+import { configuration } from '../features/configuration/ConfigurationService'
+
 import { getWorkspaceFolderPath } from './helpers'
 
 // ============================================================================
@@ -85,10 +87,21 @@ export interface SelfCleanOptions {
 
 /**
  * Resolve Ruyi executable path
- * Checks ~/.local/bin/ruyi first, then searches PATH environment variable
+ * Checks configuration first, then ~/.local/bin/ruyi, then searches PATH environment variable
  */
 export async function resolveRuyi(): Promise<string | null> {
-  // Check user's local bin directory first
+  // Check configuration
+  const configPath = configuration.ruyiPath
+  if (configPath) {
+    if (fs.existsSync(configPath)) {
+      return configPath
+    }
+    else {
+      console.warn(`Configured Ruyi path does not exist: ${configPath}`)
+    }
+  }
+
+  // Check user's local bin directory
   const homeDir = process.env.HOME
   if (homeDir) {
     const localBinPath = path.join(homeDir, '.local', 'bin', 'ruyi')
