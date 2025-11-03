@@ -143,6 +143,25 @@
           "when": "false"
         }
       ]
+    },
+    "configuration": {
+      "title": "Ruyi SDK",
+      "properties": {
+        "ruyi.checkForUpdates": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically check for Ruyi updates when running detect command."
+        },
+        "ruyi.ruyiPath": {
+          "type": "string",
+          "default": "",
+          "description": "Custom path to the Ruyi executable. Leave empty to use automatic detection."
+        },
+        "ruyi.telemetry": {
+          "type": "boolean",
+          "description": "Enable telemetry collection to help improve RuyiSDK. Leave unset to be prompted on first use."
+        }
+      }
     }
   },
   "scripts": {
