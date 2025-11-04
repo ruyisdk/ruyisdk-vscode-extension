@@ -111,6 +111,11 @@
         "command": "ruyi.venv.switch",
         "title": "Activate, Deactivate or Switch Ruyi Virtual Environments",
         "category": "Ruyi"
+      },
+      {
+        "command": "ruyi.extract",
+        "title": "Extract RuyiSDK Package",
+        "category": "Ruyi"
       }
     ],
     "menus": {
@@ -141,6 +146,12 @@
         {
           "command": "ruyi.packages.uninstall",
           "when": "false"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "ruyi.extract",
+          "group": "navigation"
         }
       ]
     }
