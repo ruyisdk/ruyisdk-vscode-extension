@@ -7,6 +7,8 @@
  */
 import * as vscode from 'vscode'
 
+import { ConfigKey } from './constants'
+
 /** Get the path of the first workspace folder,
  *  or return an error message if none is open.
  *
@@ -20,4 +22,14 @@ export function getWorkspaceFolderPath(): string {
   }
   const workspacePath = workspaceFolder.uri.fsPath
   return workspacePath
+}
+
+/**
+ * Helper function to get the full configuration key string.
+ * @param key A key from CONFIG_KEYS
+ * @returns The full key, e.g., "ruyi.checkForUpdates"
+ */
+
+export function fullKey(key: ConfigKey): `ruyi.${string}` {
+  return `ruyi.${key}`
 }

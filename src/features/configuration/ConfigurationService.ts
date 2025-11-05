@@ -8,27 +8,38 @@
 
 import * as vscode from 'vscode'
 
-import { CONFIG_KEYS } from '../../common/constants'
+import { ConfigKey, CONFIG_KEYS } from '../../common/constants'
+import { fullKey } from '../../common/helpers'
+
+export type ConfigChangeHandler = (event: vscode.ConfigurationChangeEvent) => void
 
 /**
  * Manages all configuration for the Ruyi SDK extension.
- * Provides type-safe accessors and emits a single event on configuration change.
+ * Provides type-safe accessors and emits events on configuration changes.
  */
 class ConfigurationService implements vscode.Disposable {
   private readonly disposable: vscode.Disposable
-
-  // Single event emitter for all configuration changes
-  private readonly _onConfigChange = new vscode.EventEmitter<vscode.ConfigurationChangeEvent>()
-  public readonly onConfigChange: vscode.Event<vscode.ConfigurationChangeEvent> = this._onConfigChange.event
+  private readonly emitter = new vscode.EventEmitter<vscode.ConfigurationChangeEvent>()
 
   constructor() {
     // Listen for changes in the workspace configuration
     this.disposable = vscode.workspace.onDidChangeConfiguration((event) => {
-      // Fire event when any 'ruyi' configuration changes
+      // When 'ruyi' configuration changes, call all registered handlers
       if (event.affectsConfiguration('ruyi')) {
-        this._onConfigChange.fire(event)
+        this.emitter.fire(event)
       }
     })
+
+    this.registerConfigChangeHandler(this.handleRuyiPathChange.bind(this))
+  }
+
+  /**
+  * Registers a handler for configuration changes.
+  * @param handler The function to call when the configuration changes.
+  * @returns Disposable that unregisters the handler.
+   */
+  public registerConfigChangeHandler(handler: ConfigChangeHandler): vscode.Disposable {
+    return this.emitter.event(handler)
   }
 
   /**
@@ -44,9 +55,8 @@ class ConfigurationService implements vscode.Disposable {
    * @param defaultValue The default value if the configuration is not set
    * @returns The configuration value
    */
-  public get<T>(key: string, defaultValue: T): T {
-    const normalizedKey = key.startsWith('ruyi.') ? key.slice('ruyi.'.length) : key
-    return this.config.get<T>(normalizedKey, defaultValue)
+  public get<T>(key: ConfigKey, defaultValue: T): T {
+    return this.config.get<T>(key, defaultValue)
   }
 
   // --- Type-safe Getters for each setting ---
@@ -79,8 +89,8 @@ class ConfigurationService implements vscode.Disposable {
    * Sets the telemetry configuration.
    * @param enabled True to enable telemetry, false to disable
    */
-  public setTelemetry(enabled: boolean): void {
-    this.config.update(CONFIG_KEYS.TELEMETRY, enabled, true)
+  public async setTelemetry(enabled: boolean): Promise<void> {
+    await this.config.update(CONFIG_KEYS.TELEMETRY, enabled, true)
   }
 
   /**
@@ -92,14 +102,27 @@ class ConfigurationService implements vscode.Disposable {
     const syntheticEvent: vscode.ConfigurationChangeEvent = {
       affectsConfiguration: (section: string) => section.startsWith('ruyi'),
     }
-    this._onConfigChange.fire(syntheticEvent)
+    this.emitter.fire(syntheticEvent)
+  }
+
+  private handleRuyiPathChange(event: vscode.ConfigurationChangeEvent): void {
+    if (event.affectsConfiguration(fullKey(CONFIG_KEYS.RUYI_PATH))) {
+      vscode.window.showInformationMessage(
+        'Ruyi path has been changed. Please reload the window for it to take effect.',
+        'Reload Now',
+        'Later',
+      ).then((selection) => {
+        if (selection === 'Reload Now') {
+          vscode.commands.executeCommand('workbench.action.reloadWindow')
+        }
+      })
+    }
   }
 
   public dispose() {
     this.disposable.dispose()
-    this._onConfigChange.dispose()
+    this.emitter.dispose()
   }
 }
 
-// Export a singleton instance of the service
 export const configuration = new ConfigurationService()
