@@ -11,6 +11,7 @@
 import * as path from 'path'
 import * as vscode from 'vscode'
 
+import { parseNDJSON } from '../common/helpers'
 import ruyi from '../common/ruyi'
 
 /**
@@ -30,29 +31,11 @@ interface RuyiPorcelainPackageOutput {
 }
 
 function parseSourcePackages(output: string): string[] {
-  const packages: string[] = []
-  const seen = new Set<string>()
+  const packages = parseNDJSON<RuyiPorcelainPackageOutput>(output)
+    .filter(item => item.ty === 'pkglistoutput-v1' && item.category === 'source')
+    .map(item => `${item.category}/${item.name}`)
 
-  output
-    .split('\n')
-    .filter(line => line.trim())
-    .forEach((line) => {
-      try {
-        const item = JSON.parse(line) as RuyiPorcelainPackageOutput
-        if (item.ty === 'pkglistoutput-v1' && item.category === 'source') {
-          const packageName = `${item.category}/${item.name}`
-          if (!seen.has(packageName)) {
-            packages.push(packageName)
-            seen.add(packageName)
-          }
-        }
-      }
-      catch {
-        // Skip non-JSON lines (e.g., log messages)
-      }
-    })
-
-  return packages.sort()
+  return [...new Set(packages)].sort()
 }
 
 async function getTargetDirectory(uri?: vscode.Uri): Promise<string> {
