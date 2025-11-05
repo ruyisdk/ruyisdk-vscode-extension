@@ -12,6 +12,7 @@
  */
 
 import { VALID_PACKAGE_CATEGORIES } from '../../common/constants'
+import { parseNDJSON } from '../../common/helpers'
 import ruyi from '../../common/ruyi'
 
 export type PackageCategory = typeof VALID_PACKAGE_CATEGORIES[number] | 'unknown'
@@ -81,23 +82,8 @@ export class PackageService {
    * Each line is a separate JSON object.
    */
   private parsePorcelainListOutput(output: string): RuyiPackage[] {
-    return output
-      .split('\n')
-      .filter(line => line.trim())
-      .map((line) => {
-        try {
-          return JSON.parse(line) as RuyiPorcelainPackageOutput
-        }
-        catch {
-          // Skip non-JSON lines (e.g., log messages)
-          return null
-        }
-      })
-      .filter(
-        (item): item is RuyiPorcelainPackageOutput =>
-          item !== null && item.ty === 'pkglistoutput-v1',
-      )
-
+    return parseNDJSON<RuyiPorcelainPackageOutput>(output)
+      .filter(item => item.ty === 'pkglistoutput-v1')
       // Exclude 'source' category
       .filter(item => item.category !== 'source')
       .map((item) => {
