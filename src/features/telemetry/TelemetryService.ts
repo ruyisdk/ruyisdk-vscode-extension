@@ -7,6 +7,8 @@
 
 import * as vscode from 'vscode'
 
+import { CONFIG_KEYS } from '../../common/constants'
+import { fullKey } from '../../common/helpers'
 import ruyi from '../../common/ruyi'
 import { configuration } from '../configuration/ConfigurationService'
 
@@ -59,8 +61,11 @@ export async function promptForTelemetryConfiguration(): Promise<void> {
 }
 
 // Listen for telemetry configuration changes
-configuration.onConfigChange((event) => {
-  if (event.affectsConfiguration('ruyi.telemetry')) {
-    ruyi.telemetry(configuration.telemetryEnabled ? true : false)
+configuration.registerConfigChangeHandler((event) => {
+  if (event.affectsConfiguration(fullKey(CONFIG_KEYS.TELEMETRY))) {
+    ruyi.telemetry(!!configuration.telemetryEnabled)
+      .catch((err) => {
+        vscode.window.showErrorMessage(`Error setting telemetry: ${err?.message ?? String(err)}`)
+      })
   }
 })

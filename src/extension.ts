@@ -36,30 +36,11 @@ import registerCreateNewVenvCommand from './commands/venv/create'
 import registerDetectAllVenvsCommand from './commands/venv/detect'
 import registerTerminalHandlerCommand from './commands/venv/manageTerminal'
 import registerSwitchFromVenvsCommand from './commands/venv/switch'
-import { CONFIG_KEYS } from './common/constants'
 import { configuration } from './features/configuration/ConfigurationService'
 
 export function activate(context: vscode.ExtensionContext) {
   // Register configuration service
   context.subscriptions.push(configuration)
-
-  // Listen for configuration changes
-  context.subscriptions.push(
-    configuration.onConfigChange((event) => {
-      // Handle Ruyi path changes
-      if (event.affectsConfiguration(CONFIG_KEYS.RUYI_PATH)) {
-        vscode.window.showInformationMessage(
-          'Ruyi path has been changed. Please reload the window for it to take effect.',
-          'Reload Now',
-          'Later',
-        ).then((selection) => {
-          if (selection === 'Reload Now') {
-            vscode.commands.executeCommand('workbench.action.reloadWindow')
-          }
-        })
-      }
-    }),
-  )
 
   // Register commands
   registerDetectCommand(context)
