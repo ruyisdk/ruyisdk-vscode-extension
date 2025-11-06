@@ -7,6 +7,8 @@
  */
 import * as vscode from 'vscode'
 
+import { ConfigKey } from './constants'
+
 /** Get the path of the first workspace folder,
  *  or return an error message if none is open.
  *
@@ -20,4 +22,50 @@ export function getWorkspaceFolderPath(): string {
   }
   const workspacePath = workspaceFolder.uri.fsPath
   return workspacePath
+}
+
+/**
+ * Helper function to get the full configuration key string.
+ * @param key A key from CONFIG_KEYS
+ * @returns The full key, e.g., "ruyi.checkForUpdates"
+ */
+
+export function fullKey(key: ConfigKey): `ruyi.${string}` {
+  return `ruyi.${key}`
+}
+
+/**
+ * Parse NDJSON (Newline Delimited JSON) output.
+ *
+ * This is a common pattern for parsing ruyi CLI output with --porcelain flag.
+ * Each line is a separate JSON object. Invalid lines are skipped silently.
+ *
+ * @param output The NDJSON string to parse
+ * @returns Array of parsed JSON objects (null for invalid lines are filtered out)
+ *
+ * @example
+ * ```typescript
+ * interface Package {
+ *   ty: string
+ *   name: string
+ * }
+ *
+ * const items = parseNDJSON<Package>(output)
+ *   .filter(item => item.ty === 'pkglistoutput-v1')
+ *   .map(item => item.name)
+ * ```
+ */
+export function parseNDJSON<T>(output: string): T[] {
+  return output
+    .split('\n')
+    .map((line) => {
+      try {
+        return JSON.parse(line)
+      }
+      catch {
+        // Skip non-JSON lines
+        return null
+      }
+    })
+    .filter(item => item !== null)
 }

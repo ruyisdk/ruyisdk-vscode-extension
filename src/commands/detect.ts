@@ -9,6 +9,7 @@ import * as vscode from 'vscode'
 import * as semver from 'semver'
 
 import ruyi, { resolveRuyi } from '../common/ruyi'
+import { configuration } from '../features/configuration/ConfigurationService'
 import { promptForTelemetryConfiguration } from '../features/telemetry/TelemetryService'
 
 interface GitHubRelease {
@@ -87,16 +88,20 @@ export default function registerDetectCommand(context: vscode.ExtensionContext) 
       return
     }
 
-    if ((await ruyi.telemetry()).status === 'local') {
+    if (configuration.telemetryEnabled === undefined) {
+      // Prompt user to configure telemetry settings
       await promptForTelemetryConfiguration()
     }
 
     const version = await ruyi.version()
     if (version) {
       vscode.window.showInformationMessage(`Ruyi detected: ${version} (${ruyiPath})`)
-      checkRuyiUpdate(version).catch((err) => {
-        console.error('Update check failed:', err)
-      })
+      // Check for updates only if enabled in configuration
+      if (configuration.checkForUpdates) {
+        checkRuyiUpdate(version).catch((err) => {
+          console.error('Update check failed:', err)
+        })
+      }
     }
     else {
       vscode.window.showWarningMessage(

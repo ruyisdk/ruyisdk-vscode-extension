@@ -12,6 +12,7 @@
  *   • ruyi.packages.install    (./commands/packages)
  *   • ruyi.packages.uninstall  (./commands/packages)
  *   • ruyi.packages.refresh    (./commands/packages)
+ *   • ruyi.extract      (./commands/extract)
  *   • ruyi.venv.detect  (./commands/venv/detect)
  *   • ruyi.venv.create  (./commands/venv/create)
  *   • ruyi.venv.clean   (./commands/venv/clean)
@@ -25,6 +26,7 @@
 import * as vscode from 'vscode'
 
 import registerDetectCommand from './commands/detect'
+import registerExtractCommand from './commands/extract'
 import registerHomeCommand from './commands/home'
 import registerInstallCommand from './commands/installRuyi'
 import registerNewsCommands from './commands/news'
@@ -34,10 +36,15 @@ import registerCreateNewVenvCommand from './commands/venv/create'
 import registerDetectAllVenvsCommand from './commands/venv/detect'
 import registerTerminalHandlerCommand from './commands/venv/manageTerminal'
 import registerSwitchFromVenvsCommand from './commands/venv/switch'
+import { configuration } from './features/configuration/ConfigurationService'
 
 export function activate(context: vscode.ExtensionContext) {
+  // Register configuration service
+  context.subscriptions.push(configuration)
+
   // Register commands
   registerDetectCommand(context)
+  registerExtractCommand(context)
   registerHomeCommand(context)
   registerInstallCommand(context)
   registerNewsCommands(context)

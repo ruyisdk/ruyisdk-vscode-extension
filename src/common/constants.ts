@@ -7,6 +7,8 @@
  *  - Provide standard timeout values for command execution
  */
 
+export type ConfigKey = typeof CONFIG_KEYS[keyof typeof CONFIG_KEYS]
+
 /** Error code constants */
 export const ERR_NOT_SUPPORTED = -126 // Platform not supported
 export const ERR_RUYI_NOT_FOUND = -127 // Ruyi command not found
@@ -20,3 +22,10 @@ export const VALID_PACKAGE_CATEGORIES = [
   'analyzer',
   'extra',
 ] as const
+
+/** Configuration keys */
+export const CONFIG_KEYS = {
+  CHECK_FOR_UPDATES: 'checkForUpdates',
+  RUYI_PATH: 'ruyiPath',
+  TELEMETRY: 'telemetry',
+} as const
