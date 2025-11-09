@@ -15,17 +15,19 @@
 
 import * as vscode from 'vscode'
 
+import { logger } from '../../common/logger.js'
+
 import { RuyiPackage, RuyiPackageVersion, PackageService } from './PackageService'
 
 // Define tree node types
 type TreeElement = PackageCategoryItem | PackageItem | VersionItem
 
 export class PackagesTreeProvider implements
-    vscode.TreeDataProvider<TreeElement> {
+  vscode.TreeDataProvider<TreeElement> {
   private _onDidChangeTreeData = new vscode.EventEmitter<void>()
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event
 
-  constructor(private packageService: PackageService) {}
+  constructor(private packageService: PackageService) { }
 
   /**
    * Refresh the tree view and force data refresh.
@@ -35,7 +37,7 @@ export class PackagesTreeProvider implements
       await this.packageService.getPackages(true)
     }
     catch (err) {
-      console.error('Failed to refresh packages:', err)
+      logger.error('Failed to refresh packages:', err)
     }
     finally {
       this._onDidChangeTreeData.fire()

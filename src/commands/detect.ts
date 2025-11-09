@@ -8,6 +8,7 @@ import * as vscode from 'vscode'
 
 import * as semver from 'semver'
 
+import { logger } from '../common/logger.js'
 import ruyi, { resolveRuyi } from '../common/ruyi'
 import { configuration } from '../features/configuration/ConfigurationService'
 import { promptForTelemetryConfiguration } from '../features/telemetry/TelemetryService'
@@ -16,11 +17,11 @@ interface GitHubRelease {
   tag_name: string
 }
 
-async function checkRuyiUpdate(currentVersion: string) {
+async function checkRuyiUpdate(currentVersion: string): Promise<void> {
   try {
     const coerced = semver.coerce(currentVersion)
     if (!coerced) {
-      console.warn(`Unable to parse version from: ${currentVersion}`)
+      logger.warn(`Unable to parse version from: ${currentVersion}`)
       return
     }
 
@@ -30,7 +31,7 @@ async function checkRuyiUpdate(currentVersion: string) {
       },
     })
     if (!response.ok) {
-      console.warn(`Failed to fetch latest Ruyi release: ${response.statusText}`)
+      logger.warn(`Failed to fetch latest Ruyi release: ${response.statusText}`)
       return
     }
 
@@ -68,7 +69,7 @@ async function checkRuyiUpdate(currentVersion: string) {
     }
   }
   catch (err) {
-    console.error('Failed to check for Ruyi updates:', err)
+    logger.error('Failed to check for Ruyi updates:', err)
   }
 }
 
@@ -99,7 +100,7 @@ export default function registerDetectCommand(context: vscode.ExtensionContext) 
       // Check for updates only if enabled in configuration
       if (configuration.checkForUpdates) {
         checkRuyiUpdate(version).catch((err) => {
-          console.error('Update check failed:', err)
+          logger.error('Update check failed:', err)
         })
       }
     }

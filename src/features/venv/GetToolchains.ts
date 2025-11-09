@@ -12,6 +12,7 @@
  *   used by getToolchains()
  * - getToolchains(): Get all Ruyi toolchains and return as a Object-array
  */
+import { logger } from '../../common/logger.js'
 import ruyi from '../../common/ruyi'
 
 interface Toolchain {
@@ -52,7 +53,7 @@ export function parseStdoutT(text: string): Toolchain[] {
     }
     catch (e) {
       // Output JSON parse errors
-      console.error('JSON parse error:', e)
+      logger.error('JSON parse error:', e)
     }
   }
 
