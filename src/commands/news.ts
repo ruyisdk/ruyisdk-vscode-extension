@@ -8,6 +8,7 @@
 
 import * as vscode from 'vscode'
 
+import { logger } from '../common/logger.js'
 import NewsCards from '../features/news/NewsCards'
 import NewsService from '../features/news/NewsService'
 
@@ -17,7 +18,7 @@ export default function registerNewsCommands(ctx: vscode.ExtensionContext) {
 
   // Initialize news service
   svc.initialize().catch((err: unknown) =>
-    console.warn('Failed to initialize news service:', err),
+    logger.warn('Failed to initialize news service:', err),
   )
 
   // Note: Tree view is removed, only cards view is available

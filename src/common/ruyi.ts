@@ -14,6 +14,7 @@ import * as path from 'path'
 import { configuration } from '../features/configuration/ConfigurationService'
 
 import { getWorkspaceFolderPath } from './helpers'
+import { logger } from './logger'
 
 // ============================================================================
 // Types
@@ -97,7 +98,7 @@ export async function resolveRuyi(): Promise<string | null> {
       return configPath
     }
     else {
-      console.warn(`Configured Ruyi path does not exist: ${configPath}`)
+      logger.warn(`Configured Ruyi path does not exist: ${configPath}`)
     }
   }
 
@@ -244,7 +245,7 @@ export async function runRuyi(
  *   - Chained: await Ruyi.cwd('/path').timeout(3000).install('pkg')
  */
 export class Ruyi {
-  constructor(private options: RuyiRunOptions = {}) {}
+  constructor(private options: RuyiRunOptions = {}) { }
 
   // ============================================================================
   // Builder Methods

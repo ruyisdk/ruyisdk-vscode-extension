@@ -16,6 +16,7 @@ import type { ExecException } from 'node:child_process'
 import * as util from 'util'
 import * as vscode from 'vscode'
 
+import { logger } from '../common/logger.js'
 import ruyi, { resolveRuyi } from '../common/ruyi'
 import { promptForTelemetryConfiguration } from '../features/telemetry/TelemetryService'
 
@@ -33,7 +34,7 @@ async function showInstallSuccess(method: string, version: string): Promise<void
 }
 
 async function showInstallError(method: string, errorMessage: string, continueMessage?: string): Promise<void> {
-  console.log(`[RuyiSDK] ${method} install failed: ${errorMessage}`)
+  logger.log(`${method} install failed: ${errorMessage}`)
 
   const message = continueMessage
     ? `${method} installation failed: ${errorMessage}. ${continueMessage}`

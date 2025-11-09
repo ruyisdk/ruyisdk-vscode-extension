@@ -17,6 +17,7 @@ import * as path from 'path'
 import { promisify } from 'util'
 import * as vscode from 'vscode'
 
+import { logger } from '../../common/logger.js'
 import ruyi from '../../common/ruyi'
 
 const resolve4 = promisify(dns.resolve4)
@@ -95,7 +96,7 @@ export default class NewsService {
       return cache
     }
     catch (error) {
-      console.warn('Failed to load news cache:', error)
+      logger.warn('Failed to load news cache:', error)
       return null
     }
   }
@@ -123,7 +124,7 @@ export default class NewsService {
       await vscode.workspace.fs.writeFile(cacheUri, Buffer.from(cacheContent, 'utf8'))
     }
     catch (error) {
-      console.warn('Failed to save news cache:', error)
+      logger.warn('Failed to save news cache:', error)
     }
   }
 
@@ -144,7 +145,7 @@ export default class NewsService {
         if (forceRefresh) {
           throw error
         }
-        console.warn('Network fetch failed, trying cache:', error)
+        logger.warn('Network fetch failed, trying cache:', error)
         return await this.fetchFromCache(unread)
       }
     }
@@ -206,17 +207,17 @@ export default class NewsService {
       const isOnline = await this.isNetworkAvailable()
       if (isOnline) {
         await this.list(false, true) // Force refresh
-        console.log('News service initialized')
+        logger.log('News service initialized')
       }
       else {
         const cache = await this.loadCache()
         if (cache) {
-          console.log(`News service initialized from cache with ${cache.data.length} items`)
+          logger.log(`News service initialized from cache with ${cache.data.length} items`)
         }
       }
     }
     catch (error) {
-      console.warn('Failed to initialize news service:', error)
+      logger.warn('Failed to initialize news service:', error)
     }
   }
 
@@ -257,7 +258,7 @@ export default class NewsService {
       }
     }
     catch (error) {
-      console.warn('Failed to mark news as read:', error)
+      logger.warn('Failed to mark news as read:', error)
     }
   }
 
