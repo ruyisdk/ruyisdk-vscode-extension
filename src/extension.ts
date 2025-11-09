@@ -36,6 +36,7 @@ import registerCreateNewVenvCommand from './commands/venv/create'
 import registerDetectAllVenvsCommand, { venvTree } from './commands/venv/detect'
 import registerTerminalHandlerCommand from './commands/venv/manageCurrentVenv'
 import registerSwitchFromVenvsCommand from './commands/venv/switch'
+import { logger } from './common/logger'
 import { configuration } from './features/configuration/ConfigurationService'
 
 export function activate(context: vscode.ExtensionContext) {
@@ -61,6 +62,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.StatusBarAlignment.Right,
     1000,
   )
+  logger.initialize('RuyiSDK')
   newsStatusBarItem.text = '$(info) Read RuyiNews'
   newsStatusBarItem.tooltip = 'Open Ruyi News Cards'
   newsStatusBarItem.command = 'ruyi.news.showCards'
@@ -92,4 +94,6 @@ export function activate(context: vscode.ExtensionContext) {
   })
 }
 
-export function deactivate() {}
+export function deactivate() {
+  logger.dispose()
+}

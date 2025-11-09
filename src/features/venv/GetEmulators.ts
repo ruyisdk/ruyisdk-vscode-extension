@@ -13,6 +13,7 @@
  * - getEmulators(): Get all Ruyi emulators and return as a Dict-array
  */
 
+import { logger } from '../../common/logger.js'
 import ruyi from '../../common/ruyi'
 
 interface EmulatorInfo {
@@ -48,7 +49,7 @@ export function parseStdoutE(text: string): EmulatorInfo[] {
     }
     catch (e) {
       // Output JSON parse errors
-      console.error('JSON parse error:', e)
+      logger.error('JSON parse error:', e)
     }
   }
 

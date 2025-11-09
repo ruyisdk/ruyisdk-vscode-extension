@@ -17,6 +17,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 import { getWorkspaceFolderPath } from '../../common/helpers'
+import { logger } from '../../common/logger'
 
 export function detectVenv(): string[][] {
   const foundVenvs: string[][] = []
@@ -36,7 +37,7 @@ export function detectVenv(): string[][] {
           .map(dirent => `${subdir}/${dirent.name}`)
       }
       catch (e) {
-        console.warn(`[Warning] Failed to read ${subdir}: ${e}`)
+        logger.warn(`Failed to read ${subdir}: ${e}`)
         return []
       }
     })
@@ -53,7 +54,7 @@ export function detectVenv(): string[][] {
     for (const dir of allDirsToCheck) {
       const segments = dir.split('/')
       if (!segments.every(isPathSafe)) {
-        console.warn(`Skipping unsafe path: ${dir}`)
+        logger.warn(`Skipping unsafe path: ${dir}`)
         continue
       }
 
@@ -71,7 +72,7 @@ export function detectVenv(): string[][] {
     }
   }
   catch (e) {
-    console.error(`[Error] Failed to detect venvs: ${e}`)
+    logger.error(`Failed to detect venvs: ${e}`)
   }
 
   return foundVenvs
