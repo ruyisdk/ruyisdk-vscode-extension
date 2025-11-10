@@ -6,25 +6,27 @@
  *
  * Responsibilities:
  * - Switch to a different Ruyi virtual environment or deactivate the current one.
- * - Automatically run upon extension activation.
  */
 
 import * as vscode from 'vscode'
 
-import { manageRuyiTerminal, currentVenv } from './manageTerminal'
+import { VenvPick } from '../../common/helpers'
+
+import { manageRuyiTerminal, currentVenv } from './manageCurrentVenv'
 
 export default function registerSwitchFromVenvsCommand(
   context: vscode.ExtensionContext) {
-  const disposable = vscode.commands.registerCommand('ruyi.venv.switch', async (active: boolean = true) => {
+  const disposable = vscode.commands.registerCommand('ruyi.venv.switch', async (venv?: VenvPick) => {
     // Invoke detectVenv command to let user pick a venv to operate.
-    const pickedVenv = await vscode.commands.executeCommand('ruyi.venv.detect', 'switch', active) as
-      { label: string, description: string, rawPath: string } | undefined
-    if (!pickedVenv) {
+    if (!venv) {
       return
     }
     // Manage the Ruyi terminal for venv activation/deactivation
-    const venvPath = `./${pickedVenv.rawPath}`
-    manageRuyiTerminal(venvPath === currentVenv ? null : venvPath)
+    const venvPath = `./${venv.rawPath}`
+    manageRuyiTerminal(venvPath === currentVenv ? null : venvPath, venvPath === currentVenv ? null : venv.label)
+
+    // Refresh the venv tree view to reflect the current active venv
+    await vscode.commands.executeCommand('ruyi.venv.refresh', false)
   })
   context.subscriptions.push(disposable)
 }
