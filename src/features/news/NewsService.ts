@@ -326,7 +326,8 @@ export default class NewsService {
       }
       return text
     }
-    catch {
+    catch (error) {
+      logger.warn('Failed to extract summary:', error)
       return undefined
     }
   }
