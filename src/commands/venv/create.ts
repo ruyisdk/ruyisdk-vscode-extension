@@ -179,7 +179,7 @@ export default function registerCreateNewVenvCommand(
         }
         else {
           if (!(emulatorPick.description && emulatorPick.detail.includes('Legacy') && emulatorPick.description.includes('v'))) return
-          emulator = `"${emulatorPick.rawName}(==${version})"`
+          emulator = `${emulatorPick.rawName}(==${version})`
         }
 
         // Selecting a non-installed emulator, aborting the creating and show show inquiry to install now.
@@ -275,8 +275,8 @@ export default function registerCreateNewVenvCommand(
           const relativePath = paths.relative(workspacePath, fullVenvPath)
           const depth = relativePath.split(paths.sep).length - 1
           if (depth <= 2) {
-            // Within 2 levels, trigger switch command.
-            await vscode.commands.executeCommand('ruyi.venv.switch')
+            // Within 2 levels, trigger refresh command.
+            await vscode.commands.executeCommand('ruyi.venv.refresh', false)
             goodPath = true
             return
           }

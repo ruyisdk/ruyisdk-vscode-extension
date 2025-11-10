@@ -2,62 +2,46 @@
 /**
  * Venv Detect Command
  *
- * VS Code command ID: `ruyi.venv.detect`
+ * VS Code command ID: `ruyi.venv.refresh`
  *
  * Responsibilities:
- * - Detect all Ruyi venv-s in the current workspace via features/detectVenvs service.
- * - Also automatically run before any venv is activated via `ruyi.venv.switch` command.
- * - Also automatically run before any venv is deleted via `ruyi.venv.clean` command.
- * - Can be run manually to just peek detected venvs.
+ * - Detect all Ruyi venv-s (activation state included) in the current workspace and update the Venv Tree View
+ * via features/venv/VenvTree/VenvTreeProvider.createTreeView service.
+ * - Automatically run on extension activation.
+ * - Automatically run after any venv is activated/deactivated via `ruyi.venv.switch` command.
+ * - Automatically run after any venv is created via `ruyi.venv.create` command.
+ * - Automatically run after any venv is deleted via `ruyi.venv.clean` command.
  * - Cannot be run if no workspace is opened.
- * - Show information message with detected venvs or no venvs found.
+ * - Show information message if this is actively run and no venvs are found.
  */
 
 import * as vscode from 'vscode'
 
 import { detectVenv } from '../../features/venv/DetectforVenv'
+import { VenvTreeProvider, VenvInfo } from '../../features/venv/VenvTree'
 
-export default function registerDetectAllVenvCommand(
+export const venvTree = new VenvTreeProvider()
+
+export default function registerDetectAllVenvsCommand(
   context: vscode.ExtensionContext) {
   const disposable = vscode.commands.registerCommand(
-    'ruyi.venv.detect', async (triggerMethod: string, active: boolean = true) => {
+    'ruyi.venv.refresh', async (active: boolean = true) => {
       const venvs = detectVenv()
       if (venvs.length === 0) {
         if (active) {
           vscode.window.showInformationMessage('No Ruyi venvs detected in the current workspace.')
         }
-        return
       }
-      else {
-        const shownVenvList = venvs.map(v => ({
-          label: v[1], description: `at ./${v[0]}`, rawPath: v[0] }))
-        // Show a quick pick with detected venvs, which just inspect the venv if triggered by user,
-        // activates the selected venv if triggered by switch command(on-activate run included),
-        // and deletes the selected venv if triggered by clean command.
-        const pickedVenv = await vscode.window.showQuickPick(shownVenvList, {
-          placeHolder: `Select an Venv to ${triggerMethod === 'switch'
-            ? 'activate'
-            : triggerMethod === 'clean' ? 'delete' : 'view details'}.`,
-          matchOnDescription: true, matchOnDetail: true,
-        })
-        if (!pickedVenv) {
-          return
-        }
-        else {
-          if (triggerMethod === 'switch' || triggerMethod === 'clean') {
-          // Activate or Delete the selected venv by returning it to the caller
-            return pickedVenv
-          }
-          else {
-          // Just inspect the selected venv
-          // TODO: Show more detailed info in a better way
-            vscode.window.showInformationMessage(
-              `Ruyi venv:\nName: ${pickedVenv.label}\nPath: ./${pickedVenv.rawPath}`)
-            return
-          }
-        }
-      }
+      // Update tree view with detected venvs
+      const venvInfo: VenvInfo[] = venvs.map(v => ({
+        name: v[1],
+        path: v[0],
+      }))
+      venvTree.updateVenvs(venvInfo)
+      const venvTreeView = vscode.window.createTreeView('ruyiVenvsView', {
+        treeDataProvider: venvTree,
+      })
+      context.subscriptions.push(venvTreeView)
     })
-
   context.subscriptions.push(disposable)
 }
