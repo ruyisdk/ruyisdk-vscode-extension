@@ -145,7 +145,7 @@ export class VenvTreeItem extends vscode.TreeItem {
       this.command = {
         command: 'ruyi.venv.switch',
         title: 'Activate or Deactivate Venv',
-        arguments: [{ label: name, description: '', rawPath: venvPath }],
+        arguments: [this],
       }
     }
   }

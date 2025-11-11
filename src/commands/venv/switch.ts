@@ -10,20 +10,20 @@
 
 import * as vscode from 'vscode'
 
-import { VenvPick } from '../../common/helpers'
+import { VenvTreeItem } from '../../features/venv/VenvTree'
 
 import { manageRuyiTerminal, currentVenv } from './manageCurrentVenv'
 
 export default function registerSwitchFromVenvsCommand(
   context: vscode.ExtensionContext) {
-  const disposable = vscode.commands.registerCommand('ruyi.venv.switch', async (venv?: VenvPick) => {
+  const disposable = vscode.commands.registerCommand('ruyi.venv.switch', async (venv?: VenvTreeItem) => {
     // Invoke detectVenv command to let user pick a venv to operate.
     if (!venv) {
       return
     }
     // Manage the Ruyi terminal for venv activation/deactivation
-    const venvPath = `./${venv.rawPath}`
-    manageRuyiTerminal(venvPath === currentVenv ? null : venvPath, venvPath === currentVenv ? null : venv.label)
+    const venvPath = `./${venv.venvPath}`
+    manageRuyiTerminal(venvPath === currentVenv ? null : venvPath, venvPath === currentVenv ? null : venv.name)
 
     // Refresh the venv tree view to reflect the current active venv
     await vscode.commands.executeCommand('ruyi.venv.refresh', false)
