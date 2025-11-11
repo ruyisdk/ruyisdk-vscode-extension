@@ -125,6 +125,11 @@
         "command": "ruyi.extract",
         "title": "Extract RuyiSDK Package",
         "category": "Ruyi"
+      },
+      {
+        "command": "ruyi.config.remote",
+        "title": "Config Remote Repo",
+        "category": "Ruyi"
       }
     ],
     "menus": {

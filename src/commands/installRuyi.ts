@@ -13,13 +13,54 @@
 
 import * as cp from 'child_process'
 import type { ExecException } from 'node:child_process'
-import * as util from 'util'
 import * as vscode from 'vscode'
 
 import ruyi, { resolveRuyi } from '../common/ruyi'
 import { promptForTelemetryConfiguration } from '../features/telemetry/TelemetryService'
 
-const execAsync = util.promisify(cp.exec)
+const output = vscode.window.createOutputChannel('Ruyi')
+
+async function runWithOutput(command: string, args: string[], name: string, timeoutMs = 60_000): Promise<void> {
+  output.appendLine(`[Install][${name}] $ ${command} ${args.join(' ')}`)
+  // Use spawn without shell to prevent command injection
+  const child = cp.spawn(command, args, { shell: false })
+  let killedByTimeout = false
+  const timer = setTimeout(() => {
+    killedByTimeout = true
+    try {
+      child.kill()
+    }
+    catch {
+      /* ignore */
+    }
+  }, timeoutMs)
+  child.stdout?.on('data', (d: Buffer | string) => {
+    const str = d.toString()
+    output.append(str.endsWith('\n') ? str : str + '\n')
+  })
+  child.stderr?.on('data', (d: Buffer | string) => {
+    const str = d.toString()
+    output.append(str.endsWith('\n') ? str : str + '\n')
+  })
+  await new Promise<void>((resolve, reject) => {
+    child.on('error', err => reject(err))
+    child.on('close', (code) => {
+      clearTimeout(timer)
+      if (killedByTimeout) {
+        output.appendLine(`[Install] Command timed out after ${timeoutMs}ms`)
+        reject(new Error('Command timed out'))
+        return
+      }
+      if (code === 0) {
+        output.appendLine(`[Install][${name}] Done (exit 0)`)
+        resolve()
+      }
+      else {
+        reject(new Error(`[${name}] failed with exit code ${code ?? 'null'}`))
+      }
+    })
+  })
+}
 
 async function showInstallSuccess(method: string, version: string): Promise<void> {
   const action = await vscode.window.showInformationMessage(
@@ -39,7 +80,7 @@ async function showInstallError(method: string, errorMessage: string, continueMe
     ? `${method} installation failed: ${errorMessage}. ${continueMessage}`
     : `${method} installation failed: ${errorMessage}`
 
-  await vscode.window.showWarningMessage(message, 'OK')
+  await vscode.window.showWarningMessage(`${message} (See OUTPUT: Ruyi)`, 'OK')
 }
 
 export default function registerInstallCommand(context: vscode.ExtensionContext) {
@@ -75,19 +116,20 @@ export default function registerInstallCommand(context: vscode.ExtensionContext)
     if (choice !== 'Install') return
 
     const commands = [
-      { name: 'pip', cmd: 'python3 -m pip install --user -U ruyi' },
-      { name: 'pipx', cmd: 'python3 -m pipx install ruyi' },
+      { name: 'pip', command: 'python3', args: ['-m', 'pip', 'install', '--user', '-U', 'ruyi'] },
+      { name: 'pipx', command: 'python3', args: ['-m', 'pipx', 'install', 'ruyi'] },
     ]
 
     for (let i = 0; i < commands.length; i++) {
-      const { name, cmd } = commands[i]
+      const { name, command, args } = commands[i]
       try {
+        output.show(true)
         await vscode.window.withProgress({
           location: vscode.ProgressLocation.Notification,
           title: `Installing Ruyi via ${name}...`,
           cancellable: false,
         }, async () => {
-          await execAsync(cmd, { timeout: 60_000 })
+          await runWithOutput(command, args, name, 60_000)
         })
 
         const version = await ruyi.version()
@@ -98,8 +140,8 @@ export default function registerInstallCommand(context: vscode.ExtensionContext)
         }
       }
       catch (e) {
-        const error = e as ExecException
-        const errorMessage = error.stderr || error.message || String(error)
+        const error = e as ExecException | Error
+        const errorMessage = (error as ExecException)?.stderr || error.message || String(error)
         const isLastCommand = i === commands.length - 1
         const continueMessage = isLastCommand ? 'Will show manual installation options.' : `Trying ${commands[i + 1]?.name} instead...`
         await showInstallError(name, errorMessage, continueMessage)

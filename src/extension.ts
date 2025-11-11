@@ -17,6 +17,7 @@
  *   • ruyi.venv.create  (./commands/venv/create)
  *   • ruyi.venv.clean   (./commands/venv/clean)
  *   • ruyi.venv.switch  (./commands/venv/switch)
+ *   • ruyi.config.remote (./commands/configRemote)
  *
  * - Show home page on first activation.
  * - Run an automatic detect on activation.
@@ -25,6 +26,7 @@
 
 import * as vscode from 'vscode'
 
+import registerConfigRemoteCommand from './commands/configRemote'
 import registerDetectCommand from './commands/detect'
 import registerExtractCommand from './commands/extract'
 import registerHomeCommand from './commands/home'
@@ -43,6 +45,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(configuration)
 
   // Register commands
+  registerConfigRemoteCommand(context)
   registerDetectCommand(context)
   registerExtractCommand(context)
   registerHomeCommand(context)
