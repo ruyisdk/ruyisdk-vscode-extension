@@ -11,7 +11,7 @@
 import * as path from 'path'
 import * as vscode from 'vscode'
 
-import { getWorkspaceFolderPath, VenvPick } from '../../common/helpers'
+import { getWorkspaceFolderPath } from '../../common/helpers'
 import { VenvTreeItem } from '../../features/venv/VenvTree'
 
 import { currentVenv } from './manageCurrentVenv'
@@ -22,11 +22,8 @@ export default function registerCleanADeactivatedVenvCommand(
     if (!venv) {
       return
     }
-    // Invoke detectVenv command to let user pick a venv to operate.
-    const pickedVenv: VenvPick
-      = { label: venv.name, description: '', rawPath: venv.venvPath }
     // Check if the picked venv is the current active one
-    const venvPath = `./${pickedVenv.rawPath}`
+    const venvPath = `./${venv.venvPath}`
     if (venvPath === currentVenv) {
       vscode.window.showErrorMessage('Cannot delete the currently active Ruyi venv. Please deactivate it first.')
       return
