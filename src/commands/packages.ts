@@ -10,6 +10,7 @@
 
 import * as vscode from 'vscode'
 
+import { createProgressTracker } from '../common/helpers'
 import ruyi from '../common/ruyi'
 import { PackageService } from '../features/packages/PackageService'
 import { PackagesTreeProvider, VersionItem } from '../features/packages/PackagesTree'
@@ -58,10 +59,24 @@ export default function registerPackagesCommands(ctx: vscode.ExtensionContext) {
           cancellable: false,
         },
         async (progress) => {
-          progress.report({ message: 'Running ruyi install...' })
+          progress.report({ message: 'Starting installation...', increment: 0 })
 
-          const result = await ruyi.timeout(60_000).install(packageId)
+          const [onProgress, getLastPercent] = createProgressTracker(progress)
+
+          const result = await ruyi
+            .timeout(300_000) // Increase timeout for large downloads
+            .onProgress(onProgress)
+            .install(packageId)
+
           if (result.code === 0) {
+            // Ensure we reach 100% if not already there
+            const finalIncrement = Math.max(0, 100 - getLastPercent())
+            if (finalIncrement > 0) {
+              progress.report({ message: 'Installation complete', increment: finalIncrement })
+            }
+            else {
+              progress.report({ message: 'Installation complete' })
+            }
             vscode.window.showInformationMessage(
               `✓ Successfully installed ${packageName} ${item.versionInfo.version}`)
 

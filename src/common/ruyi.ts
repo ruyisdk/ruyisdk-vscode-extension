@@ -27,6 +27,12 @@ export interface RuyiResult {
 }
 
 /**
+ * Progress callback function
+ * Called with the last line of output from stdout and stderr
+ */
+export type ProgressCallback = (lastLine: string) => void
+
+/**
  * Options for running Ruyi commands.
  * Includes working directory, environment variables, and optional timeout.
  */
@@ -34,6 +40,7 @@ export interface RuyiRunOptions {
   cwd?: string
   env?: NodeJS.ProcessEnv
   timeout?: number
+  onProgress?: ProgressCallback
 }
 
 export type TelemetryStatus = 'on' | 'off' | 'local' | 'unknown'
@@ -155,6 +162,7 @@ function executeCommand(
     let settled = false
     let timedOut = false
     let timer: NodeJS.Timeout | undefined
+    let lastOutputLine = ''
 
     // Setup timeout
     if (timeout > 0) {
@@ -164,13 +172,38 @@ function executeCommand(
       }, timeout)
     }
 
+    // Helper function to extract and report the last line
+    const updateLastLine = (newChunk: string) => {
+      if (!options?.onProgress) return
+
+      // Split by both \n and \r to handle different line ending styles
+      // curl uses \r for progress updates on the same line
+      const lines = newChunk.split(/[\r\n]+/).filter(line => line.trim())
+
+      if (lines.length > 0) {
+        // Get the last non-empty line from this chunk
+        const newLastLine = lines[lines.length - 1].trim()
+        // Only update if the line has changed to avoid redundant updates
+        if (newLastLine && newLastLine !== lastOutputLine) {
+          lastOutputLine = newLastLine
+          options.onProgress(newLastLine)
+        }
+      }
+    }
+
     // Collect output
     child.stdout?.on('data', (chunk: Buffer | string) => {
-      stdout += chunk.toString()
+      const text = chunk.toString()
+      stdout += text
+      // Update with the new chunk, not the entire accumulated output
+      updateLastLine(text)
     })
 
     child.stderr?.on('data', (chunk: Buffer | string) => {
-      stderr += chunk.toString()
+      const text = chunk.toString()
+      stderr += text
+      // Also check stderr for progress information
+      updateLastLine(text)
     })
 
     // Handle errors
@@ -270,6 +303,13 @@ export class Ruyi {
    */
   env(env: NodeJS.ProcessEnv): Ruyi {
     return new Ruyi({ ...this.options, env })
+  }
+
+  /**
+   * Set progress callback for command execution
+   */
+  onProgress(callback: ProgressCallback): Ruyi {
+    return new Ruyi({ ...this.options, onProgress: callback })
   }
 
   // ============================================================================
