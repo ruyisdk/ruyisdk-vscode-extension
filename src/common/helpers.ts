@@ -69,13 +69,3 @@ export function parseNDJSON<T>(output: string): T[] {
     })
     .filter(item => item !== null)
 }
-
-/**
- * Helper Interface for venv pick.
- */
-
-export interface VenvPick {
-  label: string
-  description: string
-  rawPath: string
-}
