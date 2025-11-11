@@ -13,7 +13,7 @@
  *   • ruyi.packages.uninstall  (./commands/packages)
  *   • ruyi.packages.refresh    (./commands/packages)
  *   • ruyi.extract      (./commands/extract)
- *   • ruyi.venv.detect  (./commands/venv/detect)
+ *   • ruyi.venv.refresh  (./commands/venv/detect)
  *   • ruyi.venv.create  (./commands/venv/create)
  *   • ruyi.venv.clean   (./commands/venv/clean)
  *   • ruyi.venv.switch  (./commands/venv/switch)
@@ -33,8 +33,8 @@ import registerNewsCommands from './commands/news'
 import registerPackagesCommands from './commands/packages'
 import registerCleanADeactivatedVenvCommand from './commands/venv/clean'
 import registerCreateNewVenvCommand from './commands/venv/create'
-import registerDetectAllVenvsCommand from './commands/venv/detect'
-import registerTerminalHandlerCommand from './commands/venv/manageTerminal'
+import registerDetectAllVenvsCommand, { venvTree } from './commands/venv/detect'
+import registerTerminalHandlerCommand from './commands/venv/manageCurrentVenv'
 import registerSwitchFromVenvsCommand from './commands/venv/switch'
 import { configuration } from './features/configuration/ConfigurationService'
 
@@ -67,6 +67,16 @@ export function activate(context: vscode.ExtensionContext) {
   newsStatusBarItem.show()
   context.subscriptions.push(newsStatusBarItem)
 
+  const venvStatusBarItem = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Left,
+    1000,
+  )
+  venvStatusBarItem.text = '$(circle-slash) No Active Venv'
+  venvStatusBarItem.tooltip = 'Manage Ruyi Virtual Environments'
+  venvStatusBarItem.command = 'ruyiVenvsView.focus'
+  venvStatusBarItem.show()
+  context.subscriptions.push(venvStatusBarItem)
+
   // Run initial detection
   setTimeout(async () => {
     const hasShownHome = context.globalState.get<boolean>('ruyi.home.shown') === true
@@ -77,7 +87,8 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     await vscode.commands.executeCommand('ruyi.detect')
-      .then(() => vscode.commands.executeCommand('ruyi.venv.switch', false))
+      .then(() => vscode.commands.executeCommand('ruyi.venv.refresh', false))
+      .then(() => venvTree.setStatusBarItem(venvStatusBarItem))
   })
 }
 

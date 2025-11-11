@@ -12,20 +12,18 @@ import * as path from 'path'
 import * as vscode from 'vscode'
 
 import { getWorkspaceFolderPath } from '../../common/helpers'
+import { VenvTreeItem } from '../../features/venv/VenvTree'
 
-import { currentVenv } from './manageTerminal'
+import { currentVenv } from './manageCurrentVenv'
 
 export default function registerCleanADeactivatedVenvCommand(
   context: vscode.ExtensionContext) {
-  const disposable = vscode.commands.registerCommand('ruyi.venv.clean', async () => {
-    // Invoke detectVenv command to let user pick a venv to operate.
-    const pickedVenv = await vscode.commands.executeCommand('ruyi.venv.detect', 'clean') as
-      { label: string, description: string, rawPath: string } | undefined
-    if (!pickedVenv) {
+  const disposable = vscode.commands.registerCommand('ruyi.venv.clean', async (venv?: VenvTreeItem) => {
+    if (!venv) {
       return
     }
     // Check if the picked venv is the current active one
-    const venvPath = `./${pickedVenv.rawPath}`
+    const venvPath = `./${venv.venvPath}`
     if (venvPath === currentVenv) {
       vscode.window.showErrorMessage('Cannot delete the currently active Ruyi venv. Please deactivate it first.')
       return
@@ -53,6 +51,7 @@ export default function registerCleanADeactivatedVenvCommand(
         // Delete the venv directory
         await fs.delete(venvUri, { recursive: true, useTrash: false })
         vscode.window.showInformationMessage(`Ruyi venv at ${absolutePath} has been deleted.`)
+        vscode.commands.executeCommand('ruyi.venv.refresh')
       }
       catch (error: unknown) {
         if (error instanceof Error) {
