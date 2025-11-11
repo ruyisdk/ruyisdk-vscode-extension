@@ -21,6 +21,7 @@ export default function registerTerminalHandlerCommand(context: vscode.Extension
       if (closedTerminal === ruyiTerminal) {
         ruyiTerminal = undefined
         currentVenv = undefined
+        venvTree.setCurrentVenv(null, null)
         vscode.window.showInformationMessage('Ruyi Venv Terminal closed, venv deactivated.')
       }
     }),
