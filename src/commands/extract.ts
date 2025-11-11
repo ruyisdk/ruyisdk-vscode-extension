@@ -11,7 +11,7 @@
 import * as path from 'path'
 import * as vscode from 'vscode'
 
-import { parseNDJSON } from '../common/helpers'
+import { createProgressTracker, parseNDJSON } from '../common/helpers'
 import ruyi from '../common/ruyi'
 
 /**
@@ -73,15 +73,28 @@ async function fetchSourcePackages(): Promise<string[]> {
 async function extractSelectedPackage(
   packageName: string,
   targetDir: string,
+  progress: vscode.Progress<{ message?: string, increment?: number }>,
 ): Promise<void> {
-  const extractResult = await ruyi.cwd(targetDir).extract(packageName, {
-    extractWithoutSubdir: true,
-  })
+  const [onProgress, getLastPercent] = createProgressTracker(progress)
+
+  const extractResult = await ruyi
+    .cwd(targetDir)
+    .timeout(300_000) // Increase timeout for large downloads
+    .onProgress(onProgress)
+    .extract(packageName, {
+      extractWithoutSubdir: true,
+    })
 
   if (extractResult.code !== 0) {
     throw new Error(
       `Failed to extract: ${extractResult.stderr || extractResult.stdout}`,
     )
+  }
+
+  // Ensure progress reaches 100%
+  const finalIncrement = Math.max(0, 100 - getLastPercent())
+  if (finalIncrement > 0) {
+    progress.report({ message: 'Extraction complete', increment: finalIncrement })
   }
 }
 
@@ -117,7 +130,7 @@ async function extractPackage(uri?: vscode.Uri): Promise<void> {
         title: `Extracting ${selectedPackage}...`,
         cancellable: false,
       },
-      async () => extractSelectedPackage(selectedPackage, targetDir),
+      async progress => extractSelectedPackage(selectedPackage, targetDir, progress),
     )
 
     await vscode.window.showInformationMessage(
