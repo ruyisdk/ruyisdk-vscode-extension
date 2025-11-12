@@ -11,13 +11,12 @@
  * - Caches results to minimize CLI calls
  */
 
-import { VALID_PACKAGE_CATEGORIES } from '../../common/constants'
 import { parseNDJSON } from '../../common/helpers'
 import { logger } from '../../common/logger'
-import ruyi from '../../ruyi'
+import ruyi, { PACKAGE_CATEGORIES, type PackageCategory as RuyiPackageCategory } from '../../ruyi'
 import type { RuyiPorcelainPackageOutput } from '../../ruyi/types'
 
-export type PackageCategory = typeof VALID_PACKAGE_CATEGORIES[number] | 'unknown'
+export type PackageCategory = RuyiPackageCategory | 'unknown'
 
 export interface RuyiPackageVersion {
   version: string
@@ -107,8 +106,8 @@ export class PackageService {
    * Normalize category string to PackageCategory type.
    */
   private normalizeCategory(category: string): PackageCategory {
-    if ((VALID_PACKAGE_CATEGORIES as readonly string[]).includes(category)) {
-      return category as PackageCategory
+    if (PACKAGE_CATEGORIES.includes(category as RuyiPackageCategory)) {
+      return category as RuyiPackageCategory
     }
 
     return 'unknown'
