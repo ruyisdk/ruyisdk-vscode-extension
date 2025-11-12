@@ -62,7 +62,7 @@ export function parseStdoutT(text: string): Toolchain[] {
 
 export async function getToolchains(): Promise<Toolchain[]> {
   let toolchains: Toolchain[] = []
-  const result = await ruyi.getToolchains()
+  const result = await ruyi.list({ categoryIs: 'toolchain' })
   if (result.code == 0) {
     toolchains = parseStdoutT(result.stdout)
   }
