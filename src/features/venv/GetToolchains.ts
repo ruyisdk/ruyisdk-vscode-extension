@@ -13,7 +13,8 @@
  * - getToolchains(): Get all Ruyi toolchains and return as a Object-array
  */
 import { parseNDJSON } from '../../common/helpers'
-import ruyi from '../../common/ruyi'
+import ruyi from '../../ruyi'
+import type { RuyiToolchainListItem } from '../../ruyi/types'
 
 interface Toolchain {
   name: string
@@ -27,11 +28,7 @@ export function parseStdoutT(text: string): Toolchain[] {
   const result: Toolchain[] = []
 
   // Use parseNDJSON helper to parse newline-delimited JSON
-  const objects = parseNDJSON<{ name?: string, vers?: Array<{
-    semver?: string
-    remarks?: string | string[]
-    pm?: { metadata?: { slug?: string } }
-  }> }>(text)
+  const objects = parseNDJSON<RuyiToolchainListItem>(text)
 
   for (const obj of objects) {
     const name = obj.name || ''
@@ -39,10 +36,8 @@ export function parseStdoutT(text: string): Toolchain[] {
     if (Array.isArray(obj.vers)) {
       for (const v of obj.vers) {
         const semver = v.semver || ''
-        // Concat the array of remarks into a single string
-        const remarks = Array.isArray(v.remarks)
-          ? v.remarks.join(', ')
-          : (v.remarks || '')
+        // remarks is always an array based on actual CLI output
+        const remarks = v.remarks || []
         const slug = v.pm?.metadata?.slug || null
         const installed = remarks.includes('installed')
         const latest = remarks.includes('latest')

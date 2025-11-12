@@ -9,7 +9,7 @@ import * as vscode from 'vscode'
 
 import { CONFIG_KEYS } from '../../common/constants'
 import { fullKey } from '../../common/helpers'
-import ruyi from '../../common/ruyi'
+import ruyi from '../../ruyi'
 import { configuration } from '../configuration/ConfigurationService'
 
 /**

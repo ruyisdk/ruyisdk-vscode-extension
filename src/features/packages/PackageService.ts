@@ -14,7 +14,8 @@
 import { VALID_PACKAGE_CATEGORIES } from '../../common/constants'
 import { parseNDJSON } from '../../common/helpers'
 import { logger } from '../../common/logger'
-import ruyi from '../../common/ruyi'
+import ruyi from '../../ruyi'
+import type { RuyiPorcelainPackageOutput } from '../../ruyi/types'
 
 export type PackageCategory = typeof VALID_PACKAGE_CATEGORIES[number] | 'unknown'
 
@@ -32,21 +33,6 @@ export interface RuyiPackage {
   name: string
   category: PackageCategory
   versions: RuyiPackageVersion[]
-}
-
-/**
- * NDJSON output type from `ruyi list --porcelain`
- */
-interface RuyiPorcelainPackageOutput {
-  ty: string
-  category: string
-  name: string
-  vers: Array<{
-    semver: string
-    remarks: string[]
-    is_installed: boolean
-    is_downloaded: boolean
-  }>
 }
 
 export class PackageService {
@@ -93,7 +79,10 @@ export class PackageService {
           const isPrerelease = v.semver.includes('-')
           const isLatest = v.remarks.includes('latest')
           const isLatestPrerelease = v.remarks.includes('latest-prerelease')
+          // Check both locations for slug: pm.metadata.slug and remarks array
           const slugRemark = v.remarks.find(r => r.startsWith('slug:'))
+          const slug = v.pm?.metadata?.slug
+            || (slugRemark ? slugRemark.substring(5).trim() : undefined)
 
           return {
             version: v.semver,
@@ -102,7 +91,7 @@ export class PackageService {
             isPrerelease,
             isLatestPrerelease,
             isBinaryAvailable: !v.remarks.includes('no-binary-for-current-host'),
-            slug: slugRemark ? slugRemark.substring(5).trim() : undefined,
+            slug,
           }
         })
 
