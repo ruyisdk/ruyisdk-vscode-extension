@@ -17,8 +17,8 @@ import * as util from 'util'
 import * as vscode from 'vscode'
 
 import { logger } from '../common/logger.js'
-import ruyi, { resolveRuyi } from '../common/ruyi'
 import { promptForTelemetryConfiguration } from '../features/telemetry/TelemetryService'
+import ruyi, { resolveRuyi } from '../ruyi'
 
 const execAsync = util.promisify(cp.exec)
 

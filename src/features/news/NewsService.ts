@@ -18,7 +18,7 @@ import { promisify } from 'util'
 import * as vscode from 'vscode'
 
 import { logger } from '../../common/logger.js'
-import ruyi from '../../common/ruyi'
+import ruyi from '../../ruyi'
 
 const resolve4 = promisify(dns.resolve4)
 

@@ -11,9 +11,9 @@
 import * as vscode from 'vscode'
 
 import { createProgressTracker } from '../common/helpers'
-import ruyi from '../common/ruyi'
 import { PackageService } from '../features/packages/PackageService'
 import { PackagesTreeProvider, VersionItem } from '../features/packages/PackagesTree'
+import ruyi from '../ruyi'
 
 export default function registerPackagesCommands(ctx: vscode.ExtensionContext) {
   // Initialize service and tree provider
