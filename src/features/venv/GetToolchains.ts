@@ -12,7 +12,7 @@
  *   used by getToolchains()
  * - getToolchains(): Get all Ruyi toolchains and return as a Object-array
  */
-import { logger } from '../../common/logger.js'
+import { parseNDJSON } from '../../common/helpers'
 import ruyi from '../../common/ruyi'
 
 interface Toolchain {
@@ -24,36 +24,30 @@ interface Toolchain {
 }
 
 export function parseStdoutT(text: string): Toolchain[] {
-  // Split the text into segments based on single newlines
-  const segments = text
-    .split('\n')
-    .map(seg => seg.trim())
-    .filter(seg => seg.length > 0)
-
   const result: Toolchain[] = []
 
-  for (const seg of segments) {
-    try {
-      const obj = JSON.parse(seg)
-      const name = obj.name || ''
-      // vers is an array to be iterated
-      if (Array.isArray(obj.vers)) {
-        for (const v of obj.vers) {
-          const semver = v.semver || ''
-          // Concat the array of remarks into a single string
-          const remarks = Array.isArray(v.remarks)
-            ? v.remarks.join(', ')
-            : (v.remarks || '')
-          const slug = v.pm && v.pm.metadata ? v.pm.metadata.slug || null : null
-          const installed = remarks.includes('installed')
-          const latest = remarks.includes('latest')
-          result.push({ name, version: semver, installed, latest, slug })
-        }
+  // Use parseNDJSON helper to parse newline-delimited JSON
+  const objects = parseNDJSON<{ name?: string, vers?: Array<{
+    semver?: string
+    remarks?: string | string[]
+    pm?: { metadata?: { slug?: string } }
+  }> }>(text)
+
+  for (const obj of objects) {
+    const name = obj.name || ''
+    // vers is an array to be iterated
+    if (Array.isArray(obj.vers)) {
+      for (const v of obj.vers) {
+        const semver = v.semver || ''
+        // Concat the array of remarks into a single string
+        const remarks = Array.isArray(v.remarks)
+          ? v.remarks.join(', ')
+          : (v.remarks || '')
+        const slug = v.pm?.metadata?.slug || null
+        const installed = remarks.includes('installed')
+        const latest = remarks.includes('latest')
+        result.push({ name, version: semver, installed, latest, slug })
       }
-    }
-    catch (e) {
-      // Output JSON parse errors
-      logger.error('JSON parse error:', e)
     }
   }
 

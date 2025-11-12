@@ -13,7 +13,7 @@
  * - getEmulators(): Get all Ruyi emulators and return as a Dict-array
  */
 
-import { logger } from '../../common/logger.js'
+import { parseNDJSON } from '../../common/helpers'
 import ruyi from '../../common/ruyi'
 
 interface EmulatorInfo {
@@ -23,33 +23,26 @@ interface EmulatorInfo {
 }
 
 export function parseStdoutE(text: string): EmulatorInfo[] {
-  // Split the text into segments based on single newlines
-  const segments = text
-    .split('\n')
-    .map(seg => seg.trim())
-    .filter(seg => seg.length > 0)
-
   const result: EmulatorInfo[] = []
 
-  for (const seg of segments) {
-    try {
-      const obj = JSON.parse(seg)
-      const name = obj.name || ''
-      // vers is an array to be iterated
-      if (Array.isArray(obj.vers)) {
-        for (const v of obj.vers) {
-          const semver = v.semver || ''
-          // Concat the array of remarks into a single string
-          const remarks = Array.isArray(v.remarks)
-            ? v.remarks.join(', ')
-            : (v.remarks || '')
-          result.push({ name, semver, remarks })
-        }
+  // Use parseNDJSON helper to parse newline-delimited JSON
+  const objects = parseNDJSON<{ name?: string, vers?: Array<{
+    semver?: string
+    remarks?: string | string[]
+  }> }>(text)
+
+  for (const obj of objects) {
+    const name = obj.name || ''
+    // vers is an array to be iterated
+    if (Array.isArray(obj.vers)) {
+      for (const v of obj.vers) {
+        const semver = v.semver || ''
+        // Concat the array of remarks into a single string
+        const remarks = Array.isArray(v.remarks)
+          ? v.remarks.join(', ')
+          : (v.remarks || '')
+        result.push({ name, semver, remarks })
       }
-    }
-    catch (e) {
-      // Output JSON parse errors
-      logger.error('JSON parse error:', e)
     }
   }
 
