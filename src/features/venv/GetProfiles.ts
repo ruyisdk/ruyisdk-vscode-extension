@@ -7,7 +7,7 @@
  * - getProfiles(): Get all Ruyi profiles and return as a dictionary (deduplicated)
  */
 
-import ruyi from '../../common/ruyi'
+import ruyi from '../../ruyi'
 
 export function readStdoutP(stdout: string): Record<string, string> {
   const dict: Record<string, string> = {}

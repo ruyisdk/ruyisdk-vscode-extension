@@ -9,9 +9,9 @@ import * as vscode from 'vscode'
 import * as semver from 'semver'
 
 import { logger } from '../common/logger.js'
-import ruyi, { resolveRuyi } from '../common/ruyi'
 import { configuration } from '../features/configuration/ConfigurationService'
 import { promptForTelemetryConfiguration } from '../features/telemetry/TelemetryService'
+import ruyi, { resolveRuyi } from '../ruyi'
 
 interface GitHubRelease {
   tag_name: string

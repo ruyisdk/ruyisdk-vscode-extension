@@ -11,9 +11,8 @@ import type { SpawnOptions } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
 
+import { logger } from '../common/logger'
 import { configuration } from '../features/configuration/ConfigurationService'
-
-import { logger } from './logger'
 
 // ============================================================================
 // Types

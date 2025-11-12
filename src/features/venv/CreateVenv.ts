@@ -7,7 +7,7 @@
  */
 
 import { getWorkspaceFolderPath } from '../../common/helpers'
-import ruyi from '../../common/ruyi'
+import ruyi from '../../ruyi'
 
 export async function createVenv(profile: string, toolchains: string[], emulator: string | null,
   name: string, path: string, sysrootFrom: string | undefined, extraCommandsFrom: string[]): Promise<string> {

@@ -12,23 +12,13 @@ import * as path from 'path'
 import * as vscode from 'vscode'
 
 import { createProgressTracker, parseNDJSON } from '../common/helpers'
-import ruyi from '../common/ruyi'
+import ruyi from '../ruyi'
+import type { RuyiPorcelainPackageOutput } from '../ruyi/types'
 
 /**
  * Parse the NDJSON output of `ruyi --porcelain list` to get source packages.
  * Each line is a separate JSON object.
  */
-interface RuyiPorcelainPackageOutput {
-  ty: string
-  category: string
-  name: string
-  vers: Array<{
-    semver: string
-    remarks: string[]
-    is_installed: boolean
-    is_downloaded: boolean
-  }>
-}
 
 function parseSourcePackages(output: string): string[] {
   const packages = parseNDJSON<RuyiPorcelainPackageOutput>(output)

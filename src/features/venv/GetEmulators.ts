@@ -14,7 +14,8 @@
  */
 
 import { parseNDJSON } from '../../common/helpers'
-import ruyi from '../../common/ruyi'
+import ruyi from '../../ruyi'
+import type { RuyiEmulatorListItem } from '../../ruyi/types'
 
 interface EmulatorInfo {
   name: string
@@ -26,10 +27,7 @@ export function parseStdoutE(text: string): EmulatorInfo[] {
   const result: EmulatorInfo[] = []
 
   // Use parseNDJSON helper to parse newline-delimited JSON
-  const objects = parseNDJSON<{ name?: string, vers?: Array<{
-    semver?: string
-    remarks?: string | string[]
-  }> }>(text)
+  const objects = parseNDJSON<RuyiEmulatorListItem>(text)
 
   for (const obj of objects) {
     const name = obj.name || ''
@@ -37,10 +35,8 @@ export function parseStdoutE(text: string): EmulatorInfo[] {
     if (Array.isArray(obj.vers)) {
       for (const v of obj.vers) {
         const semver = v.semver || ''
-        // Concat the array of remarks into a single string
-        const remarks = Array.isArray(v.remarks)
-          ? v.remarks.join(', ')
-          : (v.remarks || '')
+        // remarks is always an array based on actual CLI output
+        const remarks = (v.remarks || []).join(', ')
         result.push({ name, semver, remarks })
       }
     }
