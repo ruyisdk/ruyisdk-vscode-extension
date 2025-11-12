@@ -18,6 +18,10 @@ import { configuration } from '../features/configuration/ConfigurationService'
 // Types
 // ============================================================================
 
+// ----------------------------------------------------------------------------
+// Basic Execution Types
+// ----------------------------------------------------------------------------
+
 export interface RuyiResult {
   stdout: string
   stderr: string
@@ -41,21 +45,32 @@ export interface RuyiRunOptions {
   onProgress?: ProgressCallback
 }
 
+// ----------------------------------------------------------------------------
+// Enums and Constants
+// ----------------------------------------------------------------------------
+
 export type TelemetryStatus = 'on' | 'off' | 'local' | 'unknown'
 
-export interface ListOptions {
-  verbose?: boolean
-  isInstalled?: boolean
-  categoryContains?: string
-  categoryIs?: string
-  nameContains?: string
-}
+/**
+ * Valid values for the --category-is parameter
+ */
+export const PACKAGE_CATEGORIES = [
+  'toolchain',
+  'source',
+  'emulator',
+  'board-image',
+  'analyzer',
+  'extra',
+] as const
 
-export interface InstallOptions {
-  fetchOnly?: boolean
-  host?: string
-  reinstall?: boolean
-}
+/**
+ * Package category type derived from PACKAGE_CATEGORIES
+ */
+export type PackageCategory = typeof PACKAGE_CATEGORIES[number]
+
+// ----------------------------------------------------------------------------
+// Command Options Interfaces
+// ----------------------------------------------------------------------------
 
 export interface ExtractOptions {
   destDir?: string
@@ -64,13 +79,18 @@ export interface ExtractOptions {
   host?: string
 }
 
-export interface VenvOptions {
-  name?: string
-  toolchain?: string | string[]
-  emulator?: string
-  withSysroot?: boolean
-  sysrootFrom?: string
-  extraCommandsFrom?: string | string[]
+export interface InstallOptions {
+  fetchOnly?: boolean
+  host?: string
+  reinstall?: boolean
+}
+
+export interface ListOptions {
+  verbose?: boolean
+  isInstalled?: boolean
+  categoryContains?: string
+  categoryIs?: PackageCategory
+  nameContains?: string
 }
 
 export interface NewsListOptions {
@@ -85,6 +105,15 @@ export interface SelfCleanOptions {
   progcache?: boolean
   repo?: boolean
   telemetry?: boolean
+}
+
+export interface VenvOptions {
+  name?: string
+  toolchain?: string | string[]
+  emulator?: string
+  withSysroot?: boolean
+  sysrootFrom?: string
+  extraCommandsFrom?: string | string[]
 }
 
 // ============================================================================
