@@ -24,7 +24,7 @@ export function readStdoutP(stdout: string): Record<string, string> {
 
 export async function getProfiles(): Promise<{ [key: string]: string }> {
   let profiles: { [key: string]: string } = {}
-  const result = await ruyi.getProfiles()
+  const result = await ruyi.listProfiles()
   if (result.code == 0) {
     profiles = readStdoutP(result.stdout)
   }

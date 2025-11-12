@@ -58,7 +58,7 @@ export function parseStdoutE(text: string): EmulatorInfo[] {
 
 export async function getEmulators():
 Promise<{ name: string, semver: string, remarks: string }[] | { errorMsg: string }> {
-  const result = await ruyi.getEmulators()
+  const result = await ruyi.list({ categoryIs: 'emulator' })
   if (result.code == 0) {
     const emus = parseStdoutE(result.stdout)
     return emus
