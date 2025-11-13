@@ -13,10 +13,8 @@
 
 import { parseNDJSON } from '../../common/helpers'
 import { logger } from '../../common/logger'
-import ruyi, { PACKAGE_CATEGORIES, type PackageCategory as RuyiPackageCategory } from '../../ruyi'
+import ruyi, { PACKAGE_CATEGORIES, type PackageCategory } from '../../ruyi'
 import type { RuyiPorcelainPackageOutput } from '../../ruyi/types'
-
-export type PackageCategory = RuyiPackageCategory | 'unknown'
 
 export interface RuyiPackageVersion {
   version: string
@@ -72,8 +70,9 @@ export class PackageService {
       .filter(item => item.ty === 'pkglistoutput-v1')
       // Exclude 'source' category
       .filter(item => item.category !== 'source')
+      .filter(item => PACKAGE_CATEGORIES.includes(item.category as PackageCategory))
       .map((item) => {
-        const category = this.normalizeCategory(item.category)
+        const category = item.category as PackageCategory
         const versions: RuyiPackageVersion[] = item.vers.map((v) => {
           const isPrerelease = v.semver.includes('-')
           const isLatest = v.remarks.includes('latest')
@@ -100,16 +99,5 @@ export class PackageService {
           versions,
         }
       })
-  }
-
-  /**
-   * Normalize category string to PackageCategory type.
-   */
-  private normalizeCategory(category: string): PackageCategory {
-    if (PACKAGE_CATEGORIES.includes(category as RuyiPackageCategory)) {
-      return category as RuyiPackageCategory
-    }
-
-    return 'unknown'
   }
 }
