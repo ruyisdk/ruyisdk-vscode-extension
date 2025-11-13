@@ -33,7 +33,7 @@ import registerNewsCommands from './commands/news'
 import registerPackagesCommands from './commands/packages'
 import registerCleanADeactivatedVenvCommand from './commands/venv/clean'
 import registerCreateNewVenvCommand from './commands/venv/create'
-import registerDetectAllVenvsCommand, { venvTree } from './commands/venv/detect'
+import registerDetectAllVenvsCommand from './commands/venv/detect'
 import registerTerminalHandlerCommand from './commands/venv/manageCurrentVenv'
 import registerSwitchFromVenvsCommand from './commands/venv/switch'
 import { logger } from './common/logger'
@@ -57,27 +57,8 @@ export function activate(context: vscode.ExtensionContext) {
   registerSwitchFromVenvsCommand(context)
   registerCleanADeactivatedVenvCommand(context)
 
-  // Create status bar entry for Ruyi News Cards
-  const newsStatusBarItem = vscode.window.createStatusBarItem(
-    vscode.StatusBarAlignment.Right,
-    1000,
-  )
+  // Initialize logger
   logger.initialize('RuyiSDK')
-  newsStatusBarItem.text = '$(info) Read RuyiNews'
-  newsStatusBarItem.tooltip = 'Open Ruyi News Cards'
-  newsStatusBarItem.command = 'ruyi.news.showCards'
-  newsStatusBarItem.show()
-  context.subscriptions.push(newsStatusBarItem)
-
-  const venvStatusBarItem = vscode.window.createStatusBarItem(
-    vscode.StatusBarAlignment.Left,
-    1000,
-  )
-  venvStatusBarItem.text = '$(circle-slash) No Active Venv'
-  venvStatusBarItem.tooltip = 'Manage Ruyi Virtual Environments'
-  venvStatusBarItem.command = 'ruyiVenvsView.focus'
-  venvStatusBarItem.show()
-  context.subscriptions.push(venvStatusBarItem)
 
   // Run initial detection
   setTimeout(async () => {
@@ -89,8 +70,7 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     await vscode.commands.executeCommand('ruyi.detect')
-      .then(() => vscode.commands.executeCommand('ruyi.venv.refresh', false))
-      .then(() => venvTree.setStatusBarItem(venvStatusBarItem))
+    await vscode.commands.executeCommand('ruyi.venv.refresh', false)
   })
 }
 

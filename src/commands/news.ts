@@ -13,15 +13,22 @@ import NewsCards from '../features/news/NewsCards'
 import NewsService from '../features/news/NewsService'
 
 export default function registerNewsCommands(ctx: vscode.ExtensionContext) {
+  // Create status bar entry for quick access to news
+  const newsStatusBarItem = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Right,
+    1000,
+  )
+  newsStatusBarItem.text = '$(info) Read RuyiNews'
+  newsStatusBarItem.tooltip = 'Open Ruyi News Cards'
+  newsStatusBarItem.command = 'ruyi.news.showCards'
+  newsStatusBarItem.show()
+  ctx.subscriptions.push(newsStatusBarItem)
+
   const svc = NewsService.getInstance(ctx)
   const cardsProvider = new NewsCards(svc)
-
-  // Initialize news service
   svc.initialize().catch((err: unknown) =>
     logger.warn('Failed to initialize news service:', err),
   )
-
-  // Note: Tree view is removed, only cards view is available
 
   const searchCmd = vscode.commands.registerCommand(
     'ruyi.news.search', async () => {
