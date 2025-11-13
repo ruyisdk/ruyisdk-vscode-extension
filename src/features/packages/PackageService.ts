@@ -14,7 +14,7 @@
 import { parseNDJSON } from '../../common/helpers'
 import { logger } from '../../common/logger'
 import ruyi, { PACKAGE_CATEGORIES, type PackageCategory } from '../../ruyi'
-import type { RuyiPorcelainPackageOutput } from '../../ruyi/types'
+import type { RuyiListOutput } from '../../ruyi/types'
 
 export interface RuyiPackageVersion {
   version: string
@@ -66,7 +66,7 @@ export class PackageService {
    * Each line is a separate JSON object.
    */
   private parsePorcelainListOutput(output: string): RuyiPackage[] {
-    return parseNDJSON<RuyiPorcelainPackageOutput>(output)
+    return parseNDJSON<RuyiListOutput>(output)
       .filter(item => item.ty === 'pkglistoutput-v1')
       // Exclude 'source' category
       .filter(item => item.category !== 'source')

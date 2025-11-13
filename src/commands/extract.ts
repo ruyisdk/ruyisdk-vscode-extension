@@ -13,7 +13,7 @@ import * as vscode from 'vscode'
 
 import { createProgressTracker, parseNDJSON } from '../common/helpers'
 import ruyi from '../ruyi'
-import type { RuyiPorcelainPackageOutput } from '../ruyi/types'
+import type { RuyiListOutput } from '../ruyi/types'
 
 /**
  * Parse the NDJSON output of `ruyi --porcelain list` to get source packages.
@@ -21,7 +21,7 @@ import type { RuyiPorcelainPackageOutput } from '../ruyi/types'
  */
 
 function parseSourcePackages(output: string): string[] {
-  const packages = parseNDJSON<RuyiPorcelainPackageOutput>(output)
+  const packages = parseNDJSON<RuyiListOutput>(output)
     .filter(item => item.ty === 'pkglistoutput-v1' && item.category === 'source')
     .map(item => `${item.category}/${item.name}`)
 

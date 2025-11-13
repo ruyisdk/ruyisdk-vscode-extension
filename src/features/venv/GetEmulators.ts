@@ -15,7 +15,7 @@
 
 import { parseNDJSON } from '../../common/helpers'
 import ruyi from '../../ruyi'
-import type { RuyiEmulatorListItem } from '../../ruyi/types'
+import type { RuyiListOutput } from '../../ruyi/types'
 
 interface EmulatorInfo {
   name: string
@@ -27,7 +27,7 @@ export function parseStdoutE(text: string): EmulatorInfo[] {
   const result: EmulatorInfo[] = []
 
   // Use parseNDJSON helper to parse newline-delimited JSON
-  const objects = parseNDJSON<RuyiEmulatorListItem>(text)
+  const objects = parseNDJSON<RuyiListOutput>(text)
 
   for (const obj of objects) {
     const name = obj.name || ''
