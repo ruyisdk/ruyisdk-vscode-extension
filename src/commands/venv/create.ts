@@ -12,12 +12,11 @@
 import paths from 'path'
 import * as vscode from 'vscode'
 
-import { RuyiPackage } from '../../features/packages/PackageService'
-import { VersionItem } from '../../features/packages/PackagesTree'
 import { createVenv } from '../../features/venv/CreateVenv'
 import { getEmulators } from '../../features/venv/GetEmulators'
 import { getProfiles } from '../../features/venv/GetProfiles'
 import { getToolchains } from '../../features/venv/GetToolchains'
+import { installPackage } from '../packages'
 
 export default function registerCreateNewVenvCommand(
   context: vscode.ExtensionContext) {
@@ -102,18 +101,13 @@ export default function registerCreateNewVenvCommand(
       // Selecting a non-installed toolchain, aborting the creating and show inquiry to install now.
       if (!(toolchainPick.detail as string).includes('Installed')) {
         terminated = true
-        vscode.window.showWarningMessage(
+        const selection = await vscode.window.showWarningMessage(
           `The selected toolchain "${topush}" is not installed.`
           + `\nPlease install the toolchain first before creating the venv. Start installation now?`,
-          'Yes', 'No').then(async (selection) => {
-          if (selection === 'Yes') {
-            const pkg: RuyiPackage = { name: toolchainPick.rawName, category: 'toolchain', versions: [] }
-            const versionInfo = { version: version, isInstalled: false, isLatest: false,
-              isPrerelease: false, isLatestPrerelease: false, isBinaryAvailable: false, slug: undefined }
-            await vscode.commands.executeCommand('ruyi.packages.install', new VersionItem(pkg, versionInfo))
-          }
-          return
-        })
+          'Yes', 'No')
+        if (selection === 'Yes') {
+          await installPackage(toolchainPick.rawName, version || undefined)
+        }
       }
       if (terminated) return
     }
@@ -185,18 +179,13 @@ export default function registerCreateNewVenvCommand(
         // Selecting a non-installed emulator, aborting the creating and show show inquiry to install now.
         if (!emulatorPick.detail.includes('Installed')) {
           terminated = true
-          vscode.window.showWarningMessage(
+          const selection = await vscode.window.showWarningMessage(
             `The selected emulator "${emulator}" is not installed.`
             + `\nPlease install the emulator first before creating the venv. Start installation now?`,
-            'Yes', 'No').then(async (selection) => {
-            if (selection === 'Yes') {
-              const pkg: RuyiPackage = { name: emulatorPick.rawName, category: 'emulator', versions: [] }
-              const versionInfo = { version: version, isInstalled: false, isLatest: false,
-                isPrerelease: false, isLatestPrerelease: false, isBinaryAvailable: false, slug: undefined }
-              await vscode.commands.executeCommand('ruyi.packages.install', new VersionItem(pkg, versionInfo))
-            }
-            return
-          })
+            'Yes', 'No')
+          if (selection === 'Yes') {
+            await installPackage(emulatorPick.rawName, version || undefined)
+          }
         }
         if (terminated) return
       }
