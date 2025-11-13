@@ -15,6 +15,124 @@ import { PackageService } from '../features/packages/PackageService'
 import { PackagesTreeProvider, VersionItem } from '../features/packages/PackagesTree'
 import ruyi from '../ruyi'
 
+/**
+ * Install a package by name and version
+ * @param name Package name like "toolchain"
+ * @param version Package version like "1.0.0", or undefined for latest
+ * @returns true if successful, false otherwise
+ */
+export async function installPackage(name: string, version?: string): Promise<boolean> {
+  const packageName = name.split('/').pop() || name
+  const displayVersion = version || 'latest'
+  const packageSpec = version ? `${name}(==${version})` : name
+
+  const choice = await vscode.window.showInformationMessage(
+    `Install ${packageName} ${displayVersion}?`,
+    { modal: false },
+    'Install',
+    'Cancel',
+  )
+
+  if (choice !== 'Install') {
+    return false
+  }
+
+  let success = false
+  await vscode.window.withProgress(
+    {
+      location: vscode.ProgressLocation.Notification,
+      title: `Installing ${packageName}...`,
+      cancellable: false,
+    },
+    async (progress) => {
+      progress.report({ message: 'Starting installation...', increment: 0 })
+
+      const [onProgress, getLastPercent] = createProgressTracker(progress)
+
+      const result = await ruyi
+        .timeout(300_000)
+        .onProgress(onProgress)
+        .install(packageSpec)
+
+      if (result.code === 0) {
+        const finalIncrement = Math.max(0, 100 - getLastPercent())
+        if (finalIncrement > 0) {
+          progress.report({ message: 'Installation complete', increment: finalIncrement })
+        }
+        else {
+          progress.report({ message: 'Installation complete' })
+        }
+        vscode.window.showInformationMessage(`✓ Successfully installed ${packageName} ${displayVersion}`)
+        success = true
+      }
+      else {
+        const errorMsg = result.stderr || result.stdout || 'Unknown error'
+        vscode.window.showErrorMessage(`Failed to install ${packageName}: ${errorMsg}`)
+      }
+    },
+  )
+
+  return success
+}
+
+/**
+ * Uninstall a package by name and version
+ * @param name Package name like "toolchain"
+ * @param version Package version like "1.0.0", or undefined for latest
+ * @returns true if successful, false otherwise
+ */
+export async function uninstallPackage(name: string, version?: string): Promise<boolean> {
+  const packageName = name.split('/').pop() || name
+  const displayVersion = version || 'latest'
+  const packageSpec = version ? `${name}(==${version})` : name
+
+  const choice = await vscode.window.showWarningMessage(
+    `Uninstall ${packageName} ${displayVersion}?`,
+    { modal: false },
+    'Uninstall',
+    'Cancel',
+  )
+
+  if (choice !== 'Uninstall') {
+    return false
+  }
+
+  const confirmation = await vscode.window.showWarningMessage(
+    `Are you sure you want to uninstall ${packageName} ${displayVersion}? This action cannot be undone.`,
+    { modal: false },
+    'Yes, Uninstall',
+    'Cancel',
+  )
+
+  if (confirmation !== 'Yes, Uninstall') {
+    return false
+  }
+
+  let success = false
+  await vscode.window.withProgress(
+    {
+      location: vscode.ProgressLocation.Notification,
+      title: `Uninstalling ${packageName}...`,
+      cancellable: false,
+    },
+    async (progress) => {
+      progress.report({ message: 'Running ruyi remove...' })
+
+      const result = await ruyi.timeout(60_000).uninstall(packageSpec)
+      if (result.code === 0) {
+        vscode.window.showInformationMessage(`✓ Successfully uninstalled ${packageName} ${displayVersion}`)
+        success = true
+      }
+      else {
+        const errorMsg = result.stderr || result.stdout || 'Unknown error'
+        vscode.window.showErrorMessage(`Failed to uninstall ${packageName}: ${errorMsg}`)
+      }
+    },
+  )
+
+  return success
+}
+
 export default function registerPackagesCommands(ctx: vscode.ExtensionContext) {
   // Initialize service and tree provider
   const packageService = new PackageService()
@@ -38,57 +156,11 @@ export default function registerPackagesCommands(ctx: vscode.ExtensionContext) {
         return
       }
 
-      const packageId = item.getPackageId()
-      const packageName = item.pkg.name.split('/').pop() || item.pkg.name
+      const success = await installPackage(item.pkg.name, item.versionInfo.version)
 
-      const choice = await vscode.window.showInformationMessage(
-        `Install ${packageName} ${item.versionInfo.version}?`,
-        { modal: false },
-        'Install',
-        'Cancel',
-      )
-
-      if (choice !== 'Install') {
-        return
+      if (success) {
+        await packagesTreeProvider.refresh()
       }
-
-      await vscode.window.withProgress(
-        {
-          location: vscode.ProgressLocation.Notification,
-          title: `Installing ${packageName}...`,
-          cancellable: false,
-        },
-        async (progress) => {
-          progress.report({ message: 'Starting installation...', increment: 0 })
-
-          const [onProgress, getLastPercent] = createProgressTracker(progress)
-
-          const result = await ruyi
-            .timeout(300_000) // Increase timeout for large downloads
-            .onProgress(onProgress)
-            .install(packageId)
-
-          if (result.code === 0) {
-            // Ensure we reach 100% if not already there
-            const finalIncrement = Math.max(0, 100 - getLastPercent())
-            if (finalIncrement > 0) {
-              progress.report({ message: 'Installation complete', increment: finalIncrement })
-            }
-            else {
-              progress.report({ message: 'Installation complete' })
-            }
-            vscode.window.showInformationMessage(
-              `✓ Successfully installed ${packageName} ${item.versionInfo.version}`)
-
-            await packagesTreeProvider.refresh()
-          }
-          else {
-            const errorMsg = result.stderr || result.stdout || 'Unknown error'
-            vscode.window.showErrorMessage(
-              `Failed to install ${packageName}: ${errorMsg}`)
-          }
-        },
-      )
     },
   )
 
@@ -100,54 +172,11 @@ export default function registerPackagesCommands(ctx: vscode.ExtensionContext) {
         return
       }
 
-      const packageId = item.getPackageId()
-      const packageName = item.pkg.name.split('/').pop() || item.pkg.name
+      const success = await uninstallPackage(item.pkg.name, item.versionInfo.version)
 
-      const choice = await vscode.window.showWarningMessage(
-        `Uninstall ${packageName} ${item.versionInfo.version}?`,
-        { modal: false },
-        'Uninstall',
-        'Cancel',
-      )
-
-      if (choice !== 'Uninstall') {
-        return
+      if (success) {
+        await packagesTreeProvider.refresh()
       }
-
-      const confirmation = await vscode.window.showWarningMessage(
-        `Are you sure you want to uninstall ${packageName} ${item.versionInfo.version}? This action cannot be undone.`,
-        { modal: false },
-        'Yes, Uninstall',
-        'Cancel',
-      )
-
-      if (confirmation !== 'Yes, Uninstall') {
-        return
-      }
-
-      await vscode.window.withProgress(
-        {
-          location: vscode.ProgressLocation.Notification,
-          title: `Uninstalling ${packageName}...`,
-          cancellable: false,
-        },
-        async (progress) => {
-          progress.report({ message: 'Running ruyi remove...' })
-
-          const result = await ruyi.timeout(60_000).uninstall(packageId)
-          if (result.code === 0) {
-            vscode.window.showInformationMessage(
-              `✓ Successfully uninstalled ${packageName} ${item.versionInfo.version}`)
-
-            await packagesTreeProvider.refresh()
-          }
-          else {
-            const errorMsg = result.stderr || result.stdout || 'Unknown error'
-            vscode.window.showErrorMessage(
-              `Failed to uninstall ${packageName}: ${errorMsg}`)
-          }
-        },
-      )
     },
   )
 
