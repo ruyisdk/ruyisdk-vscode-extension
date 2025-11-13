@@ -14,7 +14,7 @@
  */
 import { parseNDJSON } from '../../common/helpers'
 import ruyi from '../../ruyi'
-import type { RuyiToolchainListItem } from '../../ruyi/types'
+import type { RuyiListOutput } from '../../ruyi/types'
 
 interface Toolchain {
   name: string
@@ -28,7 +28,7 @@ export function parseStdoutT(text: string): Toolchain[] {
   const result: Toolchain[] = []
 
   // Use parseNDJSON helper to parse newline-delimited JSON
-  const objects = parseNDJSON<RuyiToolchainListItem>(text)
+  const objects = parseNDJSON<RuyiListOutput>(text)
 
   for (const obj of objects) {
     const name = obj.name || ''
