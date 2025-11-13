@@ -24,6 +24,20 @@ export const venvTree = new VenvTreeProvider()
 
 export default function registerDetectAllVenvsCommand(
   context: vscode.ExtensionContext) {
+  // Create status bar item for venv management
+  const venvStatusBarItem = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Left,
+    1000,
+  )
+  venvStatusBarItem.text = '$(circle-slash) No Active Venv'
+  venvStatusBarItem.tooltip = 'Manage Ruyi Virtual Environments'
+  venvStatusBarItem.command = 'ruyiVenvsView.focus'
+  venvStatusBarItem.show()
+  context.subscriptions.push(venvStatusBarItem)
+
+  // Link status bar to VenvTree for automatic updates
+  venvTree.setStatusBarItem(venvStatusBarItem)
+
   const disposable = vscode.commands.registerCommand(
     'ruyi.venv.refresh', async (active: boolean = true) => {
       const venvs = detectVenv()
