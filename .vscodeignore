@@ -1,6 +1,5 @@
 .vscode/**
 .vscode-test/**
-node_modules/**
 src/**
 .gitignore
 .yarnrc
@@ -11,3 +10,13 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 **/.vscode-test.*
+
+node_modules/@types/**
+node_modules/@stylistic/**
+node_modules/@typescript-eslint/**
+node_modules/@vscode/**
+node_modules/eslint/**
+node_modules/eslint-plugin-import/**
+node_modules/globals/**
+node_modules/typescript/**
+node_modules/typescript-eslint/**
