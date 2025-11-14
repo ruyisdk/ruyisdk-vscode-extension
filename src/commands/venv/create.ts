@@ -248,7 +248,7 @@ export default function registerCreateNewVenvCommand(
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: `Creating venv "${name}"...`,
+        title: `Creating venv "${name}"`,
         cancellable: false,
       },
       async (progress) => {
