@@ -26,7 +26,7 @@ export default function registerSwitchFromVenvsCommand(
     manageRuyiTerminal(venvPath === currentVenv ? null : venvPath, venvPath === currentVenv ? null : venv.name)
 
     // Refresh the venv tree view to reflect the current active venv
-    await vscode.commands.executeCommand('ruyi.venv.refresh', false)
+    await vscode.commands.executeCommand('ruyi.venv.refresh')
   })
   context.subscriptions.push(disposable)
 }
