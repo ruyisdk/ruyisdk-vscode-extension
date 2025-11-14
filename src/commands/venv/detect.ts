@@ -34,9 +34,13 @@ export default function registerDetectAllVenvsCommand(
   venvStatusBarItem.command = 'ruyiVenvsView.focus'
   venvStatusBarItem.show()
   context.subscriptions.push(venvStatusBarItem)
-
-  // Link status bar to VenvTree for automatic updates
   venvTree.setStatusBarItem(venvStatusBarItem)
+
+  // Create tree view for venv management
+  const venvTreeView = vscode.window.createTreeView('ruyiVenvsView', {
+    treeDataProvider: venvTree,
+  })
+  context.subscriptions.push(venvTreeView)
 
   const disposable = vscode.commands.registerCommand(
     'ruyi.venv.refresh', async () => {
@@ -47,10 +51,6 @@ export default function registerDetectAllVenvsCommand(
         path: v[0],
       }))
       venvTree.updateVenvs(venvInfo)
-      const venvTreeView = vscode.window.createTreeView('ruyiVenvsView', {
-        treeDataProvider: venvTree,
-      })
-      context.subscriptions.push(venvTreeView)
     })
   context.subscriptions.push(disposable)
 }
