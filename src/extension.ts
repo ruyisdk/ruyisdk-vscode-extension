@@ -70,7 +70,7 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     await vscode.commands.executeCommand('ruyi.detect')
-    await vscode.commands.executeCommand('ruyi.venv.refresh', false)
+    await vscode.commands.executeCommand('ruyi.venv.refresh')
   })
 }
 

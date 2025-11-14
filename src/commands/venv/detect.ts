@@ -39,13 +39,8 @@ export default function registerDetectAllVenvsCommand(
   venvTree.setStatusBarItem(venvStatusBarItem)
 
   const disposable = vscode.commands.registerCommand(
-    'ruyi.venv.refresh', async (active: boolean = true) => {
+    'ruyi.venv.refresh', async () => {
       const venvs = detectVenv()
-      if (venvs.length === 0) {
-        if (active) {
-          vscode.window.showInformationMessage('No Ruyi venvs detected in the current workspace.')
-        }
-      }
       // Update tree view with detected venvs
       const venvInfo: VenvInfo[] = venvs.map(v => ({
         name: v[1],

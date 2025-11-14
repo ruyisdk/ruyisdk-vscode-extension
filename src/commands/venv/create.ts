@@ -12,10 +12,11 @@
 import paths from 'path'
 import * as vscode from 'vscode'
 
-import { createVenv } from '../../features/venv/CreateVenv'
+import { createProgressTracker, getWorkspaceFolderPath } from '../../common/helpers'
 import { getEmulators } from '../../features/venv/GetEmulators'
 import { getProfiles } from '../../features/venv/GetProfiles'
 import { getToolchains } from '../../features/venv/GetToolchains'
+import ruyi from '../../ruyi'
 import { installPackage } from '../packages'
 
 export default function registerCreateNewVenvCommand(
@@ -243,8 +244,46 @@ export default function registerCreateNewVenvCommand(
       else extraCommands.push(anExtraCommand)
     }
     // Finally: Create new venv
-    vscode.window.showInformationMessage('Creating new venv... This may take several minutes. Please wait.')
-    const result = await createVenv(profile, toolchains, emulator, name, path, sysrootFrom, extraCommands)
+    let result = ''
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: `Creating venv "${name}"...`,
+        cancellable: false,
+      },
+      async (progress) => {
+        progress.report({ message: 'Initializing...', increment: 0 })
+
+        const [onProgress, getLastPercent] = createProgressTracker(progress)
+
+        const ruyiResult = await ruyi
+          .timeout(5 * 60 * 1000)
+          .cwd(getWorkspaceFolderPath())
+          .onProgress(onProgress)
+          .venv(profile, path, {
+            name,
+            toolchain: toolchains,
+            emulator: emulator ?? undefined,
+            sysrootFrom,
+            extraCommandsFrom: extraCommands,
+          })
+
+        const finalIncrement = Math.max(0, 100 - getLastPercent())
+        if (finalIncrement > 0) {
+          progress.report({ message: 'Venv creation complete', increment: finalIncrement })
+        }
+        else {
+          progress.report({ message: 'Venv creation complete' })
+        }
+
+        if (ruyiResult.code == 0) {
+          result = `Succeeded: Now you can activate the new venv with our extension or via the terminal.`
+        }
+        else {
+          result = `Exception: ${ruyiResult.stderr.slice(0, 750)}. `
+        }
+      },
+    )
 
     if (result.includes('Succeeded')) {
       vscode.window.showInformationMessage(result)
@@ -265,7 +304,7 @@ export default function registerCreateNewVenvCommand(
           const depth = relativePath.split(paths.sep).length - 1
           if (depth <= 2) {
             // Within 2 levels, trigger refresh command.
-            await vscode.commands.executeCommand('ruyi.venv.refresh', false)
+            await vscode.commands.executeCommand('ruyi.venv.refresh')
             goodPath = true
             return
           }
