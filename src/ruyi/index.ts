@@ -8,8 +8,8 @@
 
 import { spawn } from 'child_process'
 import type { SpawnOptions } from 'child_process'
-import * as fs from 'fs'
 import * as path from 'path'
+import * as vscode from 'vscode'
 
 import { logger } from '../common/logger'
 import { configuration } from '../features/configuration/ConfigurationService'
@@ -128,10 +128,11 @@ export async function resolveRuyi(): Promise<string | null> {
   // Check configuration
   const configPath = configuration.ruyiPath
   if (configPath) {
-    if (fs.existsSync(configPath)) {
+    try {
+      await vscode.workspace.fs.stat(vscode.Uri.file(configPath))
       return configPath
     }
-    else {
+    catch {
       logger.warn(`Configured Ruyi path does not exist: ${configPath}`)
     }
   }
@@ -140,8 +141,12 @@ export async function resolveRuyi(): Promise<string | null> {
   const homeDir = process.env.HOME
   if (homeDir) {
     const localBinPath = path.join(homeDir, '.local', 'bin', 'ruyi')
-    if (fs.existsSync(localBinPath)) {
+    try {
+      await vscode.workspace.fs.stat(vscode.Uri.file(localBinPath))
       return localBinPath
+    }
+    catch {
+      logger.debug(`Detected Ruyi binary path does not exist: ${localBinPath}`)
     }
   }
 
@@ -153,12 +158,11 @@ export async function resolveRuyi(): Promise<string | null> {
   for (const dir of pathDirs) {
     try {
       const ruyiPath = path.join(dir, 'ruyi')
-      if (fs.existsSync(ruyiPath)) {
-        return ruyiPath
-      }
+      await vscode.workspace.fs.stat(vscode.Uri.file(ruyiPath))
+      return ruyiPath
     }
     catch {
-      // Skip inaccessible directories
+      // Skip inaccessible directories and directories not containing Ruyi in PATH
       continue
     }
   }
