@@ -13,34 +13,42 @@
  * We can return multiple venvs if found.
  */
 
-import * as fs from 'fs'
 import * as path from 'path'
+import * as vscode from 'vscode'
 
 import { getWorkspaceFolderPath } from '../../common/helpers'
 import { logger } from '../../common/logger'
 
-export function detectVenv(): string[][] {
+export async function detectVenv(): Promise<string[][]> {
   const foundVenvs: string[][] = []
 
   try {
     const workspacePath = getWorkspaceFolderPath()
 
-    const subdirectories = fs.readdirSync(workspacePath, { withFileTypes: true })
-      .filter(dirent => dirent.isDirectory())
-      .map(dirent => dirent.name)
+    const listDirectories = async (uri: vscode.Uri): Promise<string[]> => {
+      const entries = await vscode.workspace.fs.readDirectory(uri)
+      return entries
+        .filter(([, type]) => type === vscode.FileType.Directory)
+        .map(([name]) => name)
+    }
 
-    const subSubdirectories = subdirectories.flatMap((subdir) => {
-      try {
-        const subdirPath = path.join(workspacePath, subdir)
-        return fs.readdirSync(subdirPath, { withFileTypes: true })
-          .filter(dirent => dirent.isDirectory())
-          .map(dirent => `${subdir}/${dirent.name}`)
-      }
-      catch (e) {
-        logger.warn(`Failed to read ${subdir}: ${e}`)
-        return []
-      }
-    })
+    const subdirectories = await listDirectories(vscode.Uri.file(workspacePath))
+
+    const subSubDirArrays = await Promise.all(
+      subdirectories.map(async (subdir) => {
+        try {
+          const subdirUri = vscode.Uri.file(path.join(workspacePath, subdir))
+          const names = await listDirectories(subdirUri)
+          return names.map(name => `${subdir}/${name}`)
+        }
+        catch (e) {
+          logger.warn(`Failed to read ${subdir}: ${e}`)
+          return []
+        }
+      }),
+    )
+    const subSubdirectories = subSubDirArrays.flat()
+
     const allDirsToCheck = [...subdirectories, ...subSubdirectories]
 
     // Add security check to prevent path traversal
@@ -60,14 +68,19 @@ export function detectVenv(): string[][] {
 
       const binPath = path.join(workspacePath, dir, 'bin')
       const activatePath = path.join(binPath, 'ruyi-activate')
-      if (fs.existsSync(activatePath)) {
+      try {
+        const activateUri = vscode.Uri.file(activatePath)
+        await vscode.workspace.fs.stat(activateUri) // ensure the existence of activatePath. not exist -> exception
         // Read the ruyi-activate file to find the RUYI_VENV_PROMPT line
-        const activateContent = fs.readFileSync(activatePath, 'utf-8')
+        const activateContent = Buffer.from(await vscode.workspace.fs.readFile(activateUri)).toString('utf-8')
         const promptLine = activateContent.split('\n')
           .find(line => line.includes('RUYI_VENV_PROMPT='))
         if (promptLine) {
           foundVenvs.push([dir, promptLine.split('=')[1].trim()])
         }
+      }
+      catch {
+        // pass
       }
     }
   }
