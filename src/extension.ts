@@ -29,7 +29,6 @@ import registerDetectCommand from './commands/detect'
 import registerExtractCommand from './commands/extract'
 import registerHomeCommand from './commands/home'
 import registerInstallCommand from './commands/installRuyi'
-import registerNewsCommands from './commands/news'
 import registerPackagesCommands from './commands/packages'
 import registerCleanADeactivatedVenvCommand from './commands/venv/clean'
 import registerCreateNewVenvCommand from './commands/venv/create'
@@ -38,6 +37,7 @@ import registerTerminalHandlerCommand from './commands/venv/manageCurrentVenv'
 import registerSwitchFromVenvsCommand from './commands/venv/switch'
 import { logger } from './common/logger'
 import { configuration } from './features/configuration/ConfigurationService'
+import { registerNewsModule } from './news'
 
 export function activate(context: vscode.ExtensionContext) {
   // Register configuration service
@@ -48,7 +48,7 @@ export function activate(context: vscode.ExtensionContext) {
   registerExtractCommand(context)
   registerHomeCommand(context)
   registerInstallCommand(context)
-  registerNewsCommands(context)
+  registerNewsModule(context)
   registerPackagesCommands(context)
 
   registerTerminalHandlerCommand(context)

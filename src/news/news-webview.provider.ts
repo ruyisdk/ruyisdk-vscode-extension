@@ -1,59 +1,45 @@
 // SPDX-License-Identifier: Apache-2.0
+
 /**
- * RuyiSDK VS Code Extension - News Cards View
+ * RuyiSDK VS Code Extension - News Module - Webview Provider
  *
- * - Render news items as cards in a webview panel
- * - Sort by date (newest first)
- * - Show unread indicators
- * - Click to read news details
+ * Provides the UI layer for the news experience:
+ * - Renders news cards in a webview with search/filter/refresh controls.
+ * - Opens a markdown reader panel for detailed news content.
+ * - Handles messages from the webview and coordinates with NewsService.
  */
 
 import * as vscode from 'vscode'
 
-import createNewsPanel from './NewsPanel'
-import NewsService, { NewsRow } from './NewsService'
+import { NewsService, type NewsRow } from './news.service'
 
-export default class NewsCards {
+type NewsWebviewMessage
+  = | { type: 'openSearch' }
+    | { type: 'clearSearch' }
+    | { type: 'toggleFilter' }
+    | { type: 'refresh' }
+    | { type: 'read', no?: unknown, title?: unknown }
+
+export class NewsWebviewProvider {
   private panel: vscode.WebviewPanel | undefined
-  private svc: NewsService
   private showUnreadOnly = false
   private searchQuery = ''
 
-  constructor(svc: NewsService) {
-    this.svc = svc
+  constructor(
+    private readonly context: vscode.ExtensionContext,
+    private readonly service: NewsService,
+  ) {}
+
+  registerStatusBar(): vscode.Disposable {
+    const item = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 1000)
+    item.text = '$(info) Read RuyiNews'
+    item.tooltip = 'Open Ruyi News Cards'
+    item.command = 'ruyi.news.showCards'
+    item.show()
+    return item
   }
 
-  toggleFilter() {
-    this.setFilterUnreadOnly(!this.showUnreadOnly)
-  }
-
-  /**
-   * Explicitly set filter state and refresh the view.
-   * @param flag false → show all news; true → show only unread news
-   */
-  setFilterUnreadOnly(flag: boolean) {
-    this.showUnreadOnly = flag
-    if (this.panel) {
-      this.updateContent()
-    }
-  }
-
-  /**
-   * Set search query and refresh the view.
-   * @param query search term for filtering news by title, date, or ID
-   */
-  setSearchQuery(query: string) {
-    this.searchQuery = query.trim().toLowerCase()
-    if (this.panel) {
-      this.updateContent()
-    }
-  }
-
-  getSearchQuery(): string {
-    return this.searchQuery
-  }
-
-  async showCards(context: vscode.ExtensionContext): Promise<void> {
+  async showCards(): Promise<void> {
     if (this.panel) {
       this.panel.reveal()
       return
@@ -66,7 +52,7 @@ export default class NewsCards {
       {
         enableScripts: true,
         retainContextWhenHidden: true,
-        localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'media')],
+        localResourceRoots: [vscode.Uri.joinPath(this.context.extensionUri, 'media')],
       },
     )
 
@@ -74,70 +60,103 @@ export default class NewsCards {
       this.panel = undefined
     })
 
-    // Handle messages from webview
-    this.panel.webview.onDidReceiveMessage(async (message) => {
-      switch (message.type) {
-        case 'openSearch':
-          await vscode.commands.executeCommand('ruyi.news.search')
-          break
-        case 'clearSearch':
-          await vscode.commands.executeCommand('ruyi.news.clearSearch')
-          break
-        case 'toggleFilter':
-          this.setFilterUnreadOnly(!this.showUnreadOnly)
-          await this.updateContent()
-          break
-        case 'refresh':
-          try {
-            await this.svc.list(false, true) // Force refresh
-            await this.updateContent()
-            vscode.window.showInformationMessage('News data refreshed successfully')
-          }
-          catch (error) {
-            const msg = error instanceof Error ? error.message : String(error)
-            vscode.window.showErrorMessage(`Failed to refresh news: ${msg}`)
-          }
-          break
-        case 'read':
-          try {
-            const body = await this.svc.read(message.no)
-            createNewsPanel(body, message.title || `Ruyi News #${message.no}`, context)
-            // Auto-refresh after reading
-            await this.updateContent()
-          }
-          catch (error) {
-            const msg = error instanceof Error ? error.message : String(error)
-            vscode.window.showErrorMessage(`Failed to read news: ${msg}`)
-          }
-          break
-      }
+    this.panel.webview.onDidReceiveMessage((message) => {
+      void this.handleMessage(message)
     })
 
     await this.updateContent()
   }
 
-  /**
-   * Update the cards content
-   */
-  async updateContent(): Promise<void> {
+  async promptSearch(): Promise<void> {
+    const query = await vscode.window.showInputBox({
+      prompt: 'Search news by title, date, or ID',
+      placeHolder: 'Enter search term...',
+      value: this.searchQuery,
+      ignoreFocusOut: true,
+    })
+    if (query !== undefined) {
+      this.setSearchQuery(query)
+    }
+  }
+
+  clearSearch(): void {
+    this.setSearchQuery('')
+  }
+
+  private async handleMessage(message: NewsWebviewMessage): Promise<void> {
+    switch (message.type) {
+      case 'openSearch':
+        await this.promptSearch()
+        break
+      case 'clearSearch':
+        this.clearSearch()
+        break
+      case 'toggleFilter':
+        this.toggleFilter()
+        break
+      case 'refresh':
+        await this.refreshData()
+        break
+      case 'read':
+        await this.readNews(message)
+        break
+      default:
+        break
+    }
+  }
+
+  private async refreshData(): Promise<void> {
+    try {
+      await this.service.list(false, true)
+      await this.updateContent()
+      vscode.window.showInformationMessage('News data refreshed successfully')
+    }
+    catch (error) {
+      const msg = error instanceof Error ? error.message : String(error)
+      vscode.window.showErrorMessage(`Failed to refresh news: ${msg}`)
+    }
+  }
+
+  private async readNews(message: { no?: unknown, title?: unknown }): Promise<void> {
+    if (typeof message.no !== 'number') return
+    const title = typeof message.title === 'string' ? message.title : `Ruyi News #${message.no}`
+    try {
+      const body = await this.service.read(message.no)
+      this.openReader(body, title)
+      await this.updateContent()
+    }
+    catch (error) {
+      const msg = error instanceof Error ? error.message : String(error)
+      vscode.window.showErrorMessage(`Failed to read news: ${msg}`)
+    }
+  }
+
+  private toggleFilter(): void {
+    this.showUnreadOnly = !this.showUnreadOnly
+    void this.updateContent()
+  }
+
+  private setSearchQuery(query: string): void {
+    this.searchQuery = query.trim().toLowerCase()
+    void this.updateContent()
+  }
+
+  private async updateContent(): Promise<void> {
     if (!this.panel) return
 
     try {
-      const rows = await this.svc.list(this.showUnreadOnly)
-
-      // Sort by date (newest first)
+      const rows = await this.service.list(this.showUnreadOnly)
       const sortedRows = rows.sort((a, b) => {
         const dateA = a.date ? new Date(a.date).getTime() : 0
         const dateB = b.date ? new Date(b.date).getTime() : 0
         return dateB - dateA
       })
 
-      // Apply search filter
       const filteredRows = this.searchQuery
         ? sortedRows.filter(row => this.matchesSearch(row))
         : sortedRows
 
-      this.panel.webview.html = this.getHtml(filteredRows)
+      this.panel.webview.html = this.getCardsHtml(filteredRows)
     }
     catch (error) {
       const msg = error instanceof Error ? error.message : String(error)
@@ -145,9 +164,6 @@ export default class NewsCards {
     }
   }
 
-  /**
-   * Check if a news row matches the current search query
-   */
   private matchesSearch(row: NewsRow): boolean {
     if (!this.searchQuery) return true
 
@@ -159,10 +175,7 @@ export default class NewsCards {
     return title.includes(query) || date.includes(query) || id.includes(query)
   }
 
-  /**
-   * Generate HTML for news cards
-   */
-  private getHtml(rows: NewsRow[]): string {
+  private getCardsHtml(rows: NewsRow[]): string {
     const nonce = getNonce()
     const csp = [
       `default-src 'none';`,
@@ -216,7 +229,6 @@ export default class NewsCards {
   .btn:hover {
     background-color: var(--vscode-button-hoverBackground);
   }
-  
   .cards-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -301,19 +313,15 @@ export default class NewsCards {
     document.getElementById('searchBtn').addEventListener('click', () => {
       vscode.postMessage({ type: 'openSearch' });
     });
-
     document.getElementById('clearSearchBtn').addEventListener('click', () => {
       vscode.postMessage({ type: 'clearSearch' });
     });
-
     document.getElementById('toggleFilter').addEventListener('click', () => {
       vscode.postMessage({ type: 'toggleFilter' });
     });
-    
     document.getElementById('refreshBtn').addEventListener('click', () => {
       vscode.postMessage({ type: 'refresh' });
     });
-    
     document.querySelectorAll('.card').forEach(card => {
       card.addEventListener('click', () => {
         const no = card.dataset.no;
@@ -326,9 +334,6 @@ export default class NewsCards {
 </html>`
   }
 
-  /**
-   * Create HTML for a single news card
-   */
   private createCardHtml(row: NewsRow): string {
     const isUnread = !row.read
     const cardClass = isUnread ? 'card unread' : 'card'
@@ -341,9 +346,6 @@ export default class NewsCards {
     </div>`
   }
 
-  /**
-   * Generate error HTML
-   */
   private getErrorHtml(message: string): string {
     return `<!DOCTYPE html>
 <html>
@@ -360,9 +362,6 @@ export default class NewsCards {
 </html>`
   }
 
-  /**
-   * Escape HTML special characters
-   */
   private escapeHtml(text: string): string {
     return text.replace(/[&<>"']/g, match => ({
       '&': '&amp;',
@@ -371,6 +370,58 @@ export default class NewsCards {
       '"': '&quot;',
       '\'': '&#39;',
     }[match]!))
+  }
+
+  private openReader(content: string, title: string): void {
+    const panel = vscode.window.createWebviewPanel(
+      'ruyiNewsReader',
+      title,
+      vscode.ViewColumn.One,
+      {
+        enableScripts: true,
+        retainContextWhenHidden: true,
+        localResourceRoots: [vscode.Uri.joinPath(this.context.extensionUri, 'media')],
+      },
+    )
+
+    panel.webview.html = this.getReaderHtml(panel.webview, content, title)
+  }
+
+  private getReaderHtml(webview: vscode.Webview, markdownText: string, title: string): string {
+    const nonce = getNonce()
+    const markedJs = webview.asWebviewUri(
+      vscode.Uri.joinPath(this.context.extensionUri, 'media', 'marked.umd.js'))
+
+    const csp = [
+      `default-src 'none';`,
+      `img-src ${webview.cspSource} https:;`,
+      `style-src 'unsafe-inline' ${webview.cspSource};`,
+      `script-src ${webview.cspSource} 'nonce-${nonce}';`,
+    ].join(' ')
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="${csp}">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${this.escapeHtml(title)}</title>
+<style>
+  body { font-family: var(--vscode-font-family); padding: 16px; }
+  h1, h2, h3 { color: var(--vscode-editor-foreground); }
+  pre, code { background: var(--vscode-editor-background); padding: 4px; border-radius: 4px; }
+  ul { padding-left: 20px; }
+</style>
+</head>
+<body>
+  <div id="content"></div>
+  <script nonce="${nonce}" src="${markedJs}"></script>
+  <script nonce="${nonce}">
+    const raw = ${JSON.stringify(markdownText)};
+    document.getElementById('content').innerHTML = marked.parse(raw);
+  </script>
+</body>
+</html>`
   }
 }
 
