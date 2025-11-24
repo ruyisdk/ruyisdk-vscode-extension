@@ -71,7 +71,7 @@ export class NewsService {
     }
   }
 
-  private async loadCache(): Promise<NewsCache | null> {
+  private async loadCache(allowExpired = false): Promise<NewsCache | null> {
     try {
       const cacheUri = vscode.Uri.file(this.cachePath)
 
@@ -86,7 +86,7 @@ export class NewsService {
       const cache: NewsCache = JSON.parse(cacheData.toString())
 
       const now = Date.now()
-      if (now - cache.timestamp > this.CACHE_EXPIRY_MS) {
+      if (!allowExpired && now - cache.timestamp > this.CACHE_EXPIRY_MS) {
         return null
       }
 
@@ -101,7 +101,7 @@ export class NewsService {
   private async saveCache(data: NewsRow[]): Promise<void> {
     try {
       const cacheUri = vscode.Uri.file(this.cachePath)
-      const cacheDir = vscode.Uri.joinPath(cacheUri, '..')
+      const cacheDir = vscode.Uri.file(path.dirname(this.cachePath))
 
       try {
         await vscode.workspace.fs.stat(cacheDir)
@@ -152,7 +152,7 @@ export class NewsService {
 
     const newData = parseNewsList(result.stdout)
 
-    const cache = await this.loadCache()
+    const cache = await this.loadCache(true)
     const existingData = cache?.data || []
 
     const mergedData = newData.map((newItem) => {
@@ -164,13 +164,14 @@ export class NewsService {
       }
     })
 
+    await this.ensureSummaries(mergedData)
     await this.saveCache(mergedData)
 
     return unread ? mergedData.filter(item => !item.read) : mergedData
   }
 
   private async fetchFromCache(unread: boolean): Promise<NewsRow[]> {
-    const cache = await this.loadCache()
+    const cache = await this.loadCache(true)
 
     if (!cache || cache.data.length === 0) {
       if (await this.isNetworkAvailable()) {
@@ -178,6 +179,9 @@ export class NewsService {
       }
       return []
     }
+
+    await this.ensureSummaries(cache.data)
+    await this.saveCache(cache.data)
 
     return unread ? cache.data.filter(item => !item.read) : cache.data
   }
@@ -190,7 +194,7 @@ export class NewsService {
         logger.log('News service initialized')
       }
       else {
-        const cache = await this.loadCache()
+        const cache = await this.loadCache(true)
         if (cache) {
           logger.log(`News service initialized from cache with ${cache.data.length} items`)
         }
@@ -214,7 +218,7 @@ export class NewsService {
 
   private async markAsRead(no: number, bodyMarkdown?: string): Promise<void> {
     try {
-      const cache = await this.loadCache()
+      const cache = await this.loadCache(true)
       if (!cache) return
 
       const newsItem = cache.data.find(item => item.no === no)
@@ -231,6 +235,35 @@ export class NewsService {
     }
     catch (error) {
       logger.warn('Failed to mark news as read:', error)
+    }
+  }
+
+  private async ensureSummaries(rows: NewsRow[]): Promise<void> {
+    for (const row of rows) {
+      if (row.summary && row.summary.trim()) {
+        continue
+      }
+
+      const summary = await this.fetchSummary(row.no)
+      if (summary) {
+        row.summary = summary
+      }
+    }
+  }
+
+  private async fetchSummary(no: number): Promise<string | undefined> {
+    try {
+      const result = await ruyi.newsRead(no)
+      if (result.code !== 0) {
+        logger.warn(`ruyi news read failed for ${no}:`, result.stderr)
+        return undefined
+      }
+
+      return extractNewsSummary(result.stdout)
+    }
+    catch (error) {
+      logger.warn(`Failed to fetch summary for news ${no}:`, error)
+      return undefined
     }
   }
 }
