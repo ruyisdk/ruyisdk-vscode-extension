@@ -125,6 +125,10 @@ export class NewsService {
   }
 
   async list(unread = false, forceRefresh = false): Promise<NewsRow[]> {
+    if (forceRefresh) {
+      await this.refreshNewsRepo()
+    }
+
     const shouldTryNetwork = forceRefresh || await this.isNetworkAvailable()
 
     if (shouldTryNetwork) {
@@ -231,6 +235,13 @@ export class NewsService {
     }
     catch (error) {
       logger.warn('Failed to mark news as read:', error)
+    }
+  }
+
+  private async refreshNewsRepo(): Promise<void> {
+    const result = await ruyi.update()
+    if (result.code !== 0) {
+      throw new Error(result.stderr || 'ruyi update failed')
     }
   }
 }
