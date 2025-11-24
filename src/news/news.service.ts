@@ -144,18 +144,19 @@ export class NewsService {
   }
 
   private async fetchFromNetwork(unread: boolean): Promise<NewsRow[]> {
-    const result = await ruyi.newsList({ newOnly: unread })
+    // Always fetch the full list to maintain complete cache
+    const result = await ruyi.newsList({ newOnly: false })
 
     if (result.code !== 0) {
       throw new Error(result.stderr || 'ruyi news list failed')
     }
 
-    const newData = parseNewsList(result.stdout)
+    const fullData = parseNewsList(result.stdout)
 
     const cache = await this.loadCache()
     const existingData = cache?.data || []
 
-    const mergedData = newData.map((newItem) => {
+    const mergedData = fullData.map((newItem) => {
       const existingItem = existingData.find(item => item.id === newItem.id)
       return {
         ...newItem,
@@ -166,7 +167,9 @@ export class NewsService {
 
     await this.saveCache(mergedData)
 
-    return unread ? mergedData.filter(item => !item.read) : mergedData
+    // If unread is requested, filter the merged data
+    const filteredData = unread ? mergedData.filter(item => !item.read) : mergedData
+    return filteredData
   }
 
   private async fetchFromCache(unread: boolean): Promise<NewsRow[]> {
