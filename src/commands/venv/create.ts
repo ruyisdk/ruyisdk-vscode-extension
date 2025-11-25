@@ -89,7 +89,7 @@ export default function registerCreateNewVenvCommand(
         topush = toolchainPick.rawName
       }
       else if (toolchainPick.detail && toolchainPick.description && toolchainPick.detail.includes('Legacy') && toolchainPick.description.includes('v')) {
-        topush = `"${toolchainPick.rawName}(==${version})"`
+        topush = `${toolchainPick.rawName}(==${version})`
       }
       toolchains.push(topush)
       // Remove the selected toolchain from the list to avoid duplicate selection

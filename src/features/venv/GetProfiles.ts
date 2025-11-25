@@ -3,8 +3,8 @@
  * RuyiSDK VS Code Extension - Venv Module - Venv Creating Utility - Profiles Fetching Helper Functions
  *
  * Provides helpers used by the commands layer:
- * - readStdoutP(stdout): convert ruyi list output to a dictionary, used by getProfiles()
- * - getProfiles(): Get all Ruyi profiles and return as a dictionary (deduplicated)
+ * - readStdoutP(stdout): convert ruyi list output to a dictionary and sort it, used by getProfiles()
+ * - getProfiles(): Get all Ruyi profiles and return as a dictionary (deduplicated and sorted)
  */
 
 import ruyi from '../../ruyi'
@@ -19,7 +19,12 @@ export function readStdoutP(stdout: string): Record<string, string> {
     const value = key.replace(/\([^()]*\)/g, '').trim()
     dict[key] = value
   }
-  return dict
+  // Sort the dictionary by keys
+  const sortedDict: Record<string, string> = {}
+  Object.keys(dict).sort().forEach((key) => {
+    sortedDict[key] = dict[key]
+  })
+  return sortedDict
 }
 
 export async function getProfiles(): Promise<{ [key: string]: string }> {
