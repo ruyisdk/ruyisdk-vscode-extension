@@ -230,9 +230,10 @@ export class NewsWebviewProvider {
     background-color: var(--vscode-button-hoverBackground);
   }
   .cards-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 16px;
+    align-items: flex-start;
   }
   .card {
     border: 1px solid var(--vscode-panel-border);
@@ -242,6 +243,8 @@ export class NewsWebviewProvider {
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
+    flex: 1 1 300px;
+    box-sizing: border-box;
   }
   .card:hover {
     border-color: var(--vscode-focusBorder);
