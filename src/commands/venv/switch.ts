@@ -23,7 +23,7 @@ export default function registerSwitchFromVenvsCommand(
     }
     // Manage the Ruyi terminal for venv activation/deactivation
     const venvPath = `./${venv.venvPath}`
-    manageRuyiTerminal(venvPath === currentVenv ? null : venvPath, venvPath === currentVenv ? null : venv.name)
+    manageRuyiTerminal(venvPath === currentVenv ? null : venvPath)
 
     // Refresh the venv tree view to reflect the current active venv
     await vscode.commands.executeCommand('ruyi.venv.refresh')
