@@ -7,7 +7,11 @@ import * as vscode from 'vscode'
 
 import ruyi from '../ruyi'
 
+<<<<<<< HEAD
 import { VersionItem } from './package-tree.provider'
+=======
+import { PackagesTreeProvider, VersionItem } from './package-tree.provider'
+>>>>>>> ee8f4ab (refactor: Restructure package module into separate files for improved maintainability)
 
 /**
  * Uninstall a package by name and version
@@ -67,7 +71,11 @@ export async function uninstallPackage(name: string, version?: string): Promise<
   return success
 }
 
+<<<<<<< HEAD
 export default function registerUninstallCommand(ctx: vscode.ExtensionContext) {
+=======
+export function registerUninstallCommand(ctx: vscode.ExtensionContext, packagesTreeProvider: PackagesTreeProvider) {
+>>>>>>> ee8f4ab (refactor: Restructure package module into separate files for improved maintainability)
   const uninstallDisposable = vscode.commands.registerCommand(
     'ruyi.packages.uninstall',
     async (item: VersionItem) => {
@@ -79,7 +87,11 @@ export default function registerUninstallCommand(ctx: vscode.ExtensionContext) {
       const success = await uninstallPackage(item.pkg.name, item.versionInfo.version)
 
       if (success) {
+<<<<<<< HEAD
         await vscode.commands.executeCommand('ruyi.packages.refresh')
+=======
+        await packagesTreeProvider.refresh()
+>>>>>>> ee8f4ab (refactor: Restructure package module into separate files for improved maintainability)
       }
     },
   )

@@ -143,7 +143,7 @@ export async function extractPackage(uri?: vscode.Uri): Promise<void> {
   }
 }
 
-export default function registerExtractCommand(ctx: vscode.ExtensionContext) {
+export function registerExtractCommand(ctx: vscode.ExtensionContext) {
   const disposable = vscode.commands.registerCommand(
     'ruyi.extract',
     extractPackage,

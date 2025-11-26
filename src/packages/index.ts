@@ -2,7 +2,7 @@
 
 import * as vscode from 'vscode'
 
-import registerExtractCommand, { extractPackage } from './extract.command'
+import { registerExtractCommand, extractPackage } from './extract.command'
 import registerInstallCommand, { installPackage } from './install.command'
 import { PackagesTreeProvider } from './package-tree.provider'
 import { PackageHelper } from './package.helper'

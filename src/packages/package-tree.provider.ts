@@ -28,6 +28,7 @@ export class PackagesTreeProvider implements
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event
 
   constructor(private packageHelper: PackageHelper) { }
+<<<<<<< HEAD
 
   public registerRefreshCommand(ctx: vscode.ExtensionContext) {
     const refreshDisposable = vscode.commands.registerCommand(
@@ -48,6 +49,8 @@ export class PackagesTreeProvider implements
 
     ctx.subscriptions.push(refreshDisposable)
   }
+=======
+>>>>>>> ee8f4ab (refactor: Restructure package module into separate files for improved maintainability)
 
   /**
    * Refresh the tree view and force data refresh.
