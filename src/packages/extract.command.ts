@@ -16,16 +16,30 @@ import ruyi from '../ruyi'
 import type { RuyiListOutput } from '../ruyi/types'
 
 /**
- * Parse the NDJSON output of `ruyi --porcelain list` to get source packages.
- * Each line is a separate JSON object.
+ * Parse the NDJSON output of `ruyi --porcelain list` to get source packages with versions.
  */
+interface SourcePackage {
+  label: string
+  value: string
+}
 
-function parseSourcePackages(output: string): string[] {
-  const packages = parseNDJSON<RuyiListOutput>(output)
+function parseSourcePackages(output: string): SourcePackage[] {
+  const items = parseNDJSON<RuyiListOutput>(output)
     .filter(item => item.ty === 'pkglistoutput-v1' && item.category === 'source')
-    .map(item => `${item.category}/${item.name}`)
 
-  return [...new Set(packages)].sort()
+  const packages: SourcePackage[] = []
+
+  for (const item of items) {
+    for (const ver of item.vers) {
+      if (ver.is_downloaded) {
+        const label = `${item.name} (${ver.semver})`
+        const value = `${item.category}/${item.name}@${ver.semver}`
+        packages.push({ label, value })
+      }
+    }
+  }
+
+  return packages.sort((a, b) => a.label.localeCompare(b.label))
 }
 
 async function getTargetDirectory(uri?: vscode.Uri): Promise<string> {
@@ -44,7 +58,7 @@ async function getTargetDirectory(uri?: vscode.Uri): Promise<string> {
   return workspaceFolder.uri.fsPath
 }
 
-async function fetchSourcePackages(): Promise<string[]> {
+async function fetchSourcePackages(): Promise<SourcePackage[]> {
   const listResult = await ruyi.list({ nameContains: '' })
 
   if (listResult.code !== 0) {
@@ -54,25 +68,25 @@ async function fetchSourcePackages(): Promise<string[]> {
   const sourcePackages = parseSourcePackages(listResult.stdout)
 
   if (sourcePackages.length === 0) {
-    throw new Error('No available source packages found')
+    throw new Error('No downloaded source packages found. Please download some first.')
   }
 
   return sourcePackages
 }
 
 async function extractSelectedPackage(
-  packageName: string,
-  targetDir: string,
+  packageValue: string,
+  destDir: string,
   progress: vscode.Progress<{ message?: string, increment?: number }>,
 ): Promise<void> {
   const [onProgress, getLastPercent] = createProgressTracker(progress)
 
   const extractResult = await ruyi
-    .cwd(targetDir)
-    .timeout(300_000) // Increase timeout for large downloads
+    .timeout(300_000)
     .onProgress(onProgress)
-    .extract(packageName, {
+    .extract(packageValue, {
       extractWithoutSubdir: true,
+      destDir,
     })
 
   if (extractResult.code !== 0) {
@@ -94,7 +108,7 @@ async function extractSelectedPackage(
  */
 export async function extractPackage(uri?: vscode.Uri): Promise<void> {
   try {
-    const targetDir = await getTargetDirectory(uri)
+    let targetDir = await getTargetDirectory(uri)
 
     const sourcePackages = await vscode.window.withProgress(
       {
@@ -105,26 +119,49 @@ export async function extractPackage(uri?: vscode.Uri): Promise<void> {
       async () => fetchSourcePackages(),
     )
 
-    const selectedPackage = await vscode.window.showQuickPick(sourcePackages, {
-      placeHolder: 'Select a package to extract',
-      title: 'Extract RuyiSDK Package',
-    })
+    const selectedLabel = await vscode.window.showQuickPick(
+      sourcePackages.map(p => p.label),
+      {
+        placeHolder: 'Select a package version to extract',
+        title: 'Extract RuyiSDK Package',
+      },
+    )
+
+    if (!selectedLabel) {
+      return
+    }
+
+    const selectedPackage = sourcePackages.find(p => p.label === selectedLabel)
 
     if (!selectedPackage) {
-      return
+      throw new Error('Selected package not found')
+    }
+
+    // Add support for custom destination directory
+    const folder = await vscode.window.showOpenDialog({
+      canSelectFolders: true,
+      canSelectFiles: false,
+      canSelectMany: false,
+      defaultUri: vscode.Uri.file(targetDir),
+      openLabel: 'Select Destination Folder',
+      title: 'Choose where to extract the package',
+    })
+
+    if (folder && folder[0]) {
+      targetDir = folder[0].fsPath
     }
 
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: `Extracting ${selectedPackage}...`,
+        title: `Extracting ${selectedLabel}...`,
         cancellable: false,
       },
-      async progress => extractSelectedPackage(selectedPackage, targetDir, progress),
+      async progress => extractSelectedPackage(selectedPackage.value, targetDir, progress),
     )
 
     await vscode.window.showInformationMessage(
-      `Successfully extracted ${selectedPackage} to ${targetDir}`,
+      `Successfully extracted ${selectedLabel} to ${targetDir}`,
     )
 
     await vscode.commands.executeCommand('ruyi.packages.refresh')
@@ -132,7 +169,7 @@ export async function extractPackage(uri?: vscode.Uri): Promise<void> {
   catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
 
-    if (errorMessage.includes('No available source packages found')) {
+    if (errorMessage.includes('No downloaded source packages found')) {
       await vscode.window.showInformationMessage(errorMessage)
     }
     else {
