@@ -108,10 +108,14 @@ export class NewsWebviewProvider {
   private async refreshData(): Promise<void> {
     try {
       await this.service.list(false, true)
+      // Panel may have been closed during async operation
+      if (!this.panel) return
+
       await this.updateContent()
       vscode.window.showInformationMessage('News data refreshed successfully')
     }
     catch (error) {
+      if (!this.panel) return
       const msg = error instanceof Error ? error.message : String(error)
       vscode.window.showErrorMessage(`Failed to refresh news: ${msg}`)
     }
@@ -146,6 +150,9 @@ export class NewsWebviewProvider {
 
     try {
       const rows = await this.service.list(this.showUnreadOnly)
+      // Re-check after async operation - panel may have been closed
+      if (!this.panel) return
+
       const sortedRows = rows.sort((a, b) => {
         const dateA = a.date ? new Date(a.date).getTime() : 0
         const dateB = b.date ? new Date(b.date).getTime() : 0
@@ -156,9 +163,10 @@ export class NewsWebviewProvider {
         ? sortedRows.filter(row => this.matchesSearch(row))
         : sortedRows
 
-      this.panel.webview.html = this.getCardsHtml(filteredRows)
+      this.panel.webview.html = this.getCardsHtml(this.panel.webview, filteredRows)
     }
     catch (error) {
+      if (!this.panel) return
       const msg = error instanceof Error ? error.message : String(error)
       this.panel.webview.html = this.getErrorHtml(msg)
     }
@@ -175,11 +183,11 @@ export class NewsWebviewProvider {
     return title.includes(query) || date.includes(query) || id.includes(query)
   }
 
-  private getCardsHtml(rows: NewsRow[]): string {
+  private getCardsHtml(webview: vscode.Webview, rows: NewsRow[]): string {
     const nonce = getNonce()
     const csp = [
       `default-src 'none';`,
-      `style-src 'unsafe-inline' ${this.panel!.webview.cspSource};`,
+      `style-src 'unsafe-inline' ${webview.cspSource};`,
       `script-src 'nonce-${nonce}';`,
     ].join(' ')
 
