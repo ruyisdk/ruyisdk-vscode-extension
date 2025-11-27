@@ -11,8 +11,8 @@ import type { SpawnOptions } from 'child_process'
 import * as path from 'path'
 import * as vscode from 'vscode'
 
+import { configuration } from '../common/configuration'
 import { logger } from '../common/logger'
-import { configuration } from '../features/configuration/ConfigurationService'
 
 // ============================================================================
 // Types
