@@ -92,7 +92,7 @@ async function extractSelectedPackage(
  * Extract RuyiSDK Package command handler
  * @param uri - The URI of the folder where the user right-clicked
  */
-async function extractPackage(uri?: vscode.Uri): Promise<void> {
+export async function extractPackage(uri?: vscode.Uri): Promise<void> {
   try {
     const targetDir = await getTargetDirectory(uri)
 
@@ -126,6 +126,8 @@ async function extractPackage(uri?: vscode.Uri): Promise<void> {
     await vscode.window.showInformationMessage(
       `Successfully extracted ${selectedPackage} to ${targetDir}`,
     )
+
+    await vscode.commands.executeCommand('ruyi.packages.refresh')
   }
   catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
