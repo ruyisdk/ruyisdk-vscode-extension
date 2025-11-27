@@ -10,6 +10,7 @@ import * as vscode from 'vscode'
 
 import { ConfigKey, CONFIG_KEYS } from './constants'
 import { fullKey } from './helpers'
+import { logger } from './logger'
 
 export type ConfigChangeHandler = (event: vscode.ConfigurationChangeEvent) => void
 
@@ -65,15 +66,8 @@ class ConfigurationService implements vscode.Disposable {
 
   private handleRuyiPathChange(event: vscode.ConfigurationChangeEvent): void {
     if (event.affectsConfiguration(fullKey(CONFIG_KEYS.RUYI_PATH))) {
-      vscode.window.showInformationMessage(
-        'Ruyi path has been changed. Please reload the window for it to take effect.',
-        'Reload Now',
-        'Later',
-      ).then((selection) => {
-        if (selection === 'Reload Now') {
-          vscode.commands.executeCommand('workbench.action.reloadWindow')
-        }
-      })
+      // Just log the change, reload prompt is handled by the command that made the change
+      logger.info('Ruyi path configuration changed')
     }
   }
 
