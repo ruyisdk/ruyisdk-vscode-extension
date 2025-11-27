@@ -26,6 +26,8 @@
 import * as vscode from 'vscode'
 
 import registerDetectCommand from './commands/detect'
+import registerInstallCommand from './commands/installRuyi'
+import registerManageRuyiPathCommand from './commands/manageRuyiPath'
 import registerCleanADeactivatedVenvCommand from './commands/venv/clean'
 import registerCreateNewVenvCommand from './commands/venv/create'
 import registerDetectAllVenvsCommand from './commands/venv/detect'
@@ -46,6 +48,8 @@ export function activate(context: vscode.ExtensionContext) {
   registerDetectCommand(context)
   registerPackagesModule(context)
   registerHomeModule(context)
+  registerInstallCommand(context)
+  registerManageRuyiPathCommand(context)
   registerNewsModule(context)
   registerTelemetryModule(context)
 

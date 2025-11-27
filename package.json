@@ -125,6 +125,11 @@
         "command": "ruyi.extract",
         "title": "Extract RuyiSDK Package",
         "category": "Ruyi"
+      },
+      {
+        "command": "ruyi.manageRuyiPath",
+        "title": "Manage RuyiSDK Path",
+        "category": "Ruyi"
       }
     ],
     "menus": {
