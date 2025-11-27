@@ -8,10 +8,10 @@ import * as vscode from 'vscode'
 
 import * as semver from 'semver'
 
+import { configuration } from '../common/configuration'
 import { logger } from '../common/logger.js'
-import { configuration } from '../features/configuration/ConfigurationService'
-import { promptForTelemetryConfiguration } from '../features/telemetry/TelemetryService'
 import ruyi, { resolveRuyi } from '../ruyi'
+import { promptForTelemetryConfiguration } from '../telemetry'
 
 interface GitHubRelease {
   tag_name: string
