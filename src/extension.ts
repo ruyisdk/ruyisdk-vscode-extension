@@ -9,10 +9,10 @@
  *   • ruyi.news.search       (./commands/news)
  *   • ruyi.news.clearSearch  (./commands/news)
  *   • ruyi.news.showCards    (./commands/news)
- *   • ruyi.packages.install    (./commands/packages)
- *   • ruyi.packages.uninstall  (./commands/packages)
- *   • ruyi.packages.refresh    (./commands/packages)
- *   • ruyi.extract      (./commands/extract)
+ *   • ruyi.packages.install    (./packages/install.command)
+ *   • ruyi.packages.uninstall  (./packages/uninstall.command)
+ *   • ruyi.packages.refresh    (./packages/refresh.command)
+ *   • ruyi.extract      (./packages/extract.command)
  *   • ruyi.venv.refresh  (./commands/venv/detect)
  *   • ruyi.venv.create  (./commands/venv/create)
  *   • ruyi.venv.clean   (./commands/venv/clean)
@@ -26,10 +26,7 @@
 import * as vscode from 'vscode'
 
 import registerDetectCommand from './commands/detect'
-import registerExtractCommand from './commands/extract'
 import registerHomeCommand from './commands/home'
-import registerInstallCommand from './commands/installRuyi'
-import registerPackagesCommands from './commands/packages'
 import registerCleanADeactivatedVenvCommand from './commands/venv/clean'
 import registerCreateNewVenvCommand from './commands/venv/create'
 import registerDetectAllVenvsCommand from './commands/venv/detect'
@@ -38,6 +35,7 @@ import registerSwitchFromVenvsCommand from './commands/venv/switch'
 import { configuration } from './common/configuration'
 import { logger } from './common/logger'
 import { registerNewsModule } from './news'
+import { registerPackagesModule } from './packages'
 import { registerTelemetryModule } from './telemetry'
 
 export function activate(context: vscode.ExtensionContext) {
@@ -46,12 +44,10 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Register commands
   registerDetectCommand(context)
-  registerExtractCommand(context)
+  registerPackagesModule(context)
   registerHomeCommand(context)
-  registerInstallCommand(context)
   registerNewsModule(context)
   registerTelemetryModule(context)
-  registerPackagesCommands(context)
 
   registerTerminalHandlerCommand(context)
   registerDetectAllVenvsCommand(context)

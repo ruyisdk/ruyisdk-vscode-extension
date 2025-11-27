@@ -15,9 +15,9 @@
 
 import * as vscode from 'vscode'
 
-import { logger } from '../../common/logger.js'
+import { logger } from '../common/logger.js'
 
-import { RuyiPackage, RuyiPackageVersion, PackageService } from './PackageService'
+import { RuyiPackage, RuyiPackageVersion, PackageService } from './package.service'
 
 // Define tree node types
 type TreeElement = PackageCategoryItem | PackageItem | VersionItem

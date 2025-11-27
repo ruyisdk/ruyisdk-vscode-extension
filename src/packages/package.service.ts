@@ -11,10 +11,10 @@
  * - Caches results to minimize CLI calls
  */
 
-import { parseNDJSON } from '../../common/helpers'
-import { logger } from '../../common/logger'
-import ruyi, { PACKAGE_CATEGORIES, type PackageCategory } from '../../ruyi'
-import type { RuyiListOutput } from '../../ruyi/types'
+import { parseNDJSON } from '../common/helpers'
+import { logger } from '../common/logger'
+import ruyi, { PACKAGE_CATEGORIES, type PackageCategory } from '../ruyi'
+import type { RuyiListOutput } from '../ruyi/types'
 
 export interface RuyiPackageVersion {
   version: string
