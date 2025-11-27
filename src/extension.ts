@@ -35,9 +35,10 @@ import registerCreateNewVenvCommand from './commands/venv/create'
 import registerDetectAllVenvsCommand from './commands/venv/detect'
 import registerTerminalHandlerCommand from './commands/venv/manageCurrentVenv'
 import registerSwitchFromVenvsCommand from './commands/venv/switch'
+import { configuration } from './common/configuration'
 import { logger } from './common/logger'
-import { configuration } from './features/configuration/ConfigurationService'
 import { registerNewsModule } from './news'
+import { registerTelemetryModule } from './telemetry'
 
 export function activate(context: vscode.ExtensionContext) {
   // Register configuration service
@@ -49,6 +50,7 @@ export function activate(context: vscode.ExtensionContext) {
   registerHomeCommand(context)
   registerInstallCommand(context)
   registerNewsModule(context)
+  registerTelemetryModule(context)
   registerPackagesCommands(context)
 
   registerTerminalHandlerCommand(context)
