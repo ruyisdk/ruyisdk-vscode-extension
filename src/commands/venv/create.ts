@@ -16,8 +16,8 @@ import { createProgressTracker, getWorkspaceFolderPath } from '../../common/help
 import { getEmulators } from '../../features/venv/GetEmulators'
 import { getProfiles } from '../../features/venv/GetProfiles'
 import { getToolchains } from '../../features/venv/GetToolchains'
+import { installPackage } from '../../packages/install.command'
 import ruyi from '../../ruyi'
-import { installPackage } from '../packages'
 
 export default function registerCreateNewVenvCommand(
   context: vscode.ExtensionContext) {

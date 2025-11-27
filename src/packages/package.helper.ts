@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
- * PackageService
+ * PackageHelper
  *
  * Provides package listing, parsing, and installation status tracking.
  *
@@ -11,10 +11,10 @@
  * - Caches results to minimize CLI calls
  */
 
-import { parseNDJSON } from '../../common/helpers'
-import { logger } from '../../common/logger'
-import ruyi, { PACKAGE_CATEGORIES, type PackageCategory } from '../../ruyi'
-import type { RuyiListOutput } from '../../ruyi/types'
+import { parseNDJSON } from '../common/helpers'
+import { logger } from '../common/logger'
+import ruyi, { PACKAGE_CATEGORIES, type PackageCategory } from '../ruyi'
+import type { RuyiListOutput } from '../ruyi/types'
 
 export interface RuyiPackageVersion {
   version: string
@@ -32,7 +32,7 @@ export interface RuyiPackage {
   versions: RuyiPackageVersion[]
 }
 
-export class PackageService {
+export class PackageHelper {
   private packages: RuyiPackage[] = []
 
   /**

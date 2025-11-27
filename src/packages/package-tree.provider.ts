@@ -15,9 +15,9 @@
 
 import * as vscode from 'vscode'
 
-import { logger } from '../../common/logger.js'
+import { logger } from '../common/logger.js'
 
-import { RuyiPackage, RuyiPackageVersion, PackageService } from './PackageService'
+import { RuyiPackage, RuyiPackageVersion, PackageHelper } from './package.helper'
 
 // Define tree node types
 type TreeElement = PackageCategoryItem | PackageItem | VersionItem
@@ -27,14 +27,34 @@ export class PackagesTreeProvider implements
   private _onDidChangeTreeData = new vscode.EventEmitter<void>()
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event
 
-  constructor(private packageService: PackageService) { }
+  constructor(private packageHelper: PackageHelper) { }
+
+  public registerRefreshCommand(ctx: vscode.ExtensionContext) {
+    const refreshDisposable = vscode.commands.registerCommand(
+      'ruyi.packages.refresh',
+      async () => {
+        await vscode.window.withProgress(
+          {
+            location: vscode.ProgressLocation.Notification,
+            title: 'Refreshing package list...',
+            cancellable: false,
+          },
+          async () => {
+            await this.refresh()
+          },
+        )
+      },
+    )
+
+    ctx.subscriptions.push(refreshDisposable)
+  }
 
   /**
    * Refresh the tree view and force data refresh.
    */
   async refresh(): Promise<void> {
     try {
-      await this.packageService.getPackages(true)
+      await this.packageHelper.getPackages(true)
     }
     catch (err) {
       logger.error('Failed to refresh packages:', err)
@@ -51,7 +71,7 @@ export class PackagesTreeProvider implements
   async getChildren(element?: TreeElement): Promise<TreeElement[]> {
     if (!element) {
       // Root node: show categories
-      const packages = await this.packageService.getPackages()
+      const packages = await this.packageHelper.getPackages()
       if (packages.length === 0) {
         return []
       }
@@ -62,7 +82,7 @@ export class PackagesTreeProvider implements
 
     if (element instanceof PackageCategoryItem) {
       // Category node: display the packages under this category
-      const packages = await this.packageService.getPackages()
+      const packages = await this.packageHelper.getPackages()
       return packages
         .filter(p => p.category === element.category)
         .sort((a, b) => a.name.localeCompare(b.name))
