@@ -3,7 +3,7 @@ import * as vscode from 'vscode'
 
 let panel: vscode.WebviewPanel | undefined
 
-export default function showHomePanel(ctx: vscode.ExtensionContext) {
+export function showHomePanel(ctx: vscode.ExtensionContext) {
   if (panel) {
     panel.reveal(vscode.ViewColumn.One)
     return
@@ -17,7 +17,7 @@ export default function showHomePanel(ctx: vscode.ExtensionContext) {
     panel = undefined
   }, null, ctx.subscriptions)
   panel.webview.onDidReceiveMessage(handleMessage, undefined, ctx.subscriptions)
-  panel.webview.html = html
+  panel.webview.html = getHtml()
 }
 
 async function handleMessage(msg: { type: string }) {
@@ -29,63 +29,64 @@ async function handleMessage(msg: { type: string }) {
   }
 }
 
-const html = `<!DOCTYPE html>
+function getHtml(): string {
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body {
+    html, body {
       margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      min-height: 100vh;
+    }
+    body {
       padding: 48px 32px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: linear-gradient(180deg, rgba(22,22,22,0.95), rgba(0,0,0,0.9));
-      color: #f5f5f5;
+      box-sizing: border-box;
+      font-family: var(--vscode-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+      background-color: var(--vscode-editor-background);
+      color: var(--vscode-editor-foreground);
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 32px;
     }
     h1 { margin: 0; font-size: 40px; font-weight: 600; }
-    .subtitle { margin: 8px 0 0; font-size: 18px; color: #c5c5c5; }
+    .subtitle { margin: 8px 0 0; font-size: 18px; color: var(--vscode-descriptionForeground); }
     .cards { display: flex; gap: 24px; flex-wrap: wrap; max-width: 960px; }
     .card {
       flex: 1 1 320px;
       min-height: 200px;
       padding: 32px;
-      border-radius: 20px;
-      background: rgba(40, 40, 40, 0.75);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 18px 38px rgba(0, 0, 0, 0.4);
+      border-radius: 12px;
+      background: var(--vscode-sideBar-background);
+      border: 1px solid var(--vscode-panel-border, var(--vscode-widget-border));
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      backdrop-filter: blur(12px);
     }
-    .card h2 { margin: 0 0 12px; font-size: 28px; }
-    .card p { margin: 0 0 28px; color: #c5c5c5; font-size: 15px; line-height: 1.6; }
+    .card h2 { margin: 0 0 12px; font-size: 24px; color: var(--vscode-editor-foreground); }
+    .card p { margin: 0 0 28px; color: var(--vscode-descriptionForeground); font-size: 14px; line-height: 1.6; }
     button {
       padding: 10px 26px;
-      font-size: 15px;
-      color: #cfe0ff;
-      background: transparent;
-      border-radius: 999px;
-      border: 1px solid #337dff;
+      font-size: 14px;
+      color: var(--vscode-button-foreground);
+      background: var(--vscode-button-background);
+      border-radius: 4px;
+      border: none;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: background 0.2s;
     }
     button:hover {
-      background: rgba(51, 125, 255, 0.18);
-      box-shadow: 0 0 0 2px rgba(51, 125, 255, 0.25);
+      background: var(--vscode-button-hoverBackground);
     }
-    .notice {
-      margin-top: 16px;
-      padding: 16px 24px;
-      border-radius: 16px;
-      background: rgba(80, 80, 80, 0.28);
-      border: 1px solid rgba(255, 255, 255, 0.04);
-      color: #c5c5c5;
-      font-size: 14px;
+    button:focus {
+      outline: 1px solid var(--vscode-focusBorder);
+      outline-offset: 2px;
     }
   </style>
 </head>
@@ -110,7 +111,7 @@ const html = `<!DOCTYPE html>
       <button onclick="vscode.postMessage({type:'openPackages'})">Browse Packages</button>
     </article>
   </section>
-  <div class="notice">This version currently provides the News feature only. Packages will be available in future updates.</div>
   <script>const vscode = acquireVsCodeApi();</script>
 </body>
 </html>`
+}

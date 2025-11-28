@@ -26,7 +26,6 @@
 import * as vscode from 'vscode'
 
 import registerDetectCommand from './commands/detect'
-import registerHomeCommand from './commands/home'
 import registerCleanADeactivatedVenvCommand from './commands/venv/clean'
 import registerCreateNewVenvCommand from './commands/venv/create'
 import registerDetectAllVenvsCommand from './commands/venv/detect'
@@ -34,6 +33,7 @@ import registerTerminalHandlerCommand from './commands/venv/manageCurrentVenv'
 import registerSwitchFromVenvsCommand from './commands/venv/switch'
 import { configuration } from './common/configuration'
 import { logger } from './common/logger'
+import registerHomeModule from './home'
 import { registerNewsModule } from './news'
 import { registerPackagesModule } from './packages'
 import { registerTelemetryModule } from './telemetry'
@@ -45,7 +45,7 @@ export function activate(context: vscode.ExtensionContext) {
   // Register commands
   registerDetectCommand(context)
   registerPackagesModule(context)
-  registerHomeCommand(context)
+  registerHomeModule(context)
   registerNewsModule(context)
   registerTelemetryModule(context)
 
