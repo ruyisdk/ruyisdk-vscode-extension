@@ -50,7 +50,8 @@ class ConfigurationService implements vscode.Disposable {
   }
 
   public get telemetryEnabled(): boolean | undefined {
-    return this.get<boolean | undefined>(CONFIG_KEYS.TELEMETRY, undefined)
+    const inspect = this.config.inspect<boolean>(CONFIG_KEYS.TELEMETRY)
+    return inspect?.workspaceFolderValue ?? inspect?.workspaceValue ?? inspect?.globalValue
   }
 
   public async setTelemetry(enabled: boolean): Promise<void> {
