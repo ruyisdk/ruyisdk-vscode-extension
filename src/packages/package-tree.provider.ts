@@ -1,18 +1,4 @@
 // SPDX-License-Identifier: Apache-2.0
-/**
- * PackagesTreeProvider
- *
- * Displays Ruyi packages in a tree view with the following hierarchy:
- * - Category (toolchain, source, emulator, etc.)
- *   - Package (e.g., llvm-plct)
- *     - Version (e.g., 17.0.6-ruyi.20240511)
- *
- * Each version item shows:
- * - Installation status (installed/available)
- * - Version tags (latest, prerelease, no binary)
- * - Context menu for install/uninstall actions
- */
-
 import * as vscode from 'vscode'
 
 import { logger } from '../common/logger.js'

@@ -1,8 +1,4 @@
 // SPDX-License-Identifier: Apache-2.0
-/**
- * Install Command: install packages with progress feedback
- */
-
 import * as vscode from 'vscode'
 
 import { createProgressTracker } from '../common/helpers'
@@ -70,7 +66,7 @@ export async function installPackage(name: string, version?: string): Promise<bo
   return success
 }
 
-export default function registerPackageInstallCommand(ctx: vscode.ExtensionContext) {
+export default function registerInstallCommand(ctx: vscode.ExtensionContext) {
   const installDisposable = vscode.commands.registerCommand(
     'ruyi.packages.install',
     async (item: VersionItem) => {
