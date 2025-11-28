@@ -2,12 +2,12 @@
 
 import * as vscode from 'vscode'
 
-import { registerTelemetryCommands } from './telemetry.command'
+import registerTelemetryCommands from './telemetry.command'
 import { telemetryService } from './telemetry.service'
 
-export function registerTelemetryModule(context: vscode.ExtensionContext): void {
-  registerTelemetryCommands(context)
-  context.subscriptions.push(telemetryService)
+export default function registerTelemetryModule(ctx: vscode.ExtensionContext) {
+  registerTelemetryCommands(ctx)
+  ctx.subscriptions.push(telemetryService)
 
   telemetryService.syncFromConfiguration().catch((err) => {
     vscode.window.showErrorMessage(`Failed to initialize telemetry: ${err instanceof Error ? err.message : String(err)}`)
@@ -15,4 +15,3 @@ export function registerTelemetryModule(context: vscode.ExtensionContext): void 
 }
 
 export { promptForTelemetryConfiguration } from './telemetry.command'
-export { telemetryService } from './telemetry.service'
