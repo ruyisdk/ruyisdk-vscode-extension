@@ -35,7 +35,7 @@ import { configuration } from './common/configuration'
 import { logger } from './common/logger'
 import registerHomeModule from './home'
 import registerNewsModule from './news'
-import { registerPackagesModule } from './packages'
+import registerPackagesModule from './packages'
 import { registerTelemetryModule } from './telemetry'
 
 export function activate(context: vscode.ExtensionContext) {

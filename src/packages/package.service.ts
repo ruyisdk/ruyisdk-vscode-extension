@@ -1,16 +1,4 @@
 // SPDX-License-Identifier: Apache-2.0
-/**
- * PackageService
- *
- * Provides package listing, parsing, and installation status tracking.
- *
- * Features:
- * - Retrieves all available packages via `ruyi list`
- * - Parses package information including categories, versions, and metadata
- * - Tracks installation status by querying `ruyi list -- porcelain --installed`
- * - Caches results to minimize CLI calls
- */
-
 import { parseNDJSON } from '../common/helpers'
 import { logger } from '../common/logger'
 import ruyi, { PACKAGE_CATEGORIES, type PackageCategory } from '../ruyi'

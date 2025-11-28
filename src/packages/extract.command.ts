@@ -1,13 +1,4 @@
 // SPDX-License-Identifier: Apache-2.0
-/**
- * Extract Command: Extract RuyiSDK Package from source
- *
- * Provides user-facing command for:
- * - Listing all available source packages
- * - Letting user select a package to extract
- * - Extracting the selected package to the current directory
- */
-
 import * as path from 'path'
 import * as vscode from 'vscode'
 
@@ -15,9 +6,6 @@ import { createProgressTracker, parseNDJSON } from '../common/helpers'
 import ruyi from '../ruyi'
 import type { RuyiListOutput } from '../ruyi/types'
 
-/**
- * Parse the NDJSON output of `ruyi --porcelain list` to get source packages with versions.
- */
 interface SourcePackage {
   label: string
   value: string
