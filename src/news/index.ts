@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
+import * as vscode from 'vscode'
 
-export { registerNewsModule } from './news.command'
-export { NewsService } from './news.service'
-export type { NewsRow } from './news.service'
+import registerNewsCommands from './news.command'
+
+export default function registerNewsModule(ctx: vscode.ExtensionContext) {
+  registerNewsCommands(ctx)
+}

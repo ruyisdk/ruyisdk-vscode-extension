@@ -34,7 +34,7 @@ import registerSwitchFromVenvsCommand from './commands/venv/switch'
 import { configuration } from './common/configuration'
 import { logger } from './common/logger'
 import registerHomeModule from './home'
-import { registerNewsModule } from './news'
+import registerNewsModule from './news'
 import { registerPackagesModule } from './packages'
 import { registerTelemetryModule } from './telemetry'
 
