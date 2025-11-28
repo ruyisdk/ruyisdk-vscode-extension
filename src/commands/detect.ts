@@ -11,7 +11,6 @@ import * as semver from 'semver'
 import { configuration } from '../common/configuration'
 import { logger } from '../common/logger.js'
 import ruyi, { resolveRuyi } from '../ruyi'
-import { promptForTelemetryConfiguration } from '../telemetry'
 
 interface GitHubRelease {
   tag_name: string
@@ -87,11 +86,6 @@ export default function registerDetectCommand(context: vscode.ExtensionContext) 
         vscode.commands.executeCommand('ruyi.install')
       }
       return
-    }
-
-    if (configuration.telemetryEnabled === undefined) {
-      // Prompt user to configure telemetry settings
-      await promptForTelemetryConfiguration()
     }
 
     const version = await ruyi.version()
