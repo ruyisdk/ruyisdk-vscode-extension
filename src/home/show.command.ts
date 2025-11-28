@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import * as vscode from 'vscode'
 
-import { showHomePanel } from './home-panel.provider'
+import { showHomePanel } from './home-webview.provider'
 
 export default function registerShowCommand(ctx: vscode.ExtensionContext) {
   ctx.subscriptions.push(
