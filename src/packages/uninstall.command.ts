@@ -1,8 +1,4 @@
 // SPDX-License-Identifier: Apache-2.0
-/**
- * Uninstall Command: uninstall packages with confirmation
- */
-
 import * as vscode from 'vscode'
 
 import ruyi from '../ruyi'
@@ -67,7 +63,7 @@ export async function uninstallPackage(name: string, version?: string): Promise<
   return success
 }
 
-export default function registerPackageUninstallCommand(ctx: vscode.ExtensionContext) {
+export default function registerUninstallCommand(ctx: vscode.ExtensionContext) {
   const uninstallDisposable = vscode.commands.registerCommand(
     'ruyi.packages.uninstall',
     async (item: VersionItem) => {

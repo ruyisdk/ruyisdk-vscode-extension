@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
-
 import * as vscode from 'vscode'
 
 import { PackagesTreeProvider } from './package-tree.provider'
 
 export default function registerRefreshCommand(
-  context: vscode.ExtensionContext,
+  ctx: vscode.ExtensionContext,
   provider: PackagesTreeProvider,
 ) {
-  const refreshDisposable = vscode.commands.registerCommand(
+  const disposable = vscode.commands.registerCommand(
     'ruyi.packages.refresh',
     async () => {
       await vscode.window.withProgress(
@@ -24,5 +23,5 @@ export default function registerRefreshCommand(
     },
   )
 
-  context.subscriptions.push(refreshDisposable)
+  ctx.subscriptions.push(disposable)
 }
