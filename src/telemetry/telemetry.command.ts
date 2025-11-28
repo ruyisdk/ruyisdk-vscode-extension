@@ -7,8 +7,8 @@ import * as vscode from 'vscode'
 
 import { telemetryService } from './telemetry.service'
 
-export function registerTelemetryCommands(context: vscode.ExtensionContext): void {
-  context.subscriptions.push(
+export default function registerTelemetryCommands(ctx: vscode.ExtensionContext) {
+  ctx.subscriptions.push(
     vscode.commands.registerCommand('ruyi.telemetry.configure', async () => {
       await promptForTelemetryConfiguration()
     }),
