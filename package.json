@@ -90,6 +90,18 @@
         "icon": "$(layout)"
       },
       {
+        "command": "ruyi.packages.search",
+        "title": "Search Packages",
+        "category": "Ruyi",
+        "icon": "$(search)"
+      },
+      {
+        "command": "ruyi.packages.clearSearch",
+        "title": "Clear Package Search",
+        "category": "Ruyi",
+        "icon": "$(clear-all)"
+      },
+      {
         "command": "ruyi.packages.install",
         "title": "Install Package",
         "category": "Ruyi",
@@ -150,19 +162,29 @@
     "menus": {
       "view/title": [
         {
-          "command": "ruyi.packages.refresh",
+          "command": "ruyi.packages.search",
           "when": "view == ruyiPackagesView",
           "group": "navigation@0"
         },
         {
+          "command": "ruyi.packages.clearSearch",
+          "when": "view == ruyiPackagesView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "ruyi.packages.refresh",
+          "when": "view == ruyiPackagesView",
+          "group": "navigation@2"
+        },
+        {
           "command": "ruyi.venv.refresh",
           "when": "view == ruyiVenvsView",
-          "group": "navigation@1"
+          "group": "navigation@0"
         },
         {
           "command": "ruyi.venv.create",
           "when": "view == ruyiVenvsView",
-          "group": "navigation@2"
+          "group": "navigation@1"
         }
       ],
       "view/item/context": [

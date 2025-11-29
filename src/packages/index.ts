@@ -6,6 +6,7 @@ import registerInstallCommand from './install.command'
 import { PackagesTreeProvider } from './package-tree.provider'
 import { PackageService } from './package.service'
 import registerRefreshCommand from './refresh.command'
+import registerSearchCommand from './search.command'
 import registerUninstallCommand from './uninstall.command'
 
 export default function registerPackagesModule(ctx: vscode.ExtensionContext) {
@@ -16,6 +17,7 @@ export default function registerPackagesModule(ctx: vscode.ExtensionContext) {
     treeDataProvider: packagesTreeProvider,
     showCollapseAll: true,
   })
+  packagesTreeProvider.setTreeView(packagesTreeView)
   ctx.subscriptions.push(packagesTreeView)
 
   void packagesTreeProvider.refresh()
@@ -23,5 +25,6 @@ export default function registerPackagesModule(ctx: vscode.ExtensionContext) {
   registerInstallCommand(ctx)
   registerUninstallCommand(ctx)
   registerRefreshCommand(ctx, packagesTreeProvider)
+  registerSearchCommand(ctx, packagesTreeProvider)
   registerExtractCommand(ctx)
 }
