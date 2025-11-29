@@ -4,8 +4,10 @@
  *
  * Responsibilities:
  * - Register extension commands:
- *   • ruyi.detect       (./commands/detect)
- *   • ruyi.install      (./commands/installRuyi)
+ *   • ruyi.setup.detect   (./setup/detect.command)
+ *   • ruyi.setup.install  (./setup/install.command)
+ *   • ruyi.setup.update   (./setup/update.command)
+ *   • ruyi.setup.manage   (./setup/manage.command)
  *   • ruyi.news.search       (./commands/news)
  *   • ruyi.news.clearSearch  (./commands/news)
  *   • ruyi.news.showCards    (./commands/news)
@@ -25,9 +27,6 @@
 
 import * as vscode from 'vscode'
 
-import registerDetectCommand from './commands/detect'
-import registerInstallCommand from './commands/installRuyi'
-import registerManageRuyiPathCommand from './commands/manageRuyiPath'
 import registerCleanADeactivatedVenvCommand from './commands/venv/clean'
 import registerCreateNewVenvCommand from './commands/venv/create'
 import registerDetectAllVenvsCommand from './commands/venv/detect'
@@ -38,6 +37,7 @@ import { logger } from './common/logger'
 import registerHomeModule from './home'
 import registerNewsModule from './news'
 import registerPackagesModule from './packages'
+import registerSetupModule from './setup'
 import registerTelemetryModule from './telemetry'
 
 export function activate(context: vscode.ExtensionContext) {
@@ -45,11 +45,9 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(configuration)
 
   // Register commands
-  registerDetectCommand(context)
   registerPackagesModule(context)
   registerHomeModule(context)
-  registerInstallCommand(context)
-  registerManageRuyiPathCommand(context)
+  registerSetupModule(context)
   registerNewsModule(context)
   registerTelemetryModule(context)
 
@@ -71,7 +69,7 @@ export function activate(context: vscode.ExtensionContext) {
       await vscode.commands.executeCommand('ruyi.home.show')
     }
 
-    await vscode.commands.executeCommand('ruyi.detect')
+    await vscode.commands.executeCommand('ruyi.setup.detect')
     await vscode.commands.executeCommand('ruyi.venv.refresh')
   })
 }
