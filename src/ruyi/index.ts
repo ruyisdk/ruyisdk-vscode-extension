@@ -121,49 +121,54 @@ export interface VenvOptions {
 // ============================================================================
 
 /**
- * Resolve Ruyi executable path
- * Checks configuration first, then ~/.local/bin/ruyi, then searches PATH environment variable
+ * Check if a file path is executable
  */
-export async function resolveRuyi(): Promise<string | null> {
-  // Check configuration
+async function isExecutable(filePath: string): Promise<boolean> {
+  try {
+    const stat = await vscode.workspace.fs.stat(vscode.Uri.file(filePath))
+    return stat.type === vscode.FileType.File
+  }
+  catch {
+    return false
+  }
+}
+
+/**
+ * Resolve the active Ruyi executable path
+ * Priority: 1) configured path, 2) ~/.local/bin/ruyi, 3) first in PATH
+ * @returns Path to Ruyi executable or null if not found
+ */
+export async function resolveActiveRuyi(): Promise<string | null> {
+  // 1. Check configured path first
   const configPath = configuration.ruyiPath
   if (configPath) {
-    try {
-      await vscode.workspace.fs.stat(vscode.Uri.file(configPath))
+    if (await isExecutable(configPath)) {
       return configPath
     }
-    catch {
-      logger.warn(`Configured Ruyi path does not exist: ${configPath}`)
-    }
+    logger.warn(`Configured Ruyi path does not exist: ${configPath}`)
   }
 
-  // Check user's local bin directory
+  // 2. Check ~/.local/bin/ruyi (most common location)
   const homeDir = process.env.HOME
   if (homeDir) {
     const localBinPath = path.join(homeDir, '.local', 'bin', 'ruyi')
-    try {
-      await vscode.workspace.fs.stat(vscode.Uri.file(localBinPath))
+    if (await isExecutable(localBinPath)) {
       return localBinPath
-    }
-    catch {
-      logger.debug(`Detected Ruyi binary path does not exist: ${localBinPath}`)
     }
   }
 
-  // Search in PATH directories
+  // 3. Search in PATH directories
   const pathEnv = process.env.PATH
-  if (!pathEnv) return null
+  if (!pathEnv) {
+    logger.warn('PATH environment variable is not set')
+    return null
+  }
 
   const pathDirs = pathEnv.split(path.delimiter).filter(dir => dir.trim())
   for (const dir of pathDirs) {
-    try {
-      const ruyiPath = path.join(dir, 'ruyi')
-      await vscode.workspace.fs.stat(vscode.Uri.file(ruyiPath))
+    const ruyiPath = path.join(dir, 'ruyi')
+    if (await isExecutable(ruyiPath)) {
       return ruyiPath
-    }
-    catch {
-      // Skip inaccessible directories and directories not containing Ruyi in PATH
-      continue
     }
   }
 
@@ -281,7 +286,7 @@ export async function runRuyi(
   options?: RuyiRunOptions,
 ): Promise<RuyiResult> {
   // Resolve ruyi executable or fallback to python3 -m ruyi
-  const ruyiPath = await resolveRuyi()
+  const ruyiPath = await resolveActiveRuyi()
   const command = ruyiPath || 'python3'
   const commandArgs = ruyiPath ? args : ['-m', 'ruyi', ...args]
 
