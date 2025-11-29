@@ -12,8 +12,14 @@ export class PackagesTreeProvider implements
   vscode.TreeDataProvider<TreeElement> {
   private _onDidChangeTreeData = new vscode.EventEmitter<void>()
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event
+  private searchQuery = ''
+  private treeView?: vscode.TreeView<TreeElement>
 
   constructor(private packageService: PackageService) { }
+
+  setTreeView(treeView: vscode.TreeView<TreeElement>): void {
+    this.treeView = treeView
+  }
 
   /**
    * Refresh the tree view and force data refresh.
@@ -30,14 +36,60 @@ export class PackagesTreeProvider implements
     }
   }
 
+  /**
+   * Set search query and refresh the tree view.
+   */
+  setSearchQuery(query: string): void {
+    this.searchQuery = query.trim().toLowerCase()
+    this.updateTreeViewTitle()
+    this._onDidChangeTreeData.fire()
+  }
+
+  /**
+   * Get current search query.
+   */
+  getSearchQuery(): string {
+    return this.searchQuery
+  }
+
+  /**
+   * Clear search query and refresh the tree view.
+   */
+  clearSearch(): void {
+    this.searchQuery = ''
+    this.updateTreeViewTitle()
+    this._onDidChangeTreeData.fire()
+  }
+
+  private updateTreeViewTitle(): void {
+    if (this.treeView) {
+      if (this.searchQuery) {
+        this.treeView.description = `Searching '${this.searchQuery}'`
+      }
+      else {
+        this.treeView.description = undefined
+      }
+    }
+  }
+
   getTreeItem(element: TreeElement): vscode.TreeItem {
     return element
+  }
+
+  private async getFilteredPackages(): Promise<RuyiPackage[]> {
+    let packages = await this.packageService.getPackages()
+
+    if (this.searchQuery) {
+      packages = packages.filter(p => this.matchesSearch(p))
+    }
+
+    return packages
   }
 
   async getChildren(element?: TreeElement): Promise<TreeElement[]> {
     if (!element) {
       // Root node: show categories
-      const packages = await this.packageService.getPackages()
+      const packages = await this.getFilteredPackages()
       if (packages.length === 0) {
         return []
       }
@@ -48,7 +100,8 @@ export class PackagesTreeProvider implements
 
     if (element instanceof PackageCategoryItem) {
       // Category node: display the packages under this category
-      const packages = await this.packageService.getPackages()
+      const packages = await this.getFilteredPackages()
+
       return packages
         .filter(p => p.category === element.category)
         .sort((a, b) => a.name.localeCompare(b.name))
@@ -61,6 +114,21 @@ export class PackagesTreeProvider implements
     }
 
     return []
+  }
+
+  /**
+   * Check if a package matches the current search query.
+   */
+  private matchesSearch(pkg: RuyiPackage): boolean {
+    if (!this.searchQuery) {
+      return true
+    }
+
+    const query = this.searchQuery.toLowerCase()
+    const name = pkg.name.toLowerCase()
+    const category = pkg.category.toLowerCase()
+
+    return name.includes(query) || category.includes(query)
   }
 }
 
