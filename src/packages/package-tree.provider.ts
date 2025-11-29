@@ -2,6 +2,7 @@
 import * as vscode from 'vscode'
 
 import { logger } from '../common/logger.js'
+import type { PackageCategory } from '../ruyi'
 
 import { RuyiPackage, RuyiPackageVersion, PackageService } from './package.service'
 
@@ -14,6 +15,7 @@ export class PackagesTreeProvider implements
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event
   private searchQuery = ''
   private treeView?: vscode.TreeView<TreeElement>
+  private categoryCache: Map<string, RuyiPackage[]> = new Map()
 
   constructor(private packageService: PackageService) { }
 
@@ -26,6 +28,10 @@ export class PackagesTreeProvider implements
    */
   async refresh(): Promise<void> {
     try {
+      // Clear category cache on refresh
+      this.categoryCache.clear()
+      // Force refresh both categories and packages to ensure search uses fresh data
+      await this.packageService.getCategories(true)
       await this.packageService.getPackages(true)
     }
     catch (err) {
@@ -41,6 +47,7 @@ export class PackagesTreeProvider implements
    */
   setSearchQuery(query: string): void {
     this.searchQuery = query.trim().toLowerCase()
+    this.categoryCache.clear() // Clear cache when search changes
     this.updateTreeViewTitle()
     this._onDidChangeTreeData.fire()
   }
@@ -57,8 +64,23 @@ export class PackagesTreeProvider implements
    */
   clearSearch(): void {
     this.searchQuery = ''
+    this.categoryCache.clear() // Clear cache when clearing search
     this.updateTreeViewTitle()
     this._onDidChangeTreeData.fire()
+  }
+
+  /**
+   * Prepare for search by preloading all packages data.
+   * This should be called when user clicks the search button.
+   */
+  async prepareForSearch(): Promise<void> {
+    try {
+      // Preload all packages so search is instant
+      await this.packageService.getPackages()
+    }
+    catch (err) {
+      logger.error('Failed to prepare for search:', err)
+    }
   }
 
   private updateTreeViewTitle(): void {
@@ -76,36 +98,80 @@ export class PackagesTreeProvider implements
     return element
   }
 
-  private async getFilteredPackages(): Promise<RuyiPackage[]> {
-    let packages = await this.packageService.getPackages()
+  /**
+   * Get packages for a specific category (with caching and search filtering).
+   */
+  private async getPackagesForCategory(category: string): Promise<RuyiPackage[]> {
+    const cacheKey = `${category}:${this.searchQuery}`
 
-    if (this.searchQuery) {
-      packages = packages.filter(p => this.matchesSearch(p))
+    // Check cache first
+    if (this.categoryCache.has(cacheKey)) {
+      return this.categoryCache.get(cacheKey)!
     }
 
+    // If searching, we need all packages to filter
+    let packages: RuyiPackage[]
+    if (this.searchQuery) {
+      packages = await this.packageService.getPackages()
+      packages = packages.filter(p =>
+        p.category === category && this.matchesSearch(p),
+      )
+    }
+    else {
+      // Lazy load only this category's packages
+      packages = await this.packageService.getPackagesByCategory(category as PackageCategory)
+    }
+
+    // Cache the result
+    this.categoryCache.set(cacheKey, packages)
     return packages
   }
 
   async getChildren(element?: TreeElement): Promise<TreeElement[]> {
     if (!element) {
-      // Root node: show categories
-      const packages = await this.getFilteredPackages()
-      if (packages.length === 0) {
+      // Root node: show categories (lightweight, no full package loading)
+      try {
+        const categories = await this.packageService.getCategories()
+
+        if (categories.length === 0) {
+          return []
+        }
+
+        // If searching, filter categories that have matching packages
+        if (this.searchQuery) {
+          const categoriesWithMatches: typeof categories = []
+          for (const catInfo of categories) {
+            const packages = await this.getPackagesForCategory(catInfo.category)
+            if (packages.length > 0) {
+              categoriesWithMatches.push({
+                category: catInfo.category,
+                count: packages.length,
+              })
+            }
+          }
+          return categoriesWithMatches.map(c => new PackageCategoryItem(c.category, c.count))
+        }
+
+        return categories.map(c => new PackageCategoryItem(c.category, c.count))
+      }
+      catch (err) {
+        logger.error('Failed to get categories:', err)
         return []
       }
-
-      const categories = new Set(packages.map(p => p.category))
-      return Array.from(categories).sort().map(c => new PackageCategoryItem(c))
     }
 
     if (element instanceof PackageCategoryItem) {
-      // Category node: display the packages under this category
-      const packages = await this.getFilteredPackages()
-
-      return packages
-        .filter(p => p.category === element.category)
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .map(p => new PackageItem(p))
+      // Category node: lazy load packages for this category
+      try {
+        const packages = await this.getPackagesForCategory(element.category)
+        return packages
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map(p => new PackageItem(p))
+      }
+      catch (err) {
+        logger.error(`Failed to get packages for category ${element.category}:`, err)
+        return []
+      }
     }
 
     if (element instanceof PackageItem) {
@@ -136,10 +202,17 @@ export class PackagesTreeProvider implements
  * Category node
  */
 class PackageCategoryItem extends vscode.TreeItem {
-  constructor(public readonly category: string) {
+  constructor(
+    public readonly category: string,
+    private readonly count?: number,
+  ) {
     super(category, vscode.TreeItemCollapsibleState.Collapsed)
     this.iconPath = new vscode.ThemeIcon('folder')
     this.contextValue = 'ruyiPackage.category'
+    // Show package count in description
+    if (count !== undefined) {
+      this.description = `${count} package${count !== 1 ? 's' : ''}`
+    }
   }
 }
 

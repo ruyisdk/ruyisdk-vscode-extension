@@ -22,6 +22,71 @@ export interface RuyiPackage {
 
 export class PackageService {
   private packages: RuyiPackage[] = []
+  private categories: PackageCategory[] = []
+  private categoryCounts: Map<PackageCategory, number> = new Map()
+  private rawListOutput: string = ''
+
+  /**
+   * Get all available categories with package counts (lightweight).
+   * @param forceRefresh If true, force refresh data from CLI.
+   */
+  public async getCategories(forceRefresh: boolean = false):
+  Promise<{ category: PackageCategory, count: number }[]> {
+    if (!forceRefresh && this.categories.length > 0) {
+      return this.categories.map(cat => ({
+        category: cat,
+        count: this.categoryCounts.get(cat) || 0,
+      }))
+    }
+
+    try {
+      const listResult = await ruyi.list()
+      if (listResult.code !== 0) {
+        logger.error('Failed to list packages:', listResult.stderr)
+        return []
+      }
+
+      this.rawListOutput = listResult.stdout
+      this.extractCategoriesFromOutput(listResult.stdout)
+
+      return this.categories.map(cat => ({
+        category: cat,
+        count: this.categoryCounts.get(cat) || 0,
+      }))
+    }
+    catch (error) {
+      logger.error('Error fetching categories:', error)
+      return []
+    }
+  }
+
+  /**
+   * Get packages for a specific category (lazy load).
+   * @param category The category to load packages for.
+   */
+  public async getPackagesByCategory(category: PackageCategory):
+  Promise<RuyiPackage[]> {
+    // If we haven't fetched the raw data yet, get it first
+    if (!this.rawListOutput) {
+      await this.getCategories()
+    }
+
+    // Parse only packages from the requested category
+    const categoryPackages = this.parsePorcelainListOutput(this.rawListOutput, category)
+
+    // Cache the parsed packages
+    for (const pkg of categoryPackages) {
+      const existingIndex = this.packages.findIndex(p => p.name === pkg.name)
+      if (existingIndex >= 0) {
+        this.packages[existingIndex] = pkg
+      }
+      else {
+        this.packages.push(pkg)
+      }
+    }
+
+    return categoryPackages
+  }
 
   /**
    * Get all available packages and cache the results.
@@ -40,6 +105,7 @@ export class PackageService {
         return []
       }
 
+      this.rawListOutput = listResult.stdout
       this.packages = this.parsePorcelainListOutput(listResult.stdout)
       return this.packages
     }
@@ -50,15 +116,49 @@ export class PackageService {
   }
 
   /**
+   * Extract categories and counts from raw output without full parsing.
+   */
+  private extractCategoriesFromOutput(output: string): void {
+    const categoryCounts = new Map<PackageCategory, number>()
+
+    const lines = output.trim().split('\n')
+    for (const line of lines) {
+      if (!line.trim()) {
+        continue
+      }
+
+      try {
+        const item = JSON.parse(line) as RuyiListOutput
+        if (item.ty === 'pkglistoutput-v1'
+          && item.category !== 'source'
+          && PACKAGE_CATEGORIES.includes(item.category as PackageCategory)) {
+          const category = item.category as PackageCategory
+          categoryCounts.set(category, (categoryCounts.get(category) || 0) + 1)
+        }
+      }
+      catch {
+        // Skip invalid lines
+      }
+    }
+
+    this.categories = Array.from(categoryCounts.keys()).sort()
+    this.categoryCounts = categoryCounts
+  }
+
+  /**
    * Parse the NDJSON output of `ruyi --porcelain list`.
    * Each line is a separate JSON object.
+   * @param output The raw NDJSON output
+   * @param filterCategory Optional category to filter by
    */
-  private parsePorcelainListOutput(output: string): RuyiPackage[] {
+  private parsePorcelainListOutput(output: string, filterCategory?: PackageCategory): RuyiPackage[] {
     return parseNDJSON<RuyiListOutput>(output)
       .filter(item => item.ty === 'pkglistoutput-v1')
       // Exclude 'source' category
       .filter(item => item.category !== 'source')
       .filter(item => PACKAGE_CATEGORIES.includes(item.category as PackageCategory))
+      // Filter by category if specified
+      .filter(item => !filterCategory || item.category === filterCategory)
       .map((item) => {
         const category = item.category as PackageCategory
         const versions: RuyiPackageVersion[] = item.vers.map((v) => {
