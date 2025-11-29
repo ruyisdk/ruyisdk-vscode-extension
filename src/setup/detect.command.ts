@@ -1,15 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
-/**
- * Detect Command: checks if `ruyi` is available and shows version or install
- * hint.
- */
-
 import * as vscode from 'vscode'
 
 import * as semver from 'semver'
 
 import { configuration } from '../common/configuration'
-import { logger } from '../common/logger.js'
+import { logger } from '../common/logger'
 import ruyi, { resolveRuyi } from '../ruyi'
 
 interface GitHubRelease {
@@ -25,10 +20,9 @@ async function checkRuyiUpdate(currentVersion: string): Promise<void> {
     }
 
     const response = await fetch('https://api.github.com/repos/ruyisdk/ruyi/releases/latest', {
-      headers: {
-        'User-Agent': 'ruyisdk-vscode-extension',
-      },
+      headers: { 'User-Agent': 'ruyisdk-vscode-extension' },
     })
+
     if (!response.ok) {
       logger.warn(`Failed to fetch latest Ruyi release: ${response.statusText}`)
       return
@@ -43,6 +37,7 @@ async function checkRuyiUpdate(currentVersion: string): Promise<void> {
         'Update now',
         'Later',
       )
+
       if (choice === 'Update now') {
         const updateMethods = [
           { name: 'pip', cmd: 'python3 -m pip install --user -U ruyi' },
@@ -50,14 +45,12 @@ async function checkRuyiUpdate(currentVersion: string): Promise<void> {
         ]
 
         const selectedMethod = await vscode.window.showQuickPick(
-          updateMethods.map(m => m.name),
-          {
-            placeHolder: 'Select the installation method you used to install Ruyi',
-          },
+          updateMethods.map(method => method.name),
+          { placeHolder: 'Select the installation method you used to install Ruyi' },
         )
 
         if (selectedMethod) {
-          const method = updateMethods.find(m => m.name === selectedMethod)
+          const method = updateMethods.find(item => item.name === selectedMethod)
           if (method) {
             const terminal = vscode.window.createTerminal('Ruyi Update')
             terminal.sendText(method.cmd)
@@ -67,13 +60,13 @@ async function checkRuyiUpdate(currentVersion: string): Promise<void> {
       }
     }
   }
-  catch (err) {
-    logger.error('Failed to check for Ruyi updates:', err)
+  catch (error) {
+    logger.error('Failed to check for Ruyi updates:', error)
   }
 }
 
-export default function registerDetectCommand(context: vscode.ExtensionContext) {
-  const disposable = vscode.commands.registerCommand('ruyi.detect', async () => {
+export default function registerDetectCommand(ctx: vscode.ExtensionContext) {
+  const disposable = vscode.commands.registerCommand('ruyi.setup.detect', async () => {
     const ruyiPath = await resolveRuyi()
 
     if (!ruyiPath) {
@@ -82,27 +75,28 @@ export default function registerDetectCommand(context: vscode.ExtensionContext) 
         'Install Ruyi',
         'Cancel',
       )
+
       if (choice === 'Install Ruyi') {
-        vscode.commands.executeCommand('ruyi.install')
+        await vscode.commands.executeCommand('ruyi.setup')
       }
       return
     }
 
     const version = await ruyi.version()
-    if (version) {
-      vscode.window.showInformationMessage(`Ruyi detected: ${version} (${ruyiPath})`)
-      // Check for updates only if enabled in configuration
-      if (configuration.checkForUpdates) {
-        checkRuyiUpdate(version).catch((err) => {
-          logger.error('Update check failed:', err)
-        })
-      }
-    }
-    else {
+    if (!version) {
       vscode.window.showWarningMessage(
         `Ruyi found at ${ruyiPath} but version check failed. Please check your installation.`,
       )
+      return
+    }
+
+    vscode.window.showInformationMessage(`Ruyi detected: ${version} (${ruyiPath})`)
+    if (configuration.checkForUpdates) {
+      checkRuyiUpdate(version).catch((error) => {
+        logger.error('Update check failed:', error)
+      })
     }
   })
-  context.subscriptions.push(disposable)
+
+  ctx.subscriptions.push(disposable)
 }

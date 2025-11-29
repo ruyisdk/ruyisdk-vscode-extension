@@ -1,22 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
-/**
- * InstallCommand
- *
- * VS Code command: `ruyi.install`
- *
- * Responsibilities:
- * - Check platform support
- * - Resolve Python interpreter from candidates (python3/python/py)
- * - Ask user for confirmation and show progress
- * - Perform pip install and report result
- */
-
 import * as cp from 'child_process'
 import type { ExecException } from 'node:child_process'
 import * as util from 'util'
 import * as vscode from 'vscode'
 
-import { logger } from '../common/logger.js'
+import { logger } from '../common/logger'
 import ruyi, { resolveRuyi } from '../ruyi'
 import { promptForTelemetryConfiguration } from '../telemetry'
 
@@ -43,8 +31,8 @@ async function showInstallError(method: string, errorMessage: string, continueMe
   await vscode.window.showWarningMessage(message, 'OK')
 }
 
-export default function registerInstallCommand(context: vscode.ExtensionContext) {
-  const disposable = vscode.commands.registerCommand('ruyi.install', async () => {
+export default function registerSetupCommand(ctx: vscode.ExtensionContext) {
+  const disposable = vscode.commands.registerCommand('ruyi.setup', async () => {
     if (process.platform !== 'linux') {
       const choice = await vscode.window.showWarningMessage(
         'Automatic installation is only supported on Linux. Please install Ruyi manually.',
@@ -98,11 +86,13 @@ export default function registerInstallCommand(context: vscode.ExtensionContext)
           return
         }
       }
-      catch (e) {
-        const error = e as ExecException
-        const errorMessage = error.stderr || error.message || String(error)
+      catch (error) {
+        const execError = error as ExecException
+        const errorMessage = execError.stderr || execError.message || String(execError)
         const isLastCommand = i === commands.length - 1
-        const continueMessage = isLastCommand ? 'Will show manual installation options.' : `Trying ${commands[i + 1]?.name} instead...`
+        const continueMessage = isLastCommand
+          ? 'Will show manual installation options.'
+          : `Trying ${commands[i + 1]?.name} instead...`
         await showInstallError(name, errorMessage, continueMessage)
       }
     }
@@ -119,5 +109,6 @@ export default function registerInstallCommand(context: vscode.ExtensionContext)
       )
     }
   })
-  context.subscriptions.push(disposable)
+
+  ctx.subscriptions.push(disposable)
 }

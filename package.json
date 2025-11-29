@@ -52,13 +52,13 @@
     },
     "commands": [
       {
-        "command": "ruyi.detect",
-        "title": "Detect Installation and Version",
+        "command": "ruyi.setup.detect",
+        "title": "Detect Ruyi Installation",
         "category": "Ruyi"
       },
       {
-        "command": "ruyi.install",
-        "title": "Install RuyiSDK",
+        "command": "ruyi.setup",
+        "title": "Set Up RuyiSDK",
         "category": "Ruyi"
       },
       {
@@ -127,7 +127,7 @@
         "category": "Ruyi"
       },
       {
-        "command": "ruyi.manageRuyiPath",
+        "command": "ruyi.setup.manage",
         "title": "Manage RuyiSDK Path",
         "category": "Ruyi"
       },
