@@ -8,6 +8,7 @@ import { logger } from '../common/logger'
 import type { RuyiInstallation } from './manage.service'
 import { detectRuyiInstallation, listAllInstallations, manageService } from './manage.service'
 import { checkRuyiUpdate } from './setup.command'
+import { telemetryService } from './telemetry.service'
 
 interface RuyiPathQuickPickItem extends vscode.QuickPickItem {
   targetPath: string
@@ -150,6 +151,11 @@ export function registerDetectCommand(ctx: vscode.ExtensionContext): void {
         logger.error('Update check failed:', error)
       })
     }
+
+    // Sync telemetry setting
+    telemetryService.syncFromConfiguration().catch((error) => {
+      logger.error('Telemetry sync failed:', error)
+    })
   })
 
   ctx.subscriptions.push(disposable)

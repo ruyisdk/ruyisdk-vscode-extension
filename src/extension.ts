@@ -38,7 +38,6 @@ import registerHomeModule from './home'
 import registerNewsModule from './news'
 import registerPackagesModule from './packages'
 import registerSetupModule from './setup'
-import registerTelemetryModule from './telemetry'
 
 export function activate(context: vscode.ExtensionContext) {
   // Register configuration service
@@ -49,7 +48,6 @@ export function activate(context: vscode.ExtensionContext) {
   registerHomeModule(context)
   registerSetupModule(context)
   registerNewsModule(context)
-  registerTelemetryModule(context)
 
   registerTerminalHandlerCommand(context)
   registerDetectAllVenvsCommand(context)
