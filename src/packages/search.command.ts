@@ -9,6 +9,20 @@ export default function registerSearchCommand(
 ): void {
   ctx.subscriptions.push(
     vscode.commands.registerCommand('ruyi.packages.search', async () => {
+      // Preload all packages data before showing search input
+      await vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title: 'Preparing search...',
+          cancellable: false,
+        },
+        async (progress) => {
+          progress.report({ message: 'Loading all packages...' })
+          await provider.prepareForSearch()
+        },
+      )
+
+      // Now show search input - search will be instant
       const query = await vscode.window.showInputBox({
         prompt: 'Search packages by name or category',
         placeHolder: 'Enter search term...',
