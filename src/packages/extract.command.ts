@@ -18,12 +18,18 @@ function parseSourcePackages(output: string): SourcePackage[] {
   const packages: SourcePackage[] = []
 
   for (const item of items) {
+    if (!item.vers || item.vers.length === 0) {
+      continue
+    }
+
     for (const ver of item.vers) {
-      if (ver.is_downloaded) {
-        const label = `${item.name} (${ver.semver})`
-        const value = `${item.name}(${ver.semver})`
-        packages.push({ label, value })
+      if (ver.remarks?.includes('prerelease')) {
+        continue
       }
+
+      const label = `${item.name} (${ver.semver})`
+      const value = `${item.name}(${ver.semver})`
+      packages.push({ label, value })
     }
   }
 
@@ -135,9 +141,10 @@ export async function extractPackage(uri?: vscode.Uri): Promise<void> {
       title: 'Choose where to extract the package',
     })
 
-    if (folder && folder[0]) {
-      targetDir = folder[0].fsPath
+    if (!folder || !folder[0]) {
+      return
     }
+    targetDir = folder[0].fsPath
 
     await vscode.window.withProgress(
       {
