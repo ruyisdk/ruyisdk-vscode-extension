@@ -27,7 +27,7 @@ export default function registerDetectAllVenvsCommand(
   // Create status bar item for venv management
   const venvStatusBarItem = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Left,
-    1000,
+    100,
   )
   venvStatusBarItem.text = '$(circle-slash) No Active Venv'
   venvStatusBarItem.tooltip = 'Manage Ruyi Virtual Environments'

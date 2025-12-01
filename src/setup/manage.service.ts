@@ -140,7 +140,7 @@ export class ManageService implements vscode.Disposable {
     this.initialized = true
     this.statusBarItem = vscode.window.createStatusBarItem(
       vscode.StatusBarAlignment.Left,
-      100,
+      1000,
     )
     this.statusBarItem.command = 'ruyi.setup.manage'
     this.statusBarItem.text = '$(tools) <No RuyiSDK>'
