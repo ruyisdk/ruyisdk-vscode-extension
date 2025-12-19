@@ -23,6 +23,16 @@ export default function registerCreateNewVenvCommand(
   context: vscode.ExtensionContext) {
   const disposable = vscode.commands.registerCommand('ruyi.venv.create', async () => {
     // Visual helper to pick profile/toolchain/emulator and input name/path
+    if (!vscode.workspace.workspaceFolders?.length) {
+      const action = await vscode.window.showWarningMessage(
+        'Venv creation requires an open workspace folder. Please open a folder first.',
+        'Open Folder',
+      )
+      if (action === 'Open Folder') {
+        await vscode.commands.executeCommand('vscode.openFolder')
+      }
+      return
+    }
 
     let terminated: boolean = false
     // Show quick pick for profile
