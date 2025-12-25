@@ -99,6 +99,8 @@ export function registerInstallCommand(ctx: vscode.ExtensionContext): void {
     if (choice !== 'Install') return
 
     const promptReload = async (methodLabel: string, version: string) => {
+      // Refresh package management module after successful installation
+      await vscode.commands.executeCommand('ruyi.packages.refresh')
       const action = await vscode.window.showInformationMessage(
         `Ruyi installed via ${methodLabel}: ${version}`,
         'Reload Window',
