@@ -149,11 +149,6 @@
         "category": "Ruyi"
       },
       {
-        "command": "ruyi.setup.manage",
-        "title": "Manage RuyiSDK Path",
-        "category": "Ruyi"
-      },
-      {
         "command": "ruyi.telemetry.configure",
         "title": "Configure Telemetry Settings",
         "category": "Ruyi"
