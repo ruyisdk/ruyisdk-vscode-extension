@@ -34,7 +34,6 @@ export default function registerCreateNewVenvCommand(
       return
     }
 
-    let terminated: boolean = false
     // Show quick pick for profile
     const allProfiles = await getProfiles()
     const profile = await vscode.window.showQuickPick(
@@ -109,18 +108,31 @@ export default function registerCreateNewVenvCommand(
         remainingToolchains.splice(index, 1)
       }
 
-      // Selecting a non-installed toolchain, aborting the creating and show inquiry to install now.
+      // Selecting a non-installed toolchain, prompt to install now.
       if (!(toolchainPick.detail as string).includes('Installed')) {
-        terminated = true
         const selection = await vscode.window.showWarningMessage(
           `The selected toolchain "${topush}" is not installed.`
-          + `\nPlease install the toolchain first before creating the venv. Start installation now?`,
-          'Yes', 'No')
-        if (selection === 'Yes') {
-          await installPackage(toolchainPick.rawName, version || undefined)
+          + `\nWould you like to install it now? After installation, you can continue creating the venv.`,
+          'Install', 'Cancel')
+        if (selection === 'Install') {
+          const success = await installPackage(toolchainPick.rawName, version || undefined)
+          if (success) {
+            // Refresh package list after installation
+            await vscode.commands.executeCommand('ruyi.packages.refresh')
+            vscode.window.showInformationMessage(`Toolchain "${topush}" installed successfully. Continuing with venv creation...`)
+          }
+          else {
+            // Installation failed, abort the creation
+            vscode.window.showErrorMessage(`Failed to install toolchain "${topush}". Venv creation cancelled.`)
+            return
+          }
+        }
+        else {
+          // User cancelled installation, abort the creation
+          vscode.window.showInformationMessage('Venv creation cancelled.')
+          return
         }
       }
-      if (terminated) return
     }
     if (toolchains.length === 0) return
 
@@ -187,18 +199,31 @@ export default function registerCreateNewVenvCommand(
           emulator = `${emulatorPick.rawName}(==${version})`
         }
 
-        // Selecting a non-installed emulator, aborting the creating and show show inquiry to install now.
+        // Selecting a non-installed emulator, prompt to install now.
         if (!emulatorPick.detail.includes('Installed')) {
-          terminated = true
           const selection = await vscode.window.showWarningMessage(
             `The selected emulator "${emulator}" is not installed.`
-            + `\nPlease install the emulator first before creating the venv. Start installation now?`,
-            'Yes', 'No')
-          if (selection === 'Yes') {
-            await installPackage(emulatorPick.rawName, version || undefined)
+            + `\nWould you like to install it now? After installation, you can continue creating the venv.`,
+            'Install', 'Cancel')
+          if (selection === 'Install') {
+            const success = await installPackage(emulatorPick.rawName, version || undefined)
+            if (success) {
+              // Refresh package list after installation
+              await vscode.commands.executeCommand('ruyi.packages.refresh')
+              vscode.window.showInformationMessage(`Emulator "${emulator}" installed successfully. Continuing with venv creation...`)
+            }
+            else {
+              // Installation failed, abort the creation
+              vscode.window.showErrorMessage(`Failed to install emulator "${emulator}". Venv creation cancelled.`)
+              return
+            }
+          }
+          else {
+            // User cancelled installation, abort the creation
+            vscode.window.showInformationMessage('Venv creation cancelled.')
+            return
           }
         }
-        if (terminated) return
       }
     }
     else emulator = null
