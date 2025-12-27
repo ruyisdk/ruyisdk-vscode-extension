@@ -12,7 +12,7 @@ import * as vscode from 'vscode'
 
 import { VenvTreeItem } from '../../features/venv/VenvTree'
 
-import { manageRuyiTerminal, currentVenv } from './manageCurrentVenv'
+import { manageRuyiTerminal } from './manageCurrentVenv'
 
 export default function registerSwitchFromVenvsCommand(
   context: vscode.ExtensionContext) {
@@ -22,8 +22,7 @@ export default function registerSwitchFromVenvsCommand(
       return
     }
     // Manage the Ruyi terminal for venv activation/deactivation
-    const venvPath = `./${venv.venvPath}`
-    manageRuyiTerminal(venvPath === currentVenv ? null : venvPath)
+    manageRuyiTerminal(venv.venvPath, venv.name)
 
     // Refresh the venv tree view to reflect the current active venv
     await vscode.commands.executeCommand('ruyi.venv.refresh')
