@@ -15,8 +15,11 @@
  * - Show information message if this is actively run and no venvs are found.
  */
 
+import * as path from 'path'
 import * as vscode from 'vscode'
 
+import { getWorkspaceFolderPath } from '../../common/helpers'
+import { logger } from '../../common/logger'
 import { detectVenv } from '../../features/venv/DetectforVenv'
 import { VenvTreeProvider, VenvInfo } from '../../features/venv/VenvTree'
 
@@ -44,13 +47,23 @@ export default function registerDetectAllVenvsCommand(
 
   const disposable = vscode.commands.registerCommand(
     'ruyi.venv.refresh', async () => {
+      let workspaceRoot: string | undefined
+      try {
+        workspaceRoot = getWorkspaceFolderPath()
+      }
+      catch {
+        // No workspace open; skip detection quietly
+        logger.info('No workspace open; skipping venv detection.')
+        return
+      }
+
       const venvs = await detectVenv()
       // Update tree view with detected venvs
       const venvInfo: VenvInfo[] = venvs.map(v => ({
         name: v[1],
-        path: v[0],
+        path: path.join(workspaceRoot!, v[0]),
       }))
-      venvTree.updateVenvs(venvInfo)
+      venvTree.updateVenvs(venvInfo, workspaceRoot)
     })
   context.subscriptions.push(disposable)
 }

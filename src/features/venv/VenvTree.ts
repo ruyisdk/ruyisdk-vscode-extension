@@ -15,7 +15,7 @@ import * as vscode from 'vscode'
 
 export interface VenvInfo {
   name: string
-  path: string
+  path: string // absolute path
 }
 
 export class VenvTreeProvider implements
@@ -27,6 +27,7 @@ export class VenvTreeProvider implements
   private _currentVenvPath: string | null = null
   private _currentVenvName: string | null = null
   private _statusBarItem: vscode.StatusBarItem | null = null
+  private _workspaceRoot: string | null = null
 
   /**
    * Set the status bar item to update when current venv changes
@@ -67,8 +68,9 @@ export class VenvTreeProvider implements
   /**
    * Update the venv list and refresh the tree view.
    */
-  updateVenvs(venvs: VenvInfo[]): void {
+  updateVenvs(venvs: VenvInfo[], workspaceRoot?: string): void {
     this._venvs = venvs
+    this._workspaceRoot = workspaceRoot ?? this._workspaceRoot
     this._onDidChangeTreeData.fire()
   }
 
@@ -95,14 +97,22 @@ export class VenvTreeProvider implements
       return [new VenvTreeItem('No venvs detected', '', true, false)]
     }
 
-    return this._venvs.map(v =>
-      new VenvTreeItem(
+    return this._venvs.map((v) => {
+      const displayPath = this._workspaceRoot
+        ? paths.relative(this._workspaceRoot, v.path)
+        : v.path
+
+      const isCurrent = this._currentVenvPath
+        ? (paths.normalize(v.path) === paths.normalize(this._currentVenvPath))
+        : false
+
+      return new VenvTreeItem(
         v.name,
-        v.path,
+        displayPath,
         false,
-        this._currentVenvPath ? (paths.normalize(v.path) === paths.normalize(this._currentVenvPath)) : false,
-      ),
-    )
+        isCurrent,
+      )
+    })
   }
 
   /**
