@@ -131,7 +131,13 @@ export async function extractPackage(uri?: vscode.Uri): Promise<void> {
       throw new Error('Selected package not found')
     }
 
-    // Add support for custom destination directory
+    // Suggest destination directory based on package name/version
+    const match = selectedLabel.match(/^(.*)\s*\(([^)]+)\)/)
+    const pkgName = match?.[1]?.trim() || selectedLabel
+    const pkgVersion = match?.[2]?.trim().replace(/\s+/g, '-') || 'latest'
+    const suggestedDir = path.join(targetDir, `${pkgName}-${pkgVersion}`)
+
+    // Pick parent folder visually, then append suggested subfolder name automatically
     const folder = await vscode.window.showOpenDialog({
       canSelectFolders: true,
       canSelectFiles: false,
@@ -144,7 +150,10 @@ export async function extractPackage(uri?: vscode.Uri): Promise<void> {
     if (!folder || !folder[0]) {
       return
     }
-    targetDir = folder[0].fsPath
+
+    const parentDir = folder[0].fsPath
+    targetDir = path.join(parentDir, path.basename(suggestedDir))
+    await vscode.workspace.fs.createDirectory(vscode.Uri.file(targetDir))
 
     await vscode.window.withProgress(
       {
