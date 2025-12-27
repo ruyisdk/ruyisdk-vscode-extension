@@ -241,10 +241,11 @@ export default function registerCreateNewVenvCommand(
     })
     if (name === undefined) return
 
-    // Input path, default to ./ruyi-venv/
+    // Input path, default to ./ruyi-venv-{profile}
+    const suggestedPath = `./ruyi-venv-${profile.replace(/\s+/g, '-')}`
     const path = await vscode.window.showInputBox({
       placeHolder: 'Path to create the new venv',
-      value: './ruyi-venv',
+      value: suggestedPath,
       validateInput: (value) => {
         if (!value || value.trim().length === 0) {
           return 'Path cannot be empty'
