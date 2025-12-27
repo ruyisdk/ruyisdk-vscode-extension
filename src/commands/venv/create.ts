@@ -36,11 +36,17 @@ export default function registerCreateNewVenvCommand(
 
     // Show quick pick for profile
     const allProfiles = await getProfiles()
-    const profile = await vscode.window.showQuickPick(
-      Object.keys(allProfiles), {
-        placeHolder: 'Select a profile for the new venv',
-      })
-    if (!profile) return
+    const profileItems = Object.entries(allProfiles).map(([label, raw]) => ({
+      label: label,
+      description: raw !== label ? raw : undefined,
+    }))
+
+    const pickedProfile = await vscode.window.showQuickPick(profileItems, {
+      placeHolder: 'Select a profile for the new venv',
+      matchOnDescription: true,
+    })
+    if (!pickedProfile) return
+    const profile = pickedProfile.label
 
     // Show quick pick for toolchain
     const allToolchains = await getToolchains()
@@ -235,10 +241,10 @@ export default function registerCreateNewVenvCommand(
     })
     if (name === undefined) return
 
-    // Input path, default to ./myhone-venv/
+    // Input path, default to ./ruyi-venv/
     const path = await vscode.window.showInputBox({
       placeHolder: 'Path to create the new venv',
-      value: `./myhone-venv`,
+      value: './ruyi-venv',
       validateInput: (value) => {
         if (!value || value.trim().length === 0) {
           return 'Path cannot be empty'

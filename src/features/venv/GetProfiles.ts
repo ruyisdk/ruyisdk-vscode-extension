@@ -14,10 +14,13 @@ export function readStdoutP(stdout: string): Record<string, string> {
   const lines = stdout.split(/\r?\n/)
   for (const line of lines) {
     if (!line.trim()) continue // skip empty lines
-    // Use the entire line as the key, and the line without parentheses as the value
-    const key = line
-    const value = key.replace(/\([^()]*\)/g, '').trim()
-    dict[key] = value
+    const raw = line
+    // Remove any parenthetical annotations, e.g., "(needs quirks: {'xthead'})"
+    const label = raw.replace(/\([^()]*\)/g, '').trim()
+    if (!label) continue
+
+    // Map cleaned name -> raw line so UI can show raw in description
+    dict[label] = raw
   }
   // Sort the dictionary by keys
   const sortedDict: Record<string, string> = {}
