@@ -3,7 +3,7 @@
  * VenvTreeProvider
  *
  * Displays detected Ruyi virtual environments in a tree view.
- * Updates when ruyi.venv.refresh command is executed.
+ * Automatically updates when venv state changes via event subscription.
  *
  * Each venv item shows:
  * - Venv name
@@ -13,10 +13,8 @@
 import * as paths from 'path'
 import * as vscode from 'vscode'
 
-export interface VenvInfo {
-  name: string
-  path: string // absolute path
-}
+import type { VenvInfo } from './models/types'
+import { venvState } from './models/VenvState'
 
 export class VenvTreeProvider implements
   vscode.TreeDataProvider<VenvTreeItem> {
@@ -28,6 +26,38 @@ export class VenvTreeProvider implements
   private _currentVenvName: string | null = null
   private _statusBarItem: vscode.StatusBarItem | null = null
   private _workspaceRoot: string | null = null
+  private _unsubscribeStateListener: (() => void) | null = null
+
+  constructor() {
+    // Subscribe to venv state changes to automatically update UI
+    this._unsubscribeStateListener = venvState.subscribe((venvPath) => {
+      // Find the venv name from the path
+      if (venvPath) {
+        const matchingVenv = this._venvs.find(v =>
+          paths.normalize(v.path) === paths.normalize(venvPath),
+        )
+        // If we can't find the venv in the list, use the basename as fallback
+        // Normalize path to handle trailing slashes before extracting basename
+        const normalizedPath = paths.normalize(venvPath)
+        const venvName = matchingVenv?.name || paths.basename(normalizedPath) || 'Unknown Venv'
+        this.setCurrentVenv(venvPath, venvName)
+      }
+      else {
+        this.setCurrentVenv(null, null)
+      }
+    })
+  }
+
+  /**
+   * Clean up subscriptions when the provider is disposed.
+   */
+  dispose(): void {
+    if (this._unsubscribeStateListener) {
+      this._unsubscribeStateListener()
+      this._unsubscribeStateListener = null
+    }
+    this._onDidChangeTreeData.dispose()
+  }
 
   /**
    * Set the status bar item to update when current venv changes
@@ -38,9 +68,9 @@ export class VenvTreeProvider implements
   }
 
   /**
-   * Set the currently active venv.
+   * Set the currently active venv (private - only called by state subscription).
    */
-  setCurrentVenv(venvPath: string | null, venvName: string | null): void {
+  private setCurrentVenv(venvPath: string | null, venvName: string | null): void {
     this._currentVenvPath = venvPath
     this._currentVenvName = venvName || null
     this._onDidChangeTreeData.fire()
@@ -55,9 +85,13 @@ export class VenvTreeProvider implements
       return
     }
 
-    if (this._currentVenvPath && this._currentVenvName) {
-      this._statusBarItem.text = `$(check) ${this._currentVenvName}`
-      this._statusBarItem.tooltip = `Active Ruyi Venv: ${this._currentVenvName}\nPath: ${this._currentVenvPath}`
+    if (this._currentVenvPath) {
+      // Show active venv even if name is not available (use path basename)
+      // Normalize path to handle trailing slashes before extracting basename
+      const normalizedPath = paths.normalize(this._currentVenvPath)
+      const displayName = this._currentVenvName || paths.basename(normalizedPath) || 'Unknown Venv'
+      this._statusBarItem.text = `$(check) ${displayName}`
+      this._statusBarItem.tooltip = `Active Ruyi Venv: ${displayName}\nPath: ${this._currentVenvPath}`
     }
     else {
       this._statusBarItem.text = '$(circle-slash) No Active Venv'
@@ -72,13 +106,6 @@ export class VenvTreeProvider implements
     this._venvs = venvs
     this._workspaceRoot = workspaceRoot ?? this._workspaceRoot
     this._onDidChangeTreeData.fire()
-  }
-
-  /**
-   * Get the currently active venv path.
-   */
-  getCurrentVenv(): string | null {
-    return this._currentVenvPath
   }
 
   /**
@@ -114,14 +141,6 @@ export class VenvTreeProvider implements
       )
     })
   }
-
-  /**
-   * Clear the venv list.
-   */
-  clear(): void {
-    this._venvs = []
-    this._onDidChangeTreeData.fire()
-  }
 }
 
 export class VenvTreeItem extends vscode.TreeItem {
@@ -151,12 +170,7 @@ export class VenvTreeItem extends vscode.TreeItem {
         this.contextValue = 'ruyiVenv.itemNonCurrent'
       }
 
-      // Add command of activating or deactivating venv on click
-      this.command = {
-        command: 'ruyi.venv.switch',
-        title: 'Activate or Deactivate Venv',
-        arguments: [this],
-      }
+      // No default click action - use inline buttons instead
     }
   }
 }

@@ -14,7 +14,7 @@ import * as vscode from 'vscode'
 import { getWorkspaceFolderPath } from '../../common/helpers'
 import { VenvTreeItem } from '../../features/venv/VenvTree'
 
-import { currentVenv } from './manageCurrentVenv'
+import { checkVenvStatus } from './helpers'
 
 export default function registerCleanADeactivatedVenvCommand(
   context: vscode.ExtensionContext) {
@@ -22,12 +22,21 @@ export default function registerCleanADeactivatedVenvCommand(
     if (!venv) {
       return
     }
+
     // Check if the picked venv is the current active one
     const venvPath = `./${venv.venvPath}`
-    if (venvPath === currentVenv) {
+    const status = checkVenvStatus(venvPath)
+
+    if (!status) {
+      vscode.window.showErrorMessage('Please open a workspace folder first.')
+      return
+    }
+
+    if (status.isActive) {
       vscode.window.showErrorMessage('Cannot delete the currently active Ruyi venv. Please deactivate it first.')
       return
     }
+
     // Confirm deletion
     const confirm = await vscode.window.showWarningMessage(
       `Are you sure you want to delete the Ruyi venv at ${venvPath}? This action cannot be undone.`,
