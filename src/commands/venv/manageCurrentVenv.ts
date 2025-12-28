@@ -1,72 +1,36 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
- * Venv Terminal Management Helper
- * Not a command by itself
+ * Venv Terminal Management Service
  *
  * Manages a dedicated terminal for Ruyi venv activation and deactivation.
- * Keeps track of the current active venv and ensures proper cleanup on terminal closure.
- * Also detects when the user manually runs 'ruyi-deactivate' or 'source mypath/ruyi-activate' in the terminal.
+ * State management is handled by VenvState (centralized state manager).
  */
 
 import * as path from 'path'
 import * as vscode from 'vscode'
 
 import { getWorkspaceFolderPath } from '../../common/helpers'
-
-import { venvTree } from './detect'
+import { venvState } from '../../features/venv/models/VenvState'
 
 let ruyiTerminal: vscode.Terminal | null
-export let currentVenv: string | null = null // absolute path
 
-// Watch for terminal close event to reset currentVenv and ruyiTerminal
 export default function registerTerminalHandlerCommand(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.window.onDidCloseTerminal((closedTerminal) => {
       if (closedTerminal === ruyiTerminal) {
         ruyiTerminal = null
-        currentVenv = null
-        venvTree.setCurrentVenv(null, null)
-        vscode.window.showInformationMessage('Ruyi Venv Terminal closed, venv deactivated.')
-      }
-    }),
-  )
-
-  // Monitor terminal shell execution (requires Shell Integration, VS Code 1.72+)
-  // This detects when user manually runs commands in the terminal
-  context.subscriptions.push(
-    vscode.window.onDidEndTerminalShellExecution((event) => {
-      if (event.terminal === ruyiTerminal && event.execution.commandLine) {
-        const commandLine = event.execution.commandLine.value.trim()
-
-        if (commandLine === 'ruyi-deactivate') {
-          currentVenv = null
-          venvTree.setCurrentVenv(null, null)
-          vscode.window.showInformationMessage('Ruyi venv deactivated.')
-        }
-        else if (commandLine.startsWith('source ') && commandLine.includes('/bin/ruyi-activate')) {
-          const match = commandLine.match(/source\s+(.+?)\/bin\/ruyi-activate/)
-          if (match) {
-            try {
-              const workspaceRoot = getWorkspaceFolderPath()
-              const abs = path.isAbsolute(match[1])
-                ? match[1]
-                : path.resolve(workspaceRoot, match[1])
-              currentVenv = abs
-              venvTree.setCurrentVenv(currentVenv, path.basename(abs))
-              vscode.window.showInformationMessage(`Ruyi venv activated: ${currentVenv}`)
-            }
-            catch {
-              // Ignore if workspace is not available
-            }
-          }
-        }
+        venvState.setCurrentVenv(null)
       }
     }),
   )
 }
 
-// Get or create the Ruyi terminal for venv activation, assigning a venv path to it.
-export function manageRuyiTerminal(venvPath: string | null, venvName?: string) {
+/**
+ * Manage the Ruyi terminal for venv activation/deactivation.
+ *
+ * @param venvPath The path to activate (relative or absolute), or null to deactivate.
+ */
+export function manageRuyiTerminal(venvPath: string | null) {
   let workspaceRoot: string
   try {
     workspaceRoot = getWorkspaceFolderPath()
@@ -76,7 +40,10 @@ export function manageRuyiTerminal(venvPath: string | null, venvName?: string) {
     return
   }
 
-  const absPath = venvPath ? path.resolve(workspaceRoot, venvPath) : null
+  const absPath = venvPath
+    ? (path.isAbsolute(venvPath) ? venvPath : path.resolve(workspaceRoot, venvPath))
+    : null
+  const currentVenv = venvState.getCurrentVenv()
 
   if (!ruyiTerminal) {
     if (absPath) {
@@ -88,40 +55,38 @@ export function manageRuyiTerminal(venvPath: string | null, venvName?: string) {
       ruyiTerminal.show()
     }
     else {
-      currentVenv = null
-      venvTree.setCurrentVenv(null, null)
-      vscode.window.showInformationMessage('No Ruyi venv is currently active.')
+      venvState.setCurrentVenv(null)
       return
     }
   }
 
   if (absPath === null) {
-    // Deactivate current venv
-    ruyiTerminal.sendText('ruyi-deactivate')
-    currentVenv = null
-    venvTree.setCurrentVenv(null, null)
+    if (currentVenv) {
+      ruyiTerminal.sendText('ruyi-deactivate')
+      venvState.setCurrentVenv(null)
+    }
+    else {
+      venvState.setCurrentVenv(null)
+    }
     return
   }
 
   if (currentVenv && path.normalize(absPath) === path.normalize(currentVenv)) {
-    // Toggle: deactivate same venv
-    ruyiTerminal.sendText('ruyi-deactivate')
-    currentVenv = null
-    venvTree.setCurrentVenv(null, null)
     return
   }
 
-  // Activate new venv
   if (currentVenv) {
+    // Set state immediately to prevent race conditions with rapid operations
+    venvState.setCurrentVenv(absPath)
     ruyiTerminal.sendText('ruyi-deactivate')
     setTimeout(() => {
-      ruyiTerminal?.sendText(`source "${absPath}/bin/ruyi-activate"`)
+      if (ruyiTerminal) {
+        ruyiTerminal.sendText(`source "${absPath}/bin/ruyi-activate"`)
+      }
     }, 100)
   }
   else {
+    venvState.setCurrentVenv(absPath)
     ruyiTerminal.sendText(`source "${absPath}/bin/ruyi-activate"`)
   }
-
-  currentVenv = absPath
-  venvTree.setCurrentVenv(absPath, venvName ?? path.basename(absPath))
 }

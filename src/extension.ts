@@ -18,7 +18,8 @@
  *   • ruyi.venv.refresh  (./commands/venv/detect)
  *   • ruyi.venv.create  (./commands/venv/create)
  *   • ruyi.venv.clean   (./commands/venv/clean)
- *   • ruyi.venv.switch  (./commands/venv/switch)
+ *   • ruyi.venv.activate  (./commands/venv/activate)
+ *   • ruyi.venv.deactivate  (./commands/venv/deactivate)
  *
  * - Show home page on first activation.
  * - Run an automatic detect on activation.
@@ -27,11 +28,12 @@
 
 import * as vscode from 'vscode'
 
+import registerActivateVenvCommand from './commands/venv/activate'
 import registerCleanADeactivatedVenvCommand from './commands/venv/clean'
 import registerCreateNewVenvCommand from './commands/venv/create'
+import registerDeactivateVenvCommand from './commands/venv/deactivate'
 import registerDetectAllVenvsCommand from './commands/venv/detect'
 import registerTerminalHandlerCommand from './commands/venv/manageCurrentVenv'
-import registerSwitchFromVenvsCommand from './commands/venv/switch'
 import { configuration } from './common/configuration'
 import { logger } from './common/logger'
 import registerHomeModule from './home'
@@ -52,23 +54,32 @@ export function activate(context: vscode.ExtensionContext) {
   registerTerminalHandlerCommand(context)
   registerDetectAllVenvsCommand(context)
   registerCreateNewVenvCommand(context)
-  registerSwitchFromVenvsCommand(context)
+  registerActivateVenvCommand(context)
+  registerDeactivateVenvCommand(context)
   registerCleanADeactivatedVenvCommand(context)
 
   // Initialize logger
   logger.initialize('RuyiSDK')
 
-  // Run initial detection
+  // Run initial detection with error handling
   setTimeout(async () => {
-    const hasShownHome = context.globalState.get<boolean>('ruyi.home.shown') === true
+    try {
+      const hasShownHome = context.globalState.get<boolean>('ruyi.home.shown') === true
 
-    if (!hasShownHome) {
-      await context.globalState.update('ruyi.home.shown', true)
-      await vscode.commands.executeCommand('ruyi.home.show')
+      if (!hasShownHome) {
+        await context.globalState.update('ruyi.home.shown', true)
+        await vscode.commands.executeCommand('ruyi.home.show')
+      }
+
+      await vscode.commands.executeCommand('ruyi.setup.detect')
+      await vscode.commands.executeCommand('ruyi.venv.refresh')
     }
-
-    await vscode.commands.executeCommand('ruyi.setup.detect')
-    await vscode.commands.executeCommand('ruyi.venv.refresh')
+    catch (error) {
+      logger.error('Extension initialization failed:', error)
+      vscode.window.showErrorMessage(
+        'RuyiSDK extension initialization failed. Some features may not work correctly.',
+      )
+    }
   })
 }
 

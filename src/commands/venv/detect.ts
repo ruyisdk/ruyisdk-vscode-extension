@@ -8,7 +8,7 @@
  * - Detect all Ruyi venv-s (activation state included) in the current workspace and update the Venv Tree View
  * via features/venv/VenvTree/VenvTreeProvider.createTreeView service.
  * - Automatically run on extension activation.
- * - Automatically run after any venv is activated/deactivated via `ruyi.venv.switch` command.
+ * - Automatically run after any venv is activated/deactivated via inline buttons.
  * - Automatically run after any venv is created via `ruyi.venv.create` command.
  * - Automatically run after any venv is deleted via `ruyi.venv.clean` command.
  * - Cannot be run if no workspace is opened.
@@ -21,12 +21,16 @@ import * as vscode from 'vscode'
 import { getWorkspaceFolderPath } from '../../common/helpers'
 import { logger } from '../../common/logger'
 import { detectVenv } from '../../features/venv/DetectforVenv'
-import { VenvTreeProvider, VenvInfo } from '../../features/venv/VenvTree'
+import type { VenvInfo } from '../../features/venv/models/types'
+import { VenvTreeProvider } from '../../features/venv/VenvTree'
 
 export const venvTree = new VenvTreeProvider()
 
 export default function registerDetectAllVenvsCommand(
   context: vscode.ExtensionContext) {
+  // Add venvTree to subscriptions for proper cleanup
+  context.subscriptions.push(venvTree)
+
   // Create status bar item for venv management
   const venvStatusBarItem = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Left,

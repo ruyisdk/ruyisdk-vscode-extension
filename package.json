@@ -138,10 +138,16 @@
         "icon": "$(trash)"
       },
       {
-        "command": "ruyi.venv.switch",
-        "title": "Switch Venvs",
+        "command": "ruyi.venv.activate",
+        "title": "Activate Venv",
         "category": "Ruyi",
-        "icon": "$(device-desktop)"
+        "icon": "$(check)"
+      },
+      {
+        "command": "ruyi.venv.deactivate",
+        "title": "Deactivate Venv",
+        "category": "Ruyi",
+        "icon": "$(close)"
       },
       {
         "command": "ruyi.extract",
@@ -194,9 +200,19 @@
           "group": "inline@1"
         },
         {
+          "command": "ruyi.venv.activate",
+          "when": "view == ruyiVenvsView && viewItem == ruyiVenv.itemNonCurrent",
+          "group": "inline@1"
+        },
+        {
+          "command": "ruyi.venv.deactivate",
+          "when": "view == ruyiVenvsView && viewItem == ruyiVenv.current",
+          "group": "inline@1"
+        },
+        {
           "command": "ruyi.venv.clean",
           "when": "view == ruyiVenvsView && viewItem == ruyiVenv.itemNonCurrent",
-          "group": "inline"
+          "group": "inline@2"
         }
       ],
       "commandPalette": [
