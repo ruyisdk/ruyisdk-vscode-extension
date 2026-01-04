@@ -137,23 +137,40 @@ export async function extractPackage(uri?: vscode.Uri): Promise<void> {
     const pkgVersion = match?.[2]?.trim().replace(/\s+/g, '-') || 'latest'
     const suggestedDir = path.join(targetDir, `${pkgName}-${pkgVersion}`)
 
-    // Pick parent folder visually, then append suggested subfolder name automatically
-    const folder = await vscode.window.showOpenDialog({
-      canSelectFolders: true,
-      canSelectFiles: false,
-      canSelectMany: false,
-      defaultUri: vscode.Uri.file(targetDir),
-      openLabel: 'Select Destination Folder',
-      title: 'Choose where to extract the package',
-    })
-
-    if (!folder || !folder[0]) {
-      return
+    // If suggested folder exists, use it directly; otherwise ask user to accept or pick manually
+    const suggestedUri = vscode.Uri.file(suggestedDir)
+    try {
+      await vscode.workspace.fs.stat(suggestedUri)
+      targetDir = suggestedDir
     }
+    catch {
+      const option = await vscode.window.showQuickPick(
+        [
+          { label: `Extract to suggested folder: ${suggestedDir}`, value: 'suggested' },
+          { label: 'Manually select...', value: 'manual' },
+        ],
+        { placeHolder: 'Select extraction folder' },
+      )
+      if (!option) return
 
-    const parentDir = folder[0].fsPath
-    targetDir = path.join(parentDir, path.basename(suggestedDir))
-    await vscode.workspace.fs.createDirectory(vscode.Uri.file(targetDir))
+      if (option.value === 'suggested') {
+        await vscode.workspace.fs.createDirectory(suggestedUri)
+        targetDir = suggestedDir
+      }
+      else {
+        const folders = await vscode.window.showOpenDialog({
+          canSelectFolders: true,
+          canSelectFiles: false,
+          canSelectMany: false,
+          openLabel: 'Select Extraction Folder',
+          title: 'Select Extraction Folder',
+        })
+        if (!folders || !folders[0]) return
+        const parentDir = folders[0].fsPath
+        targetDir = parentDir
+        await vscode.workspace.fs.createDirectory(vscode.Uri.file(targetDir))
+      }
+    }
 
     await vscode.window.withProgress(
       {
