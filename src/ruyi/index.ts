@@ -108,7 +108,6 @@ export interface SelfCleanOptions {
 }
 
 export interface VenvOptions {
-  name?: string
   toolchain?: string | string[]
   emulator?: string
   withSysroot?: boolean
@@ -505,9 +504,6 @@ export class Ruyi {
   ): Promise<RuyiResult> {
     const args = ['venv']
 
-    if (options?.name) {
-      args.push('--name', options.name)
-    }
     if (options?.toolchain) {
       const toolchains = Array.isArray(options.toolchain) ? options.toolchain : [options.toolchain]
       toolchains.forEach(tc => args.push('--toolchain', tc))

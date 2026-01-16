@@ -7,7 +7,6 @@
  *
  * Each venv item shows:
  * - Venv name
- * - Venv path relative to workspace
  */
 
 import * as paths from 'path'
@@ -91,7 +90,7 @@ export class VenvTreeProvider implements
       const normalizedPath = paths.normalize(this._currentVenvPath)
       const displayName = this._currentVenvName || paths.basename(normalizedPath) || 'Unknown Venv'
       this._statusBarItem.text = `$(check) ${displayName}`
-      this._statusBarItem.tooltip = `Active Ruyi Venv: ${displayName}\nPath: ${this._currentVenvPath}`
+      this._statusBarItem.tooltip = `Active Ruyi Venv: ${displayName}`
     }
     else {
       this._statusBarItem.text = '$(circle-slash) No Active Venv'
@@ -157,10 +156,6 @@ export class VenvTreeItem extends vscode.TreeItem {
       this.contextValue = 'ruyiVenv.placeholder'
     }
     else {
-      this.description = `at ./${venvPath}`
-      this.tooltip = isCurrentVenv
-        ? `${name}\nPath: ${venvPath}\n✓ Currently Active`
-        : `${name}\nPath: ${venvPath}`
       if (isCurrentVenv) {
         this.iconPath = new vscode.ThemeIcon('check', new vscode.ThemeColor('testing.iconPassed'))
         this.contextValue = 'ruyiVenv.current'
