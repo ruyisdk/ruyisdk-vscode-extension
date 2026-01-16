@@ -234,13 +234,6 @@ export default function registerCreateNewVenvCommand(
     }
     else emulator = null
 
-    // Input name, default to profile name
-    const name = await vscode.window.showInputBox({
-      placeHolder: 'Name of the new venv',
-      value: profile, // Default value set to profile name
-    })
-    if (name === undefined) return
-
     // Input path, default to ./ruyi-venv-{profile}
     const suggestedPath = `./ruyi-venv-${profile.replace(/\s+/g, '-')}`
     const path = await vscode.window.showInputBox({
@@ -290,7 +283,7 @@ export default function registerCreateNewVenvCommand(
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: `Creating venv "${name}"`,
+        title: 'Creating venv',
         cancellable: false,
       },
       async (progress) => {
@@ -303,7 +296,6 @@ export default function registerCreateNewVenvCommand(
           .cwd(getWorkspaceFolderPath())
           .onProgress(onProgress)
           .venv(profile, path, {
-            name,
             toolchain: toolchains,
             emulator: emulator ?? undefined,
             sysrootFrom,

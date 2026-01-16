@@ -9,7 +9,7 @@
  * which contains a "ruyi-activate" file,
  * it is considered a Ruyi venv.
  * Under this circumstance, we will record the relative path,
- * as well as the $1 of the "RUYI_VENV_PROMPT=$1" line in the "ruyi-activate" file.
+ * and use the folder name (basename) as the venv name.
  * We can return multiple venvs if found.
  */
 
@@ -71,13 +71,9 @@ export async function detectVenv(): Promise<string[][]> {
       try {
         const activateUri = vscode.Uri.file(activatePath)
         await vscode.workspace.fs.stat(activateUri) // ensure the existence of activatePath. not exist -> exception
-        // Read the ruyi-activate file to find the RUYI_VENV_PROMPT line
-        const activateContent = Buffer.from(await vscode.workspace.fs.readFile(activateUri)).toString('utf-8')
-        const promptLine = activateContent.split('\n')
-          .find(line => line.includes('RUYI_VENV_PROMPT='))
-        if (promptLine) {
-          foundVenvs.push([dir, promptLine.split('=')[1].trim()])
-        }
+        // Use the basename of the venv directory as the venv name
+        const venvName = path.basename(dir)
+        foundVenvs.push([dir, venvName])
       }
       catch {
         // pass
