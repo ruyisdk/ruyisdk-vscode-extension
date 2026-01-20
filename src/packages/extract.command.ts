@@ -135,27 +135,32 @@ export async function extractPackage(uri?: vscode.Uri): Promise<void> {
     const match = selectedLabel.match(/^(.*)\s*\(([^)]+)\)/)
     const pkgName = match?.[1]?.trim() || selectedLabel
     const pkgVersion = match?.[2]?.trim().replace(/\s+/g, '-') || 'latest'
-    const suggestedDir = path.join(targetDir, `${pkgName}-${pkgVersion}`)
+    const baseDir = targetDir
+    const subfolderDir = path.join(baseDir, `${pkgName}-${pkgVersion}`)
 
-    // If suggested folder exists, use it directly; otherwise ask user to accept or pick manually
-    const suggestedUri = vscode.Uri.file(suggestedDir)
+    const subfolderUri = vscode.Uri.file(subfolderDir)
     try {
-      await vscode.workspace.fs.stat(suggestedUri)
-      targetDir = suggestedDir
+      await vscode.workspace.fs.stat(subfolderUri)
+      targetDir = subfolderDir
     }
     catch {
       const option = await vscode.window.showQuickPick(
         [
-          { label: `Extract to suggested folder: ${suggestedDir}`, value: 'suggested' },
+          { label: `Extract to current folder: ${baseDir}`, value: 'base' },
+          { label: `Extract to new subfolder: ${subfolderDir}`, value: 'subfolder' },
           { label: 'Manually select...', value: 'manual' },
         ],
         { placeHolder: 'Select extraction folder' },
       )
       if (!option) return
 
-      if (option.value === 'suggested') {
-        await vscode.workspace.fs.createDirectory(suggestedUri)
-        targetDir = suggestedDir
+      if (option.value === 'base') {
+        targetDir = baseDir
+        await vscode.workspace.fs.createDirectory(vscode.Uri.file(targetDir))
+      }
+      else if (option.value === 'subfolder') {
+        await vscode.workspace.fs.createDirectory(subfolderUri)
+        targetDir = subfolderDir
       }
       else {
         const folders = await vscode.window.showOpenDialog({
