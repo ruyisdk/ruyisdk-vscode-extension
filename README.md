@@ -4,7 +4,7 @@
 
 The official VS Code extension for RuyiSDK, providing RISC-V developers with an all-in-one development environment management experience.
 
-<img width="2516" height="1566" alt="Image" src="https://github.com/user-attachments/assets/ce796a73-0b99-44a9-ac75-e3bf65276656" />
+<img width="2516" height="1566" alt="Image" src="screenshot.png" />
 
 ## Features
 
