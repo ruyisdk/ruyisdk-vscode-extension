@@ -1,0 +1,43 @@
+# Copy from https://github.com/antfu/vscode-theme-vitesse/blob/main/.github/workflows/release.yml
+name: Publish Extension
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  publish-extension:
+    permissions:
+      id-token: write
+      contents: write
+      actions: write
+
+    runs-on: ubuntu-slim
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set node
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+
+      - run: npx changelogithub
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+      - run: npm install
+
+      - name: Generate .vsix file
+        run: npm run package
+
+      - name: Publish Extension
+        run: npx vsxpub --no-dependencies --exclude vsce --exclude ovsx
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # VSCE_PAT: ${{secrets.VSCE_PAT}}
+          # OVSX_PAT: ${{secrets.OVSX_PAT}}

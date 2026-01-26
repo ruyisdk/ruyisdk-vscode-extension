@@ -1,0 +1,6 @@
+out
+crafting_table/
+dist
+node_modules
+.vscode-test/
+*.vsix
