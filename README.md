@@ -4,7 +4,9 @@
 
 The official VS Code extension for RuyiSDK, providing RISC-V developers with an all-in-one development environment management experience.
 
-<img width="2516" height="1566" alt="Image" src="screenshot.png" />
+<img width="1000" alt="Image" src="screenshot.png" />
+
+Install from [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=RuyiSDK.ruyisdk-vscode-extension).
 
 ## Features
 

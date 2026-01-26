@@ -4,7 +4,9 @@
 
 RuyiSDK 官方 VS Code 扩展，为 RISC-V 开发者提供一站式的开发环境管理体验。
 
-<img width="2516" height="1566" alt="Image" src="screenshot.png" />
+<img width="1000" alt="Image" src="screenshot.png" />
+
+从 [Visual Studio 市场](https://marketplace.visualstudio.com/items?itemName=RuyiSDK.ruyisdk-vscode-extension)安装本插件。
 
 ## 功能亮点
 
