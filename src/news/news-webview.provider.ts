@@ -42,6 +42,7 @@ export class NewsWebviewProvider {
   async showCards(): Promise<void> {
     if (this.panel) {
       this.panel.reveal()
+      await this.updateContent()
       return
     }
 
