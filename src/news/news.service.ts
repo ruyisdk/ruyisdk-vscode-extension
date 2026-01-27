@@ -17,7 +17,7 @@ import * as vscode from 'vscode'
 import { logger } from '../common/logger'
 import ruyi from '../ruyi'
 
-import { extractNewsSummary, parseNewsList } from './news.helper'
+import { parseNewsListPorcelain } from './news.helper'
 
 const resolve4 = promisify(dns.resolve4)
 
@@ -125,52 +125,45 @@ export class NewsService {
   }
 
   async list(unread = false, forceRefresh = false): Promise<NewsRow[]> {
-    const shouldTryNetwork = forceRefresh || await this.isNetworkAvailable()
-
-    if (shouldTryNetwork) {
-      try {
-        return await this.fetchFromNetwork(unread)
-      }
-      catch (error) {
-        if (forceRefresh) {
-          throw error
+    // forceRefresh implies trying to update the repo from remote
+    if (forceRefresh) {
+      const isOnline = await this.isNetworkAvailable()
+      if (isOnline) {
+        try {
+          await this.refreshNewsRepo()
         }
-        logger.warn('Network fetch failed, trying cache:', error)
-        return await this.fetchFromCache(unread)
+        catch (error) {
+          logger.warn('Failed to update news repo:', error)
+          // Proceed to list local news anyway
+        }
       }
     }
 
-    return await this.fetchFromCache(unread)
+    try {
+      return await this.fetchFromRuyi(unread)
+    }
+    catch (error) {
+      logger.warn('Fetching news from ruyi failed, trying cache:', error)
+      return await this.fetchFromCache(unread)
+    }
   }
 
-  private async fetchFromNetwork(unread: boolean): Promise<NewsRow[]> {
-    await this.refreshNewsRepo()
+  private async fetchFromRuyi(unread: boolean): Promise<NewsRow[]> {
     // Always fetch the full list to maintain complete cache
-    const result = await ruyi.newsList({ newOnly: false })
+    // Using porcelain mode to get JSON output with read status and content
+    const result = await ruyi.newsList({ newOnly: false, porcelain: true })
 
     if (result.code !== 0) {
       throw new Error(result.stderr || 'ruyi news list failed')
     }
 
-    const fullData = parseNewsList(result.stdout)
+    const fullData = parseNewsListPorcelain(result.stdout, vscode.env.language)
 
-    const cache = await this.loadCache(true)
-    const existingData = cache?.data || []
+    // Cache the full valid data
+    await this.saveCache(fullData)
 
-    const mergedData = fullData.map((newItem) => {
-      const existingItem = existingData.find(item => item.id === newItem.id)
-      return {
-        ...newItem,
-        read: existingItem?.read || false,
-        summary: existingItem?.summary,
-      }
-    })
-
-    await this.ensureSummaries(mergedData)
-    await this.saveCache(mergedData)
-
-    // If unread is requested, filter the merged data
-    const filteredData = unread ? mergedData.filter(item => !item.read) : mergedData
+    // If unread is requested, filter the data
+    const filteredData = unread ? fullData.filter(item => !item.read) : fullData
     return filteredData
   }
 
@@ -178,14 +171,8 @@ export class NewsService {
     const cache = await this.loadCache(true)
 
     if (!cache || cache.data.length === 0) {
-      if (await this.isNetworkAvailable()) {
-        return await this.fetchFromNetwork(unread)
-      }
       return []
     }
-
-    await this.ensureSummaries(cache.data)
-    await this.saveCache(cache.data)
 
     return unread ? cache.data.filter(item => !item.read) : cache.data
   }
@@ -215,12 +202,16 @@ export class NewsService {
       throw new Error(result.stderr || 'ruyi news read failed')
     }
 
-    await this.markAsRead(no, result.stdout)
+    // 'ruyi news read' already marks the item as read in the backend.
+    // We just need to update our local view if needed, but since we refresh list on view,
+    // minimal action is required here. However, explicit marking is safer for cache consistency
+    // until next list refresh.
+    await this.markAsRead(no)
 
     return result.stdout
   }
 
-  private async markAsRead(no: number, bodyMarkdown?: string): Promise<void> {
+  private async markAsRead(no: number): Promise<void> {
     try {
       const cache = await this.loadCache(true)
       if (!cache) return
@@ -228,12 +219,7 @@ export class NewsService {
       const newsItem = cache.data.find(item => item.no === no)
       if (newsItem && !newsItem.read) {
         newsItem.read = true
-        if (bodyMarkdown) {
-          const summary = extractNewsSummary(bodyMarkdown)
-          if (summary) {
-            newsItem.summary = summary
-          }
-        }
+        // No need to extract summary again as it should be there from porcelain list
         await this.saveCache(cache.data)
       }
     }
@@ -246,35 +232,6 @@ export class NewsService {
     const result = await ruyi.update()
     if (result.code !== 0) {
       throw new Error(result.stderr || 'ruyi update failed')
-    }
-  }
-
-  private async ensureSummaries(rows: NewsRow[]): Promise<void> {
-    for (const row of rows) {
-      if (row.summary && row.summary.trim()) {
-        continue
-      }
-
-      const summary = await this.fetchSummary(row.no)
-      if (summary) {
-        row.summary = summary
-      }
-    }
-  }
-
-  private async fetchSummary(no: number): Promise<string | undefined> {
-    try {
-      const result = await ruyi.newsRead(no)
-      if (result.code !== 0) {
-        logger.warn(`ruyi news read failed for ${no}:`, result.stderr)
-        return undefined
-      }
-
-      return extractNewsSummary(result.stdout)
-    }
-    catch (error) {
-      logger.warn(`Failed to fetch summary for news ${no}:`, error)
-      return undefined
     }
   }
 }

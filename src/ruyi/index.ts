@@ -95,6 +95,7 @@ export interface ListOptions {
 
 export interface NewsListOptions {
   newOnly?: boolean
+  porcelain?: boolean
 }
 
 export interface SelfCleanOptions {
@@ -558,7 +559,13 @@ export class Ruyi {
    * List news items
    */
   async newsList(options?: NewsListOptions): Promise<RuyiResult> {
-    const args = ['news', 'list']
+    const args: string[] = []
+
+    if (options?.porcelain) {
+      args.push('--porcelain')
+    }
+
+    args.push('news', 'list')
 
     if (options?.newOnly) {
       args.push('--new')

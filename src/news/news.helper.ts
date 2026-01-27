@@ -15,6 +15,20 @@ import type { NewsRow } from './news.service'
 const ROW_RE = /^\s*(\d+)\s+(\S+)\s+(.+)\s*$/
 const DATE_RE = /^(\d{4}-\d{2}-\d{2})\b/
 
+interface NewsItemLang {
+  lang: string
+  display_title: string
+  content: string
+}
+
+interface NewsItemJson {
+  ty: string
+  id: string
+  ord: number
+  is_read: boolean
+  langs: NewsItemLang[]
+}
+
 export function parseNewsList(stdout: string): NewsRow[] {
   return stdout.split(/\r?\n/)
     .map(line => ROW_RE.exec(line))
@@ -26,6 +40,61 @@ export function parseNewsList(stdout: string): NewsRow[] {
       date: DATE_RE.exec(id)?.[1],
       read: false,
     }))
+}
+
+export function parseNewsListPorcelain(stdout: string, preferredLang?: string): NewsRow[] {
+  const result: NewsRow[] = []
+  const lines = stdout.split(/\r?\n/).filter(line => line.trim())
+
+  // Normalize preferred language code (e.g. "zh-cn" -> "zh_CN")
+  let targetLang = preferredLang?.replace('-', '_')
+  // Handle simple case "zh" -> "zh_CN"
+  if (targetLang === 'zh') targetLang = 'zh_CN'
+  if (targetLang === 'en') targetLang = 'en_US'
+
+  for (const line of lines) {
+    try {
+      const item: NewsItemJson = JSON.parse(line)
+      if (item.ty !== 'newsitem-v1') continue
+
+      // Strategy: Preferred -> zh_CN -> en_US -> First Available
+      let contentObj = targetLang ? item.langs.find(l => l.lang.toLowerCase() === targetLang?.toLowerCase()) : undefined
+
+      if (!contentObj) {
+        // Try with fuzzy match (start with lang code)
+        if (preferredLang) {
+          const shortLang = preferredLang.split('-')[0]
+          contentObj = item.langs.find(l => l.lang.toLowerCase().startsWith(shortLang.toLowerCase()))
+        }
+      }
+
+      if (!contentObj) {
+        contentObj = item.langs.find(l => l.lang === 'zh_CN')
+      }
+      if (!contentObj) {
+        contentObj = item.langs.find(l => l.lang === 'en_US')
+      }
+      if (!contentObj && item.langs.length > 0) {
+        contentObj = item.langs[0]
+      }
+
+      if (contentObj) {
+        const summary = extractNewsSummary(contentObj.content)
+        result.push({
+          no: item.ord,
+          id: item.id,
+          title: contentObj.display_title,
+          date: DATE_RE.exec(item.id)?.[1],
+          read: item.is_read,
+          summary,
+        })
+      }
+    }
+    catch (error) {
+      logger.warn('Failed to parse news item json:', error)
+    }
+  }
+  return result
 }
 
 export function extractNewsSummary(markdown: string): string | undefined {
