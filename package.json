@@ -22,6 +22,16 @@
     "Programming Languages",
     "Debuggers"
   ],
+  "keywords": [
+    "ruyi",
+    "ruyisdk",
+    "risc-v",
+    "riscv",
+    "toolchain",
+    "package manager",
+    "virtual environment",
+    "sdk"
+  ],
   "activationEvents": [
     "onStartupFinished"
   ],
