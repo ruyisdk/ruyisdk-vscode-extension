@@ -27,6 +27,83 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "walkthroughs": [
+      {
+        "id": "ruyi.welcome",
+        "title": "Get started with RuyiSDK",
+        "description": "Start developing for RISC-V and explore core features such as SDK management, virtual environment management, and package installation.",
+        "steps": [
+          {
+            "id": "install",
+            "title": "Install RuyiSDK",
+            "description": "You can either [Install automatically](command:ruyi.setup.install) with pip(x) or download from [our website](https://ruyisdk.org/en/download/).",
+            "completionEvents": [
+              "onContext:ruyi.tutorial.installationComplete"
+            ],
+            "media": {
+              "markdown": "media/install.md"
+            }
+          },
+          {
+            "id": "packages",
+            "title": "Manage packages",
+            "description": "You can install packages visually on RuyiSDK sidebar view.",
+            "completionEvents": [
+              "onView:ruyiPackagesView"
+            ],
+            "media": {
+              "image": "media/packages.png",
+              "altText": "A tree view of RuyiSDK packages"
+            }
+          },
+          {
+            "id": "venv",
+            "title": "Create virtual environment",
+            "description": "[Create a virtual environment](command:ruyi.venv.create) to install toolchain, (optional) emulator, and so on.",
+            "completionEvents": [
+              "onCommand:ruyi.venv.create"
+            ],
+            "media": {
+              "image": "media/create-venv.png",
+              "altText": "A list view of virtual environment profile"
+            }
+          },
+          {
+            "id": "activate",
+            "title": "Activate virtual environment",
+            "description": "Activate virtual environment in sidebar.",
+            "completionEvents": [
+              "onCommand:ruyi.venv.activate"
+            ],
+            "media": {
+              "image": "media/activate-venv.png",
+              "altText": "Manage virtual environment in sidebar view of RuyiSDK"
+            }
+          },
+          {
+            "id": "news",
+            "title": "Read Ruyi News",
+            "description": "[Read latest Ruyi News](command:ruyi.news.showCards) inside editor",
+            "completionEvents": [
+              "onCommand:ruyi.news.showCards"
+            ],
+            "media": {
+              "image": "media/news.png",
+              "altText": "Ruyi SDK News"
+            }
+          },
+          {
+            "id": "example",
+            "title": "Build example executable",
+            "description": "[Follow our guide](https://ruyisdk.org/en/docs/VSCode-Plugins/cases/case1/) to build a binary and run it on a RISC-V Development Board.",
+            "media": {
+              "image": "media/example.png",
+              "altText": "CoreMark: Build with Extension (Example: LicheePi 4A)"
+            }
+          }
+        ]
+      }
+    ],
     "viewsContainers": {
       "activitybar": [
         {
