@@ -145,6 +145,8 @@ export function registerDetectCommand(ctx: vscode.ExtensionContext): void {
       `Ruyi detected: ${installation.version} (${installation.path})`,
     )
 
+    await vscode.commands.executeCommand('setContext', 'ruyi.tutorial.installationComplete', true)
+
     // Check for updates if enabled
     if (configuration.checkForUpdates) {
       checkRuyiUpdate(installation.version).catch((error) => {
