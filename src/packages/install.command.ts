@@ -10,22 +10,25 @@ import { VersionItem } from './package-tree.provider'
  * Install a package by name and version
  * @param name Package name like "toolchain"
  * @param version Package version like "1.0.0", or undefined for latest
+ * @param skipConfirm If true, skip the confirmation dialog
  * @returns true if successful, false otherwise
  */
-export async function installPackage(name: string, version?: string): Promise<boolean> {
+export async function installPackage(name: string, version?: string, skipConfirm: boolean = false): Promise<boolean> {
   const packageName = name.split('/').pop() || name
   const displayVersion = version || 'latest'
   const packageSpec = version ? `${name}(==${version})` : name
 
-  const choice = await vscode.window.showInformationMessage(
-    `Install ${packageName} ${displayVersion}?`,
-    { modal: false },
-    'Install',
-    'Cancel',
-  )
+  if (!skipConfirm) {
+    const choice = await vscode.window.showInformationMessage(
+      `Install ${packageName} ${displayVersion}?`,
+      { modal: false },
+      'Install',
+      'Cancel',
+    )
 
-  if (choice !== 'Install') {
-    return false
+    if (choice !== 'Install') {
+      return false
+    }
   }
 
   let success = false
