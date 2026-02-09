@@ -15,11 +15,10 @@
  *   • ruyi.packages.uninstall  (./packages/uninstall.command)
  *   • ruyi.packages.refresh    (./packages/refresh.command)
  *   • ruyi.extract      (./packages/extract.command)
- *   • ruyi.venv.refresh  (./commands/venv/detect)
- *   • ruyi.venv.create  (./commands/venv/create)
- *   • ruyi.venv.clean   (./commands/venv/clean)
- *   • ruyi.venv.activate  (./commands/venv/activate)
- *   • ruyi.venv.deactivate  (./commands/venv/deactivate)
+ *   • ruyi.venv.refresh  (./venv/create.command)
+ *   • ruyi.venv.create  (./venv/create.command)
+ *   • ruyi.venv.clean   (./venv/clean.command)
+ *   • ruyi.venv.switch  (./venv/switch.command)
  *
  * - Show home page on first activation.
  * - Run an automatic detect on activation.
@@ -28,35 +27,24 @@
 
 import * as vscode from 'vscode'
 
-import registerActivateVenvCommand from './commands/venv/activate'
-import registerCleanADeactivatedVenvCommand from './commands/venv/clean'
-import registerCreateNewVenvCommand from './commands/venv/create'
-import registerDeactivateVenvCommand from './commands/venv/deactivate'
-import registerDetectAllVenvsCommand from './commands/venv/detect'
-import registerTerminalHandlerCommand from './commands/venv/manageCurrentVenv'
 import { configuration } from './common/configuration'
 import { logger } from './common/logger'
 import registerHomeModule from './home'
 import registerNewsModule from './news'
 import registerPackagesModule from './packages'
 import registerSetupModule from './setup'
+import registerVenvModule from './venv'
 
 export function activate(context: vscode.ExtensionContext) {
   // Register configuration service
   context.subscriptions.push(configuration)
 
-  // Register commands
+  // Register modules
   registerPackagesModule(context)
   registerHomeModule(context)
   registerSetupModule(context)
   registerNewsModule(context)
-
-  registerTerminalHandlerCommand(context)
-  registerDetectAllVenvsCommand(context)
-  registerCreateNewVenvCommand(context)
-  registerActivateVenvCommand(context)
-  registerDeactivateVenvCommand(context)
-  registerCleanADeactivatedVenvCommand(context)
+  registerVenvModule(context)
 
   // Initialize logger
   logger.initialize('RuyiSDK')
