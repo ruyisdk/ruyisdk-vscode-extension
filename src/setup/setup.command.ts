@@ -8,7 +8,7 @@ import * as semver from 'semver'
 
 import { logger } from '../common/logger'
 
-import { detectRuyiInstallation } from './manage.service'
+import { detectRuyiInstallation, fetchGitHubReleases } from './manage.service'
 
 const execAsync = util.promisify(cp.exec)
 
@@ -36,22 +36,19 @@ export async function checkRuyiUpdate(currentVersion: string): Promise<void> {
       return
     }
 
-    const response = await fetch('https://api.github.com/repos/ruyisdk/ruyi/releases/latest', {
-      headers: { 'User-Agent': 'ruyisdk-vscode-extension' },
-    }).catch((error: unknown) => {
-      logger.error('Failed to fetch latest Ruyi version:', error)
-      return null
-    })
-    if (!response) {
-      return
-    }
-    if (!response.ok) {
-      logger.warn(`Failed to fetch latest Ruyi release: ${response.statusText}`)
+    const releases = await fetchGitHubReleases()
+    if (releases.length === 0) {
       return
     }
 
-    const release = (await response.json()) as { tag_name: string }
-    const latestVersion = release.tag_name.replace(/^v/, '')
+    // Find the latest stable release (non-prerelease)
+    const latestRelease = releases.find(r => !r.prerelease)
+    if (!latestRelease) {
+      logger.warn('No stable release found on GitHub')
+      return
+    }
+
+    const latestVersion = latestRelease.tag_name.replace(/^v/, '')
     if (!semver.gt(latestVersion, coerced.version)) {
       return
     }
