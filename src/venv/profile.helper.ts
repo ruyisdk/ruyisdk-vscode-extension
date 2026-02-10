@@ -29,7 +29,7 @@ export function parseProfiles(stdout: string): ProfilesMap {
 
     const raw = line
     // Remove any parenthetical annotations, e.g., "(needs quirks: {'xthead'})" or "（需要特殊特性：{'xthead'}）"
-    const label = raw.replace(/\([^()]*\)/g, '').trim()
+    const label = raw.replace(/[(\uff08][^()\uff08\uff09]*[)\uff09]/g, '').trim()
     if (!label) continue
 
     // Map cleaned name -> raw line so UI can show raw in description
