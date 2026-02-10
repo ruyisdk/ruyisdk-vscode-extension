@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
+import * as semver from 'semver'
+
 import { parseNDJSON } from '../common/helpers'
 import { logger } from '../common/logger'
 import ruyi, { PACKAGE_CATEGORIES, type PackageCategory } from '../ruyi'
@@ -11,6 +13,7 @@ export interface RuyiPackageVersion {
   isLatestPrerelease: boolean
   isInstalled: boolean
   isBinaryAvailable: boolean
+  isOutdated: boolean
   slug?: string
 }
 
@@ -177,8 +180,29 @@ export class PackageService {
             isPrerelease,
             isLatestPrerelease,
             isBinaryAvailable: !v.remarks.includes('no-binary-for-current-host'),
+            isOutdated: false, // Will be calculated later
             slug,
           }
+        })
+
+        // Sort versions using semver (descending order, newest first)
+        versions.sort((a, b) => {
+          try {
+            const semA = semver.coerce(a.version)
+            const semB = semver.coerce(b.version)
+            if (semA && semB) {
+              return semver.rcompare(semA, semB)
+            }
+          }
+          catch {
+            // Fall back to string comparison if semver parsing fails
+          }
+          return b.version.localeCompare(a.version)
+        })
+
+        // Mark all versions except the latest 3 as outdated
+        versions.forEach((v, index) => {
+          v.isOutdated = index >= 3
         })
 
         return {

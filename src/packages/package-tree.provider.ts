@@ -268,6 +268,9 @@ export class VersionItem extends vscode.TreeItem {
 
   private buildDescription(): string {
     const tags: string[] = []
+    if (this.versionInfo.isOutdated) {
+      tags.push('outdated')
+    }
     if (this.versionInfo.isLatest) {
       tags.push('latest')
     }
