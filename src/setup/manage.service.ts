@@ -16,12 +16,122 @@ import { resolveActiveRuyi } from '../ruyi'
 const execAsync = promisify(exec)
 
 /**
+ * GitHub Release information
+ */
+export interface GitHubRelease {
+  tag_name: string
+  prerelease: boolean
+}
+
+/**
+ * Raw GitHub API release response
+ */
+interface GitHubReleaseResponse {
+  tag_name: string
+  prerelease: boolean
+  [key: string]: unknown
+}
+
+/**
  * Represents a RuyiSDK installation
  */
 export interface RuyiInstallation {
   path: string
   version?: string
   parsedVersion?: semver.SemVer
+  tags?: string[]
+}
+
+/**
+ * Fetch all releases from GitHub
+ */
+export async function fetchGitHubReleases(): Promise<GitHubRelease[]> {
+  try {
+    const response = await fetch('https://api.github.com/repos/ruyisdk/ruyi/releases', {
+      headers: { 'User-Agent': 'ruyisdk-vscode-extension' },
+    })
+
+    if (!response.ok) {
+      logger.warn(`Failed to fetch GitHub releases: ${response.statusText}`)
+      return []
+    }
+
+    const data = await response.json() as GitHubReleaseResponse[]
+    const releases: GitHubRelease[] = data.map(release => ({
+      tag_name: release.tag_name,
+      prerelease: release.prerelease,
+    }))
+
+    logger.info(`Fetched ${releases.length} releases from GitHub`)
+
+    return releases
+  }
+  catch (error) {
+    logger.error('Failed to fetch GitHub releases:', error)
+    return []
+  }
+}
+
+/**
+ * Determine version tags based on GitHub releases
+ * @param version The version string to check
+ * @param releases All GitHub releases
+ * @returns Array of tags for the version
+ */
+export function determineVersionTags(version: string, releases: GitHubRelease[]): string[] {
+  const tags: string[] = []
+
+  // Parse the current version
+  const currentVersion = semver.coerce(version)
+  if (!currentVersion) {
+    return tags
+  }
+
+  // Extract version number from the original version string (e.g., "Ruyi 0.46.0-beta.20260206" -> "0.46.0-beta.20260206")
+  const versionMatch = version.match(/(\d+\.\d+\.\d+[^\s]*)/)
+  const fullVersionString = versionMatch ? versionMatch[1] : currentVersion.version
+
+  // Extract and sort all stable (non-prerelease) versions
+  const stableVersions = releases
+    .filter(release => !release.prerelease)
+    .map(release => ({
+      tag: release.tag_name,
+      parsed: semver.coerce(release.tag_name.replace(/^v/, '')),
+    }))
+    .filter(v => v.parsed !== null)
+    .sort((a, b) => semver.rcompare(a.parsed!, b.parsed!))
+
+  // Get the top 3 latest stable versions
+  const latestThreeStable = stableVersions.slice(0, 3).map(v => v.parsed!.version)
+
+  // Check if current version matches any release (compare full version string with tag_name)
+  const matchingRelease = releases.find((release) => {
+    const tagWithoutV = release.tag_name.replace(/^v/, '')
+    return tagWithoutV === fullVersionString || release.tag_name === fullVersionString
+  })
+
+  if (matchingRelease) {
+    // Found matching release
+    if (matchingRelease.prerelease) {
+      tags.push('$(beaker) Prereleased')
+    }
+    else if (!latestThreeStable.includes(currentVersion.version)) {
+      // It's a stable release but not in the latest 3
+      tags.push('$(warning) Outdated')
+    }
+  }
+  else {
+    // No matching release found, check if it's older than latest stable
+    const latestStableVersion = stableVersions[0]?.parsed
+    if (latestStableVersion && semver.lt(currentVersion, latestStableVersion)) {
+      // Version is older than the latest stable
+      if (!latestThreeStable.includes(currentVersion.version)) {
+        tags.push('$(warning) Outdated')
+      }
+    }
+  }
+
+  return tags
 }
 
 /**
@@ -45,6 +155,9 @@ export async function getRuyiVersion(ruyiPath: string): Promise<string | undefin
  */
 export async function listAllInstallations(): Promise<RuyiInstallation[]> {
   logger.info('Scanning for RuyiSDK installations...')
+
+  // Fetch GitHub releases for version tagging
+  const githubReleases = await fetchGitHubReleases()
 
   // Find all Ruyi executables
   const candidates: string[] = []
@@ -87,10 +200,13 @@ export async function listAllInstallations(): Promise<RuyiInstallation[]> {
   const installations: RuyiInstallation[] = await Promise.all(
     candidates.map(async (candidate) => {
       const version = await getRuyiVersion(candidate)
+      const parsedVersion = version ? semver.coerce(version) ?? undefined : undefined
+      const tags = version && githubReleases.length > 0 ? determineVersionTags(version, githubReleases) : []
       return {
         path: candidate,
         version,
-        parsedVersion: version ? semver.coerce(version) ?? undefined : undefined,
+        parsedVersion,
+        tags,
       }
     }),
   )
@@ -120,10 +236,17 @@ export async function detectRuyiInstallation(): Promise<RuyiInstallation | null>
   }
 
   const version = await getRuyiVersion(ruyiPath)
+  const parsedVersion = version ? semver.coerce(version) ?? undefined : undefined
+
+  // Fetch GitHub releases to determine tags
+  const githubReleases = await fetchGitHubReleases()
+  const tags = version && githubReleases.length > 0 ? determineVersionTags(version, githubReleases) : []
+
   return {
     path: ruyiPath,
     version,
-    parsedVersion: version ? semver.coerce(version) ?? undefined : undefined,
+    parsedVersion,
+    tags,
   }
 }
 
@@ -160,16 +283,14 @@ export class ManageService implements vscode.Disposable {
     this.updateStatusBarItem().catch((error) => {
       logger.error('Failed to initialize Ruyi status bar item', error)
     })
-
-    this.autoSelectLatest().catch((error) => {
-      logger.error('Failed to auto-select latest RuyiSDK', error)
-    })
   }
 
   public async setRuyiPath(newPath: string, skipReload?: boolean): Promise<void> {
     try {
       const config = vscode.workspace.getConfiguration('ruyi')
-      await config.update(CONFIG_KEYS.RUYI_PATH, newPath, vscode.ConfigurationTarget.Global)
+      // Use undefined to remove the setting, empty string won't work
+      const valueToSet = newPath || undefined
+      await config.update(CONFIG_KEYS.RUYI_PATH, valueToSet, vscode.ConfigurationTarget.Global)
 
       await this.updateStatusBarItem()
 
@@ -204,7 +325,12 @@ export class ManageService implements vscode.Disposable {
       return
     }
 
-    const currentPath = configuration.ruyiPath
+    // Try configured path first, then auto-detect
+    let currentPath = configuration.ruyiPath
+    if (!currentPath) {
+      currentPath = await resolveActiveRuyi() ?? undefined
+    }
+
     if (!currentPath) {
       this.statusBarItem.text = '$(tools) <No RuyiSDK>'
       this.statusBarItem.tooltip = 'Click to select RuyiSDK installation'
@@ -213,32 +339,18 @@ export class ManageService implements vscode.Disposable {
 
     const version = await getRuyiVersion(currentPath)
     if (version) {
-      const match = version.match(/(\d+\.\d+\.\d+)/)
-      const versionLabel = match ? match[1] : version
+      // Extract full version string including prerelease suffix
+      const match = version.match(/(\d+\.\d+\.\d+[^\s]*)/)
+      const versionLabel = match ? match[1] : version.replace(/^Ruyi\s+/i, '')
+      const pathInfo = configuration.ruyiPath ? `Path: ${path.dirname(currentPath)}` : `Auto-detected: ${path.dirname(currentPath)}`
       this.statusBarItem.text = `$(tools) RuyiSDK ${versionLabel}`
-      this.statusBarItem.tooltip = `RuyiSDK ${version}\nPath: ${path.dirname(currentPath)}`
+      this.statusBarItem.tooltip = `RuyiSDK ${version}\n${pathInfo}`
     }
     else {
+      const pathInfo = configuration.ruyiPath ? 'RuyiSDK' : 'RuyiSDK (Auto-detected)'
       this.statusBarItem.text = `$(tools) ${path.basename(currentPath)}`
-      this.statusBarItem.tooltip = `RuyiSDK: ${path.dirname(currentPath)}`
+      this.statusBarItem.tooltip = `${pathInfo}: ${path.dirname(currentPath)}`
     }
-  }
-
-  private async autoSelectLatest(): Promise<void> {
-    if (configuration.ruyiPath) {
-      logger.info('RuyiSDK path already configured, skipping auto-selection')
-      return
-    }
-
-    const installations = await listAllInstallations()
-    const latest = installations.find(installation => installation.parsedVersion)
-    if (!latest) {
-      logger.warn('No RuyiSDK installations with valid versions found')
-      return
-    }
-
-    await this.setRuyiPath(latest.path, true)
-    logger.info(`Auto-selected latest RuyiSDK: ${latest.version} at ${latest.path}`)
   }
 
   public dispose(): void {

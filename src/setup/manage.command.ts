@@ -41,8 +41,11 @@ async function promptManualInput(): Promise<void> {
 function buildQuickPickItems(installations: RuyiInstallation[]): RuyiPathQuickPickItem[] {
   const items = installations.map((installation) => {
     const versionSuffix = installation.version ? ` (${installation.version})` : ''
+    const tagsDisplay = installation.tags && installation.tags.length > 0
+      ? ` ${installation.tags.join(' ')}`
+      : ''
     return {
-      label: `$(package) ${path.basename(installation.path)}${versionSuffix}`,
+      label: `$(package) ${path.basename(installation.path)}${versionSuffix}${tagsDisplay}`,
       description: path.dirname(installation.path),
       detail: installation.version ? `Version: ${installation.version}` : installation.path,
       targetPath: installation.path,
