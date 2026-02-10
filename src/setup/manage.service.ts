@@ -16,12 +16,19 @@ import { resolveActiveRuyi } from '../ruyi'
 const execAsync = promisify(exec)
 
 /**
+ * Maximum number of distinct RuyiSDK versions to keep as non-outdated.
+ * Installations with versions older than the latest N versions will be marked as outdated.
+ */
+const MAX_NON_OUTDATED_VERSIONS = 3
+
+/**
  * Represents a RuyiSDK installation
  */
 export interface RuyiInstallation {
   path: string
   version?: string
   parsedVersion?: semver.SemVer
+  isOutdated?: boolean
 }
 
 /**
@@ -104,6 +111,22 @@ export async function listAllInstallations(): Promise<RuyiInstallation[]> {
     if (b.parsedVersion) return 1
     return a.path.localeCompare(b.path)
   })
+
+  // Mark installations as outdated (keep only the latest N distinct versions)
+  // Since installations are already sorted, collect the first N unique versions
+  const topVersionsSet = new Set<string>()
+  for (const inst of installations) {
+    if (inst.parsedVersion && topVersionsSet.size < MAX_NON_OUTDATED_VERSIONS) {
+      topVersionsSet.add(inst.parsedVersion.version)
+    }
+  }
+
+  // Mark installations whose version is not in the top N
+  for (const inst of installations) {
+    if (inst.parsedVersion) {
+      inst.isOutdated = !topVersionsSet.has(inst.parsedVersion.version)
+    }
+  }
 
   logger.info(`Found ${installations.length} RuyiSDK installation(s)`)
   return installations
