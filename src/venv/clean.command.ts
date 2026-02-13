@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import * as vscode from 'vscode'
 
+import { resolveVenvPathArg } from './venv.helper'
 import type { VenvService } from './venv.service'
 
 /**
@@ -40,20 +41,9 @@ export async function cleanVenvCommand(
 export default function registerCleanCommand(ctx: vscode.ExtensionContext, service: VenvService): void {
   ctx.subscriptions.push(
     vscode.commands.registerCommand('ruyi.venv.clean', async (arg?: unknown) => {
-      let venvPath: string | undefined
-
-      // Adapter Logic: Handle different argument types
-      if (typeof arg === 'string') {
-        venvPath = arg
-      }
-      else if (arg && typeof arg === 'object' && 'venvPath' in arg) {
-        // Duck typing for VenvItem
-        venvPath = (arg as { venvPath: string }).venvPath
-      }
+      const venvPath = resolveVenvPathArg(arg)
 
       if (!venvPath) {
-        // Optional: Maybe show a quick pick if no path provided?
-        // For now, just error out as this is usually triggered from UI context menu
         vscode.window.showErrorMessage('No virtual environment selected.')
         return
       }

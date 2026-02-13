@@ -22,6 +22,46 @@ type EmulatorPick = vscode.QuickPickItem & {
   noBinary: boolean
 }
 
+type InstallableDependency = {
+  rawName: string
+  version: string
+  latest: boolean
+  installed: boolean
+}
+
+function buildPackageSpec(pkg: Pick<InstallableDependency, 'rawName' | 'version' | 'latest'>): string {
+  if (pkg.latest || !pkg.version) {
+    return pkg.rawName
+  }
+  return `${pkg.rawName}(==${pkg.version})`
+}
+
+async function ensureDependencyInstalled(
+  dependencyType: 'toolchain' | 'emulator',
+  item: InstallableDependency,
+): Promise<boolean> {
+  if (item.installed) {
+    return true
+  }
+
+  const selection = await vscode.window.showWarningMessage(
+    `The selected ${dependencyType} "${item.rawName}" is not installed.\nWould you like to install it now?`,
+    'Install',
+    'Cancel',
+  )
+  if (selection !== 'Install') {
+    return false
+  }
+
+  const success = await installPackage(item.rawName, item.latest ? undefined : item.version, true)
+  if (!success) {
+    vscode.window.showErrorMessage(`Failed to install ${dependencyType} "${item.rawName}". Venv creation cancelled.`)
+    return false
+  }
+
+  return true
+}
+
 /**
  * Executes the create venv command.
  */
@@ -83,33 +123,13 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
 
   // 3.1 Check and install missing toolchains
   for (const tc of pickedToolchains) {
-    if (!tc.installed) {
-      const selection = await vscode.window.showWarningMessage(
-        `The selected toolchain "${tc.rawName}" is not installed.\nWould you like to install it now?`,
-        'Install',
-        'Cancel',
-      )
-      if (selection === 'Install') {
-        // Skip confirmation since we just asked
-        const success = await installPackage(tc.rawName, tc.latest ? undefined : tc.version, true)
-        if (!success) {
-          vscode.window.showErrorMessage(`Failed to install toolchain "${tc.rawName}". Venv creation cancelled.`)
-          return
-        }
-      }
-      else {
-        // User cancelled installation
-        return
-      }
+    const ready = await ensureDependencyInstalled('toolchain', tc)
+    if (!ready) {
+      return
     }
   }
 
-  const toolchainSpecs = pickedToolchains.map((toolchain) => {
-    if (toolchain.latest || !toolchain.version) {
-      return toolchain.rawName
-    }
-    return `${toolchain.rawName}(==${toolchain.version})`
-  })
+  const toolchainSpecs = pickedToolchains.map(toolchain => buildPackageSpec(toolchain))
 
   // 4. Select Emulator (Optional)
   let emulatorSpec: string | undefined
@@ -168,28 +188,12 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
     }
 
     // 4.1 Install missing emulator
-    if (!pickedEmulator.installed) {
-      const selection = await vscode.window.showWarningMessage(
-        `The selected emulator "${pickedEmulator.rawName}" is not installed.\nWould you like to install it now?`,
-        'Install',
-        'Cancel',
-      )
-      if (selection === 'Install') {
-        // Skip confirmation since we just asked
-        const success = await installPackage(pickedEmulator.rawName, pickedEmulator.latest ? undefined : pickedEmulator.version, true)
-        if (!success) {
-          vscode.window.showErrorMessage(`Failed to install emulator "${pickedEmulator.rawName}". Venv creation cancelled.`)
-          return
-        }
-      }
-      else {
-        return
-      }
+    const emulatorReady = await ensureDependencyInstalled('emulator', pickedEmulator)
+    if (!emulatorReady) {
+      return
     }
 
-    emulatorSpec = (pickedEmulator.latest || !pickedEmulator.version)
-      ? pickedEmulator.rawName
-      : `${pickedEmulator.rawName}(==${pickedEmulator.version})`
+    emulatorSpec = buildPackageSpec(pickedEmulator)
   }
 
   // 5. Input Path
