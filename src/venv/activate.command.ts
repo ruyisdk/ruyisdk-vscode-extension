@@ -4,6 +4,7 @@ import * as vscode from 'vscode'
 
 import { getWorkspaceFolderPath } from '../common/helpers'
 
+import { resolveVenvPathArg } from './venv.helper'
 import type { VenvService } from './venv.service'
 
 /**
@@ -52,18 +53,7 @@ export async function activateVenvCommand(
 export default function registerActivateCommand(ctx: vscode.ExtensionContext, service: VenvService): void {
   ctx.subscriptions.push(
     vscode.commands.registerCommand('ruyi.venv.activate', async (arg?: unknown) => {
-      let venvPath: string | undefined
-
-      // Adapter Logic: Handle different argument types from VS Code
-      if (typeof arg === 'string') {
-        // Direct call with string path
-        venvPath = arg
-      }
-      else if (arg && typeof arg === 'object' && 'venvPath' in arg) {
-        // Call from Tree View Inline Button (Duck typing VenvItem)
-        // VS Code passes the TreeItem instance when clicking inline actions.
-        venvPath = (arg as { venvPath: string }).venvPath
-      }
+      const venvPath = resolveVenvPathArg(arg)
 
       if (!venvPath) {
         vscode.window.showErrorMessage('No virtual environment selected.')

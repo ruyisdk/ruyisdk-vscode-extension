@@ -17,13 +17,13 @@ import ruyi from '../ruyi'
 import { scanWorkspaceForVenvs } from './detection.helper'
 import { getEmulatorsFromRuyi } from './emulator.helper'
 import { getProfilesFromRuyi } from './profile.helper'
-import { getToolchainsFromRuyi } from './toolchain.helper'
 import type {
   VenvInfo,
   Toolchain,
   EmulatorResult,
   ProfilesMap,
 } from './types'
+import { getToolchainsFromRuyi } from './venv.helper'
 
 export interface VenvCreateParams {
   profile: string
@@ -206,33 +206,24 @@ export class VenvService implements vscode.Disposable {
     const { profile, path: venvPath, toolchains, emulator, withSysroot, sysrootFrom, extraCommandsFrom } = params
 
     try {
-    // Use provided reporter or create a dummy one if not provided (though usually called with one)
-    // But here we might just want to wrap the ruyi call.
-
-      // If we are calling this from a command that already sets up progress, we might pass the reporter.
-      // If not, we might need to rely on the caller to handle UI feedback.
-      // For this service method, let's assume we return success/failure and let caller handle UI unless passed.
-
-      let onProgress: ((lastLine: string) => void) | undefined
       let getLastPercent: (() => number) | undefined
-
-      if (progressReporter) {
-        const tracker = createProgressTracker(progressReporter)
-        onProgress = tracker[0]
-        getLastPercent = tracker[1]
-      }
-
-      const ruyiResult = await ruyi
+      let ruyiInvoker = ruyi
         .timeout(5 * 60 * 1000) // 5 minutes timeout
         .cwd(getWorkspaceFolderPath())
-        .onProgress(onProgress || (() => {}))
-        .venv(profile, venvPath, {
-          toolchain: toolchains,
-          emulator: emulator,
-          withSysroot,
-          sysrootFrom,
-          extraCommandsFrom,
-        })
+
+      if (progressReporter) {
+        const [onProgress, getProgress] = createProgressTracker(progressReporter)
+        getLastPercent = getProgress
+        ruyiInvoker = ruyiInvoker.onProgress(onProgress)
+      }
+
+      const ruyiResult = await ruyiInvoker.venv(profile, venvPath, {
+        toolchain: toolchains,
+        emulator,
+        withSysroot,
+        sysrootFrom,
+        extraCommandsFrom,
+      })
 
       if (progressReporter && getLastPercent) {
         const finalIncrement = Math.max(0, 100 - getLastPercent())

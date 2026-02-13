@@ -47,7 +47,7 @@ export class VenvTreeProvider implements vscode.TreeDataProvider<VenvTreeElement
     return venvs.map(venv => new VenvItem(venv, this.isCurrentVenv(venv, current)))
   }
 
-  private isCurrentVenv(venv: VenvInfo, current: VenvInfo | string | null | undefined): boolean {
+  private isCurrentVenv(venv: VenvInfo, current: string | null | undefined): boolean {
     if (!current) {
       return false
     }
@@ -64,16 +64,7 @@ export class VenvTreeProvider implements vscode.TreeDataProvider<VenvTreeElement
       ? venv.path
       : path.resolve(workspaceRoot, venv.path)
 
-    let currentAbsPath: string
-    if (typeof current === 'string') {
-      currentAbsPath = current
-    }
-    else {
-      currentAbsPath = path.isAbsolute(current.path)
-        ? current.path
-        : path.resolve(workspaceRoot, current.path)
-    }
-
+    const currentAbsPath = current
     return path.normalize(venvAbsPath) === path.normalize(currentAbsPath)
   }
 }
