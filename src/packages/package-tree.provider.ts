@@ -30,8 +30,7 @@ export class PackagesTreeProvider implements
     try {
       // Clear category cache on refresh
       this.categoryCache.clear()
-      // Force refresh both categories and packages to ensure search uses fresh data
-      await this.packageService.getCategories(true)
+      // Force a single refresh from CLI and rebuild all caches
       await this.packageService.getPackages(true)
     }
     catch (err) {
