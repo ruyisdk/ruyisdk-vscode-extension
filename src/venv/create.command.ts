@@ -217,7 +217,7 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
 
   // 6. Sysroot (Optional)
   const sysrootFrom = await vscode.window.showInputBox({
-    placeHolder: '(Optional) Sysroot package specifier. Press ESC to skip.',
+    placeHolder: '(Optional) Specify sysroot package. Press enter without input for default. Or ESC to skip.',
   })
 
   // 7. Extra Commands (Optional)
@@ -251,7 +251,8 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
           path: venvPath,
           toolchains: toolchainSpecs,
           emulator: emulatorSpec,
-          withSysroot: sysrootFrom ? true : false,
+          // Enter -> true even if input is empty str; ESC -> false.
+          withSysroot: sysrootFrom !== undefined,
           sysrootFrom: sysrootFrom || undefined,
           extraCommandsFrom: extraCommands.length > 0 ? extraCommands : undefined,
         }, progress)
