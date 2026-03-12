@@ -390,10 +390,10 @@ export class Ruyi {
   }
 
   /**
-   * List all available profiles
+   * List all available profiles using entity command
    */
   async listProfiles(): Promise<RuyiResult> {
-    return runRuyi(['--porcelain', 'list', 'profiles'], this.options)
+    return runRuyi(['--porcelain', 'entity', 'list', '-t', 'profile-v1'], this.options)
   }
 
   // ============================================================================
@@ -728,4 +728,9 @@ export class Ruyi {
   }
 }
 
-export default new Ruyi()
+export default new Ruyi({
+  env: {
+    ...process.env,
+    RUYI_EXPERIMENTAL: '1',
+  },
+})
