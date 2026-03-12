@@ -8,41 +8,66 @@
 
 import { logger } from '../common/logger'
 import ruyi from '../ruyi'
+import type { RuyiResult } from '../ruyi'
 
-import type { ProfilesMap } from './types'
+import type { ProfilesMap, RuyiProfile } from './types'
 
-export type { ProfilesMap }
+export type { ProfilesMap, RuyiProfile }
 
 /**
- * Parses the raw stdout from `ruyi list` command to extract profiles.
- * Cleans up parenthetical annotations and returns a sorted dictionary.
- *
- * @param stdout - Raw output from ruyi list command
- * @returns Sorted dictionary mapping cleaned profile names to raw lines
+ * Parse the JSON Lines output from entity list command into RuyiProfile array
  */
-export function parseProfiles(stdout: string): ProfilesMap {
-  const dict: Record<string, string> = {}
-  const lines = stdout.split(/\r?\n/)
-
-  for (const line of lines) {
-    if (!line.trim()) continue // skip empty lines
-
-    const raw = line
-    // Remove any parenthetical annotations, e.g., "(needs quirks: {'xthead'})" or "（需要特殊特性：{'xthead'}）"
-    const label = raw.replace(/[(\uff08][^()\uff08\uff09]*[)\uff09]/g, '').trim()
-    if (!label) continue
-
-    // Map cleaned name -> raw line so UI can show raw in description
-    dict[label] = raw
+function parseProfilesOutput(result: RuyiResult): RuyiProfile[] {
+  if (result.code !== 0) {
+    throw new Error(`Failed to list profiles: ${result.stderr}`)
   }
 
-  // Sort the dictionary by keys
-  const sortedDict: Record<string, string> = {}
-  Object.keys(dict).sort().forEach((key) => {
-    sortedDict[key] = dict[key]
-  })
+  const profiles: RuyiProfile[] = []
+  const lines = result.stdout.split(/\r?\n/).filter(line => line.trim())
 
-  return sortedDict
+  for (const line of lines) {
+    try {
+      const entity = JSON.parse(line)
+      const data = entity.data?.['profile-v1']
+      if (!data) continue
+
+      profiles.push({
+        id: data.id ?? entity.entity_id,
+        displayName: data.display_name ?? entity.display_name,
+        arch: data.arch ?? 'unknown',
+        neededToolchainQuirks: data.needed_toolchain_quirks ?? [],
+        toolchainCommonFlagsStr: data.toolchain_common_flags_str ?? '',
+      })
+    }
+    catch (err) {
+      logger.warn(`Failed to parse profile line: ${line}`, err)
+    }
+  }
+
+  // Sort by display name for consistent ordering
+  return profiles.sort((a, b) => a.displayName.localeCompare(b.displayName))
+}
+
+/**
+ * Converts structured RuyiProfile array to ProfilesMap format.
+ * Returns a map of display names to optional descriptions.
+ *
+ * @param profiles - Array of structured profile objects
+ * @returns Dictionary mapping profile display names to descriptions (or undefined)
+ */
+export function parseProfiles(profiles: RuyiProfile[]): ProfilesMap {
+  const dict: Record<string, string | undefined> = {}
+
+  for (const profile of profiles) {
+    // Build description only if quirks exist
+    const description = profile.neededToolchainQuirks.length > 0
+      ? `(needs quirks: ${profile.neededToolchainQuirks.join(', ')})`
+      : undefined
+
+    dict[profile.displayName] = description
+  }
+
+  return dict
 }
 
 /**
@@ -52,13 +77,14 @@ export function parseProfiles(stdout: string): ProfilesMap {
  * @throws Error if the ruyi command fails
  */
 export async function getProfilesFromRuyi(): Promise<ProfilesMap> {
-  const result = await ruyi.listProfiles()
-
-  if (result.code === 0) {
-    return parseProfiles(result.stdout)
+  try {
+    const result = await ruyi.listProfiles()
+    const profiles = parseProfilesOutput(result)
+    return parseProfiles(profiles)
   }
-  else {
-    logger.error(`Failed to get profiles: ${result.stderr}`)
-    throw new Error(`Failed to get profiles: ${result.stderr}`)
+  catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error)
+    logger.error(`Failed to get profiles: ${errorMsg}`)
+    throw new Error(`Failed to get profiles: ${errorMsg}`)
   }
 }

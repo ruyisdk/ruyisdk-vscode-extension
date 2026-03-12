@@ -80,9 +80,9 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
 
   // 2. Select Profile
   const allProfiles = await service.getProfiles()
-  const profileItems = Object.entries(allProfiles).map(([label, raw]) => ({
+  const profileItems = Object.entries(allProfiles).map(([label, description]) => ({
     label,
-    description: raw !== label ? raw : undefined,
+    description,
   }))
 
   const pickedProfile = await vscode.window.showQuickPick(profileItems, {
