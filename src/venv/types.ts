@@ -49,9 +49,27 @@ export interface EmulatorInfo {
 }
 
 /**
- * Represents a Ruyi profile.
+ * Represents a Ruyi profile with structured data from ruyi CLI.
  */
-export type ProfilesMap = Record<string, string>
+export interface RuyiProfile {
+  /** Profile ID (e.g., "generic", "sipeed-lpi4a") */
+  id: string
+  /** Display name for UI */
+  displayName: string
+  /** Architecture (e.g., "riscv32", "riscv64") */
+  arch: string
+  /** Toolchain quirks required by this profile */
+  neededToolchainQuirks: string[]
+  /** Common toolchain flags for this profile */
+  toolchainCommonFlagsStr: string
+}
+
+/**
+ * Map of profile display names to their optional descriptions.
+ * Key is the profile display name for QuickPick label.
+ * Value is the description (e.g., quirks info) or undefined if none.
+ */
+export type ProfilesMap = Record<string, string | undefined>
 
 /**
  * Result type for emulator fetching that can be either success or error.
