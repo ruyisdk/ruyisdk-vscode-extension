@@ -1,0 +1,56 @@
+{
+  "version": "1",
+  "description": "Build system detection rules for RuyiSDK VS Code Extension.\n\nPriority order (highest wins):\n  10 — CMake       : detected by CMakeLists.txt\n   5 — GNU Make    : detected by Makefile / GNUmakefile / makefile\n   1 — GCC (C)     : detected by any *.c file in the workspace root\n\nTo override, place a '.ruyi-build-rules.json' file in your workspace root\nusing the same schema. The workspace file replaces the bundled rules entirely,\nso copy any rules you still need.",
+  "rules": [
+    {
+      "id": "cmake",
+      "name": "CMake",
+      "priority": 10,
+      "indicators": ["CMakeLists.txt"],
+      "steps": [
+        {
+          "name": "Configure",
+          "command": "cmake",
+          "args": ["-B", "build", "-S", "."],
+          "workdir": "."
+        },
+        {
+          "name": "Build",
+          "command": "cmake",
+          "args": ["--build", "build"],
+          "workdir": "."
+        }
+      ]
+    },
+    {
+      "id": "gnu-make",
+      "name": "GNU Make",
+      "priority": 5,
+      "indicators": ["Makefile", "GNUmakefile", "makefile"],
+      "steps": [
+        {
+          "name": "Build",
+          "command": "make",
+          "args": [],
+          "workdir": "."
+        }
+      ]
+    },
+    {
+      "id": "c-gcc",
+      "name": "GCC (C)",
+      "priority": 1,
+      "indicators": [],
+      "indicatorGlobs": ["*.c"],
+      "steps": [
+        {
+          "name": "Compile",
+          "command": "for f in *.c; do gcc \"$f\" -o \"${f%.c}\"; done",
+          "args": [],
+          "workdir": ".",
+          "useShell": true
+        }
+      ]
+    }
+  ]
+}

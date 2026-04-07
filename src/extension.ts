@@ -27,6 +27,7 @@
 
 import * as vscode from 'vscode'
 
+import registerBuildModule from './build'
 import { configuration } from './common/configuration'
 import { logger } from './common/logger'
 import registerHomeModule from './home'
@@ -45,6 +46,7 @@ export function activate(context: vscode.ExtensionContext) {
   registerSetupModule(context)
   registerNewsModule(context)
   registerVenvModule(context)
+  registerBuildModule(context)
 
   // Initialize logger
   logger.initialize('RuyiSDK')
