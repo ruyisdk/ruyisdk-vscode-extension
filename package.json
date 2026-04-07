@@ -245,6 +245,12 @@
         "command": "ruyi.telemetry.configure",
         "title": "Configure Telemetry Settings",
         "category": "Ruyi"
+      },
+      {
+        "command": "ruyi.build.run",
+        "title": "Build Project",
+        "category": "Ruyi",
+        "icon": "$(play)"
       }
     ],
     "menus": {
@@ -300,6 +306,12 @@
           "command": "ruyi.venv.clean",
           "when": "view == ruyiVenvsView && viewItem == ruyiVenv.itemNonCurrent",
           "group": "inline@2"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "ruyi.build.run",
+          "group": "navigation@0"
         }
       ],
       "commandPalette": [
