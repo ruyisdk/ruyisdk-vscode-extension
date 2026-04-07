@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-import * as cp from 'child_process'
 import type { ExecException } from 'node:child_process'
-import * as util from 'util'
 import * as vscode from 'vscode'
 
 import * as semver from 'semver'
@@ -9,24 +7,71 @@ import * as semver from 'semver'
 import { logger } from '../common/logger'
 
 import { detectRuyiInstallation, fetchGitHubReleases } from './manage.service'
-
-const execAsync = util.promisify(cp.exec)
+import {
+  executeRuyiInstall,
+  executeRuyiUpdate,
+  PACKAGE_METHODS,
+  type PackageMethodKey,
+  type PackageMethod,
+} from './setup.helper'
 
 const INSTALLATION_GUIDE_URL = 'https://ruyisdk.org/en/docs/Package-Manager/installation'
 
-const PACKAGE_METHODS = {
-  pip: {
-    installCmd: 'python3 -m pip install --user -U ruyi',
-    updateCmd: 'python3 -m pip install --user -U ruyi',
-  },
-  pipx: {
-    installCmd: 'python3 -m pipx install ruyi',
-    updateCmd: 'python3 -m pipx upgrade ruyi',
-  },
-} as const
+function getErrorDetails(error: unknown): string {
+  const execError = error as ExecException
+  return execError.stderr || execError.message || String(error)
+}
 
-type PackageMethodKey = keyof typeof PACKAGE_METHODS
-type PackageMethod = (typeof PACKAGE_METHODS)[PackageMethodKey]
+async function showErrorWithCopyDetails(
+  operation: 'install' | 'update',
+  methodName: string,
+  error: unknown,
+): Promise<void> {
+  const details = getErrorDetails(error)
+  logger.error(`${operation} failed via ${methodName}:`, details)
+
+  const action = await vscode.window.showErrorMessage(
+    `${operation === 'install' ? 'Installation' : 'Update'} failed via ${methodName}.`,
+    'Copy Details',
+    'OK',
+  )
+
+  if (action === 'Copy Details') {
+    await vscode.env.clipboard.writeText(details)
+    await vscode.window.showInformationMessage('Error details copied to clipboard.')
+  }
+}
+
+async function handleSuccessAndPromptReload(
+  action: 'install' | 'update',
+  methodName: string,
+): Promise<void> {
+  const installation = await detectRuyiInstallation()
+  const version = installation?.version
+
+  const successMessage = action === 'install'
+    ? `Ruyi installed via ${methodName}: ${version}`
+    : `Ruyi updated via ${methodName}: ${version}`
+
+  const verificationFailureMessage = action === 'install'
+    ? 'Installation completed, but Ruyi installation could not be verified. Please reload the window manually.'
+    : 'Update completed, but the local Ruyi version could not be verified. Please reload the window manually.'
+
+  if (version) {
+    await vscode.commands.executeCommand('ruyi.packages.refresh')
+    const userAction = await vscode.window.showInformationMessage(
+      successMessage,
+      'Reload Window',
+      'Later',
+    )
+    if (userAction === 'Reload Window') {
+      await vscode.commands.executeCommand('workbench.action.reloadWindow')
+    }
+  }
+  else {
+    vscode.window.showWarningMessage(verificationFailureMessage)
+  }
+}
 
 export async function checkRuyiUpdate(currentVersion: string): Promise<void> {
   try {
@@ -88,29 +133,9 @@ export function registerInstallCommand(ctx: vscode.ExtensionContext): void {
       return
     }
 
-    const choice = await vscode.window.showInformationMessage(
-      'RuyiSDK not found. Would you like to install it automatically?',
-      'Install',
-      'Cancel',
-    )
-    if (choice !== 'Install') return
-
-    const promptReload = async (methodLabel: string, version: string) => {
-      // Refresh package management module after successful installation
-      await vscode.commands.executeCommand('ruyi.packages.refresh')
-      const action = await vscode.window.showInformationMessage(
-        `Ruyi installed via ${methodLabel}: ${version}`,
-        'Reload Window',
-        'Later',
-      )
-      if (action === 'Reload Window') {
-        await vscode.commands.executeCommand('workbench.action.reloadWindow')
-      }
-    }
-
     const methods = Object.entries(PACKAGE_METHODS) as Array<[PackageMethodKey, PackageMethod]>
     for (let i = 0; i < methods.length; i++) {
-      const [methodName, method] = methods[i]
+      const [methodName] = methods[i]
       try {
         await vscode.window.withProgress(
           {
@@ -118,30 +143,26 @@ export function registerInstallCommand(ctx: vscode.ExtensionContext): void {
             title: `Installing Ruyi via ${methodName}...`,
             cancellable: false,
           },
-          () => execAsync(method.installCmd, { timeout: 60_000 }),
+          () => executeRuyiInstall(methodName, { timeout: 60000 }),
         )
 
-        const installation = await detectRuyiInstallation()
-        const version = installation?.version
-        if (version) {
-          await promptReload(methodName, version)
-          return
-        }
+        await handleSuccessAndPromptReload('install', methodName)
+        return
       }
       catch (error) {
-        const execError = error as ExecException
-        const errorMessage = execError.stderr || execError.message || String(error)
         const nextMethodName = methods[i + 1]?.[0]
-        const followup = nextMethodName
-          ? `Trying ${nextMethodName} instead...`
-          : 'Will show manual installation options.'
+        const details = getErrorDetails(error)
+        logger.log(`${methodName} install failed: ${details}`)
 
-        logger.log(`${methodName} install failed: ${errorMessage}`)
-
-        await vscode.window.showWarningMessage(
-          `${methodName} installation failed: ${errorMessage}. ${followup}`,
-          'OK',
-        )
+        if (nextMethodName) {
+          await vscode.window.showWarningMessage(
+            `${methodName} installation failed. Trying ${nextMethodName} instead...`,
+            'OK',
+          )
+        }
+        else {
+          await showErrorWithCopyDetails('install', methodName, error)
+        }
       }
     }
 
@@ -175,9 +196,23 @@ export function registerUpdateCommand(ctx: vscode.ExtensionContext): void {
       return
     }
 
-    const terminal = vscode.window.createTerminal('Ruyi Update')
-    terminal.sendText(method.updateCmd)
-    terminal.show()
+    try {
+      await vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title: `Updating Ruyi via ${selectedMethod}...`,
+          cancellable: false,
+        },
+        async () => {
+          await executeRuyiUpdate(selectedMethod as PackageMethodKey, { timeout: 60000 })
+        },
+      )
+
+      await handleSuccessAndPromptReload('update', selectedMethod)
+    }
+    catch (error) {
+      await showErrorWithCopyDetails('update', selectedMethod, error)
+    }
   })
 
   ctx.subscriptions.push(disposable)
