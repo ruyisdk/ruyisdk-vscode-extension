@@ -79,7 +79,7 @@ export function registerManageCommand(ctx: vscode.ExtensionContext): void {
           location: vscode.ProgressLocation.Notification,
           title: 'Detecting RuyiSDK installations...',
         },
-        listAllInstallations,
+        () => listAllInstallations(),
       )
 
       if (installations.length === 0) {

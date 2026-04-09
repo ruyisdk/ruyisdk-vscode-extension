@@ -6,7 +6,7 @@ import * as semver from 'semver'
 
 import { logger } from '../common/logger'
 
-import { detectRuyiInstallation, fetchGitHubReleases } from './manage.service'
+import { detectRuyiInstallation, fetchGitHubReleases, listAllInstallations } from './manage.service'
 import {
   executeRuyiInstall,
   executeRuyiUpdate,
@@ -75,8 +75,8 @@ async function handleSuccessAndPromptReload(
 
 export async function checkRuyiUpdate(currentVersion: string): Promise<void> {
   try {
-    const coerced = semver.coerce(currentVersion)
-    if (!coerced) {
+    const currentCoerced = semver.coerce(currentVersion)
+    if (!currentCoerced) {
       logger.warn(`Unable to parse version from: ${currentVersion}`)
       return
     }
@@ -94,12 +94,23 @@ export async function checkRuyiUpdate(currentVersion: string): Promise<void> {
     }
 
     const latestVersion = latestRelease.tag_name.replace(/^v/, '')
-    if (!semver.gt(latestVersion, coerced.version)) {
+    const latestStableCoerced = semver.coerce(latestVersion)
+    if (!latestStableCoerced) {
+      logger.warn(`Unable to parse latest stable version from GitHub tag: ${latestRelease.tag_name}`)
+      return
+    }
+
+    const installations = await listAllInstallations({ includeTags: false })
+    const latestInstalledVersion = installations.find(item => item.parsedVersion)?.parsedVersion
+      ?? currentCoerced
+
+    // Only prompt when the latest installed local version is behind GitHub latest stable.
+    if (!semver.gt(latestStableCoerced, latestInstalledVersion)) {
       return
     }
 
     const choice = await vscode.window.showInformationMessage(
-      `A new version of Ruyi is available: ${latestVersion} (current: ${coerced.version})`,
+      `A new version of Ruyi is available: ${latestVersion} (current: ${currentCoerced.version})`,
       'Update now',
       'Later',
     )
