@@ -42,6 +42,10 @@ export interface RuyiInstallation {
   tags?: string[]
 }
 
+interface ListInstallationsOptions {
+  includeTags?: boolean
+}
+
 /**
  * Fetch all releases from GitHub
  */
@@ -153,11 +157,13 @@ export async function getRuyiVersion(ruyiPath: string): Promise<string | undefin
  * List all RuyiSDK installations with version information
  * Installations are sorted by version (newest first)
  */
-export async function listAllInstallations(): Promise<RuyiInstallation[]> {
+export async function listAllInstallations(options: ListInstallationsOptions = {}): Promise<RuyiInstallation[]> {
   logger.info('Scanning for RuyiSDK installations...')
 
+  const includeTags = options.includeTags ?? true
+
   // Fetch GitHub releases for version tagging
-  const githubReleases = await fetchGitHubReleases()
+  const githubReleases = includeTags ? await fetchGitHubReleases() : []
 
   // Find all Ruyi executables
   const candidates: string[] = []
