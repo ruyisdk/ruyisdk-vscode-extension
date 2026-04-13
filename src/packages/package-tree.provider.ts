@@ -62,10 +62,7 @@ export class PackagesTreeProvider implements
    * Clear search query and refresh the tree view.
    */
   clearSearch(): void {
-    this.searchQuery = ''
-    this.categoryCache.clear() // Clear cache when clearing search
-    this.updateTreeViewTitle()
-    this._onDidChangeTreeData.fire()
+    this.setSearchQuery('')
   }
 
   /**
@@ -83,14 +80,13 @@ export class PackagesTreeProvider implements
   }
 
   private updateTreeViewTitle(): void {
-    if (this.treeView) {
-      if (this.searchQuery) {
-        this.treeView.description = `Searching '${this.searchQuery}'`
-      }
-      else {
-        this.treeView.description = undefined
-      }
+    if (!this.treeView) {
+      return
     }
+
+    this.treeView.description = this.searchQuery
+      ? `Searching '${this.searchQuery}'`
+      : undefined
   }
 
   getTreeItem(element: TreeElement): vscode.TreeItem {
