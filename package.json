@@ -159,6 +159,11 @@
         "category": "Ruyi"
       },
       {
+        "command": "ruyi.home.show",
+        "title": "Show Home Page",
+        "category": "Ruyi"
+      },
+      {
         "command": "ruyi.news.search",
         "title": "Search News",
         "category": "Ruyi",
