@@ -2,8 +2,11 @@
 import * as vscode from 'vscode'
 
 let panel: vscode.WebviewPanel | undefined
+let extensionId = ''
 
 export function showHomePanel(ctx: vscode.ExtensionContext) {
+  extensionId = ctx.extension.id
+
   if (panel) {
     panel.reveal(vscode.ViewColumn.One)
     return
@@ -21,11 +24,17 @@ export function showHomePanel(ctx: vscode.ExtensionContext) {
 }
 
 async function handleMessage(msg: { type: string }) {
-  if (msg.type === 'openNews') {
+  if (msg.type === 'openWalkthrough') {
+    await vscode.commands.executeCommand('workbench.action.openWalkthrough', `${extensionId}#ruyi.welcome`, false)
+  }
+  else if (msg.type === 'openNews') {
     await vscode.commands.executeCommand('ruyi.news.showCards')
   }
   else if (msg.type === 'openPackages') {
     await vscode.commands.executeCommand('ruyiPackagesView.focus')
+  }
+  else if (msg.type === 'openForum') {
+    await vscode.env.openExternal(vscode.Uri.parse('https://ruyisdk.cn'))
   }
 }
 
@@ -58,7 +67,7 @@ function getHtml(): string {
     .subtitle { margin: 8px 0 0; font-size: 18px; color: var(--vscode-descriptionForeground); }
     .cards { display: flex; gap: 24px; flex-wrap: wrap; max-width: 960px; }
     .card {
-      flex: 1 1 320px;
+      flex: 1 1 220px;
       min-height: 200px;
       padding: 32px;
       border-radius: 12px;
@@ -98,6 +107,13 @@ function getHtml(): string {
   <section class="cards">
     <article class="card">
       <div>
+        <h2>Walkthrough</h2>
+        <p>Open the getting started walkthrough and follow the guided setup flow</p>
+      </div>
+      <button onclick="vscode.postMessage({type:'openWalkthrough'})">Open Walkthrough</button>
+    </article>
+    <article class="card">
+      <div>
         <h2>News</h2>
         <p>View the latest RuyiSDK release notes and announcements</p>
       </div>
@@ -105,10 +121,17 @@ function getHtml(): string {
     </article>
     <article class="card">
       <div>
-        <h2>Packages</h2>
+        <h2>Package</h2>
         <p>Browse, install, and manage software packages</p>
       </div>
-      <button onclick="vscode.postMessage({type:'openPackages'})">Browse Packages</button>
+      <button onclick="vscode.postMessage({type:'openPackages'})">Browse Package</button>
+    </article>
+    <article class="card">
+      <div>
+        <h2>Forum</h2>
+        <p>Visit the Ruyi community forum and discover more resources</p>
+      </div>
+      <button onclick="vscode.postMessage({type:'openForum'})">Go to Forum</button>
     </article>
   </section>
   <script>const vscode = acquireVsCodeApi();</script>
