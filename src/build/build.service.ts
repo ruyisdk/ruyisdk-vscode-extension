@@ -123,6 +123,46 @@ export class BuildService implements vscode.Disposable {
     return this._outputChannel
   }
 
+  /** Formats a build step command line for human-readable logging. */
+  private formatStepCommandForLog(step: BuildStep): string {
+    const quoteIfNeeded = (part: string): string => {
+      if (part.length === 0) {
+        return '""'
+      }
+      if (/\s|"/.test(part)) {
+        return `"${part.replace(/"/g, '\\"')}"`
+      }
+      return part
+    }
+
+    return [step.command, ...step.args].map(quoteIfNeeded).join(' ')
+  }
+
+  /**
+   * Selects venv-aware strategy variants when available.
+   * Active venv -> base rule (`cmake` / `c-gcc`), otherwise -> local rule.
+   * Falls back to the matched rule when the preferred variant is unavailable.
+   */
+  private pickVenvAwareRule(config: BuildRulesConfig, fallback: BuildRule): BuildRule {
+    const venvAwarePairs: Record<string, { active: string, local: string }> = {
+      'cmake': { active: 'cmake', local: 'cmake-local' },
+      'cmake-local': { active: 'cmake', local: 'cmake-local' },
+      'c-gcc': { active: 'c-gcc', local: 'c-gcc-local' },
+      'c-gcc-local': { active: 'c-gcc', local: 'c-gcc-local' },
+    }
+
+    const pair = venvAwarePairs[fallback.id]
+    if (!pair) {
+      return fallback
+    }
+
+    const hasActiveVenv = !!VenvService.instance.getCurrentVenv()
+    const preferredId = hasActiveVenv ? pair.active : pair.local
+    const preferred = config.rules.find(r => r.id === preferredId)
+
+    return preferred ?? fallback
+  }
+
   // ─── Rule loading ──────────────────────────────────────────────────────────
 
   /**
@@ -176,8 +216,9 @@ export class BuildService implements vscode.Disposable {
       for (const indicator of rule.indicators) {
         const candidate = path.join(workspaceRoot, indicator)
         if (fs.existsSync(candidate)) {
-          logger.info(`Detected build system: ${rule.name} (matched indicator: ${indicator})`)
-          return { rule, workspaceRoot }
+          const selectedRule = this.pickVenvAwareRule(config, rule)
+          logger.info(`Detected build system: ${selectedRule.name} (matched indicator: ${indicator}, rule id: ${selectedRule.id})`)
+          return { rule: selectedRule, workspaceRoot }
         }
       }
 
@@ -187,8 +228,9 @@ export class BuildService implements vscode.Disposable {
           const pattern = new vscode.RelativePattern(workspaceRoot, glob)
           const files = await vscode.workspace.findFiles(pattern, null, 1)
           if (files.length > 0) {
-            logger.info(`Detected build system: ${rule.name} (matched glob: ${glob} → ${files[0].fsPath})`)
-            return { rule, workspaceRoot }
+            const selectedRule = this.pickVenvAwareRule(config, rule)
+            logger.info(`Detected build system: ${selectedRule.name} (matched glob: ${glob} → ${files[0].fsPath}, rule id: ${selectedRule.id})`)
+            return { rule: selectedRule, workspaceRoot }
           }
         }
       }
@@ -250,6 +292,9 @@ export class BuildService implements vscode.Disposable {
           const stepWorkdir = step.workdir
             ? path.resolve(workspaceRoot, step.workdir)
             : workspaceRoot
+
+          this.outputChannel.appendLine(`Workdir : ${stepWorkdir}`)
+          this.outputChannel.appendLine(`Command : ${this.formatStepCommandForLog(step)}`)
 
           let exitCode: number
           try {
