@@ -11,8 +11,30 @@
         {
           "name": "Configure",
           "command": "cmake",
-          "args": ["-B", "build", "-S", "."],
+          "args": ["-DCMAKE_TOOLCHAIN_FILE=./${RUYI_VENV_PROMPT}/toolchain.cmake", "-DCMAKE_INSTALL_PREFIX=./${RUYI_VENV_PROMPT}/sysroot.riscv64-unknown-linux-gnu", "-B", "build", "-S", "."],
+          "workdir": ".",
+          "useShell": true
+        },
+        {
+          "name": "Build",
+          "command": "cmake",
+          "args": ["--build", "build"],
           "workdir": "."
+        }
+      ]
+    },
+    {
+      "id": "cmake-local",
+      "name": "CMake",
+      "priority": 10,
+      "indicators": ["CMakeLists.txt"],
+      "steps": [
+        {
+          "name": "Configure",
+          "command": "cmake",
+          "args": ["-B", "build", "-S", "."],
+          "workdir": ".",
+          "useShell": true
         },
         {
           "name": "Build",
@@ -38,6 +60,21 @@
     },
     {
       "id": "c-gcc",
+      "name": "GCC (C)",
+      "priority": 1,
+      "indicators": [],
+      "indicatorGlobs": ["*.c"],
+      "steps": [
+        {
+          "name": "Compile",
+          "command": "for f in *.c; do ${RUYI_VENV_PROMPT}/bin/*-gcc \"$f\" -o \"${f%.c}\"; done",
+          "args": [],
+          "workdir": ".",
+          "useShell": true
+        }
+      ]
+    },{
+      "id": "c-gcc-local",
       "name": "GCC (C)",
       "priority": 1,
       "indicators": [],
