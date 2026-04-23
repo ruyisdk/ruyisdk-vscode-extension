@@ -139,6 +139,11 @@
     },
     "commands": [
       {
+        "command": "ruyi.board-docs",
+        "title": "Show Board Docs",
+        "category": "Ruyi"
+      },
+      {
         "command": "ruyi.setup.detect",
         "title": "Detect Ruyi Installation",
         "category": "Ruyi"
