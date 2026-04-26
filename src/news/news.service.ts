@@ -9,6 +9,7 @@
  */
 
 import * as dns from 'dns'
+import * as https from 'https'
 import * as os from 'os'
 import * as path from 'path'
 import { promisify } from 'util'
@@ -17,7 +18,7 @@ import * as vscode from 'vscode'
 import { logger } from '../common/logger'
 import ruyi from '../ruyi'
 
-import { parseNewsListPorcelain } from './news.helper'
+import { parseNewsListPorcelain, stripLeadingFrontMatter } from './news.helper'
 
 const resolve4 = promisify(dns.resolve4)
 
@@ -41,6 +42,7 @@ export class NewsService {
   private cachePath: string
   private readonly CACHE_VERSION = '1.0.0'
   private readonly CACHE_EXPIRY_MS = 24 * 60 * 60 * 1000
+  private newsEntriesCache = new Map<number, Array<{ name: string, url: string, locale: string }>>()
 
   private constructor(context?: vscode.ExtensionContext) {
     this.cachePath = context
@@ -157,7 +159,21 @@ export class NewsService {
       throw new Error(result.stderr || 'ruyi news list failed')
     }
 
-    const fullData = parseNewsListPorcelain(result.stdout, vscode.env.language)
+    let fullData = parseNewsListPorcelain(result.stdout, vscode.env.language)
+
+    // Merge with local cache to preserve any read status updates that haven't synced to ruyi CLI yet
+    const cache = await this.loadCache(true)
+    if (cache) {
+      const cacheMap = new Map(cache.data.map(item => [item.no, item]))
+      fullData = fullData.map((item) => {
+        const cached = cacheMap.get(item.no)
+        // Use cached read status if it's more recent (i.e., if cached item is read, use it)
+        if (cached && cached.read && !item.read) {
+          return { ...item, read: true }
+        }
+        return item
+      })
+    }
 
     // Cache the full valid data
     await this.saveCache(fullData)
@@ -196,19 +212,99 @@ export class NewsService {
     }
   }
 
-  async read(no: number): Promise<string> {
-    const result = await ruyi.newsRead(no)
-    if (result.code !== 0) {
-      throw new Error(result.stderr || 'ruyi news read failed')
+  async readDefault(no: number): Promise<{ defaultLocale: string, content: string, availableLocales: string[] }> {
+    try {
+      const { entries } = await this.getNewsEntries(no)
+      if (entries.length === 0) {
+        throw new Error('No news files found on GitHub')
+      }
+      const availableLocales = entries.map(e => e.locale)
+      const vscodeLang = vscode.env.language
+      const prefersZh = vscodeLang.toLowerCase().startsWith('zh')
+      const defaultEntry = entries.find(e => e.locale === (prefersZh ? 'zh_CN' : 'en_US'))
+        ?? entries.find(e => e.locale === (prefersZh ? 'en_US' : 'zh_CN'))
+        ?? entries[0]
+      const fileData = await this.fetchJson<{ content: string }>(defaultEntry.url)
+      const cleaned = fileData.content.replace(/\n/g, '')
+      const content = stripLeadingFrontMatter(Buffer.from(cleaned, 'base64').toString('utf8'))
+      await this.markAsRead(no)
+      // Sync read status to local ruyi - ensure completion before returning
+      await ruyi.newsRead(no).catch(err => logger.warn('Failed to sync read status to ruyi:', err))
+      return { defaultLocale: defaultEntry.locale, content, availableLocales }
     }
+    catch (error) {
+      logger.warn('Failed to read news from GitHub, falling back to ruyi CLI:', error)
+      const result = await ruyi.newsRead(no)
+      if (result.code !== 0) {
+        throw new Error(result.stderr || 'ruyi news read failed')
+      }
+      await this.markAsRead(no)
+      return { defaultLocale: 'default', content: result.stdout, availableLocales: ['default'] }
+    }
+  }
 
-    // 'ruyi news read' already marks the item as read in the backend.
-    // We just need to update our local view if needed, but since we refresh list on view,
-    // minimal action is required here. However, explicit marking is safer for cache consistency
-    // until next list refresh.
-    await this.markAsRead(no)
+  async readLocale(no: number, locale: string): Promise<string> {
+    const { entries } = await this.getNewsEntries(no)
+    const entry = entries.find(e => e.locale === locale)
+    if (!entry) {
+      throw new Error(`Locale "${locale}" not found`)
+    }
+    const fileData = await this.fetchJson<{ content: string }>(entry.url)
+    const cleaned = fileData.content.replace(/\n/g, '')
+    return stripLeadingFrontMatter(Buffer.from(cleaned, 'base64').toString('utf8'))
+  }
 
-    return result.stdout
+  private async getNewsEntries(no: number): Promise<{ id: string, entries: Array<{ name: string, url: string, locale: string }> }> {
+    const cache = await this.loadCache(true)
+    const newsItem = cache?.data.find(item => item.no === no)
+    if (!newsItem?.id) {
+      throw new Error('News item not found in cache')
+    }
+    const cached = this.newsEntriesCache.get(no)
+    if (cached) {
+      return { id: newsItem.id, entries: cached }
+    }
+    const dirUrl = 'https://api.github.com/repos/ruyisdk/packages-index/contents/news?ref=main'
+    const rawEntries = await this.fetchJson<Array<{ name: string, url: string, type: string }>>(dirUrl)
+    const entries = rawEntries
+      .filter(e => e.type === 'file' && e.name.startsWith(newsItem.id))
+      .map((e) => {
+        const localeMatch = e.name.match(/\.([a-z]{2}_[A-Z]{2})\.md$/)
+        const locale = localeMatch ? localeMatch[1] : 'default'
+        return { name: e.name, url: e.url, locale }
+      })
+    this.newsEntriesCache.set(no, entries)
+    return { id: newsItem.id, entries }
+  }
+
+  private fetchJson<T>(url: string): Promise<T> {
+    return new Promise((resolve, reject) => {
+      const options = {
+        headers: {
+          'User-Agent': 'ruyisdk-vscode-extension',
+          'Accept': 'application/vnd.github.v3+json',
+        },
+      }
+      https.get(url, options, (res) => {
+        if (res.statusCode !== 200) {
+          reject(new Error(`HTTP ${res.statusCode} for ${url}`))
+          res.resume()
+          return
+        }
+        let data = ''
+        res.on('data', (chunk: string) => {
+          data += chunk
+        })
+        res.on('end', () => {
+          try {
+            resolve(JSON.parse(data) as T)
+          }
+          catch (e) {
+            reject(e)
+          }
+        })
+      }).on('error', reject)
+    })
   }
 
   private async markAsRead(no: number): Promise<void> {
