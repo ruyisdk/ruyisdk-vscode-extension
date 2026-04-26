@@ -40,13 +40,13 @@
     "walkthroughs": [
       {
         "id": "ruyi.welcome",
-        "title": "Get started with RuyiSDK",
-        "description": "Start developing for RISC-V and explore core features such as SDK management, virtual environment management, and package installation.",
+        "title": "%contributes.walkthroughs.ruyi.welcome.title%",
+        "description": "%contributes.walkthroughs.ruyi.welcome.description%",
         "steps": [
           {
             "id": "install",
-            "title": "Install RuyiSDK",
-            "description": "You can either [Install automatically](command:ruyi.setup.install) with pip(x) or download from [our website](https://ruyisdk.org/en/download/).",
+            "title": "%contributes.walkthroughs.ruyi.welcome.steps.install.title%",
+            "description": "%contributes.walkthroughs.ruyi.welcome.steps.install.description%",
             "completionEvents": [
               "onContext:ruyi.tutorial.installationComplete"
             ],
@@ -56,59 +56,59 @@
           },
           {
             "id": "packages",
-            "title": "Manage packages",
-            "description": "You can install packages visually on RuyiSDK sidebar view.",
+            "title": "%contributes.walkthroughs.ruyi.welcome.steps.packages.title%",
+            "description": "%contributes.walkthroughs.ruyi.welcome.steps.packages.description%",
             "completionEvents": [
               "onView:ruyiPackagesView"
             ],
             "media": {
               "image": "media/packages.png",
-              "altText": "A tree view of RuyiSDK packages"
+              "altText": "%contributes.walkthroughs.ruyi.welcome.steps.packages.media.altText%"
             }
           },
           {
             "id": "venv",
-            "title": "Create virtual environment",
-            "description": "[Create a virtual environment](command:ruyi.venv.create) to install toolchain, (optional) emulator, and so on.",
+            "title": "%contributes.walkthroughs.ruyi.welcome.steps.venv.title%",
+            "description": "%contributes.walkthroughs.ruyi.welcome.steps.venv.description%",
             "completionEvents": [
               "onCommand:ruyi.venv.create"
             ],
             "media": {
               "image": "media/create-venv.png",
-              "altText": "A list view of virtual environment profile"
+              "altText": "%contributes.walkthroughs.ruyi.welcome.steps.venv.media.altText%"
             }
           },
           {
             "id": "activate",
-            "title": "Activate virtual environment",
-            "description": "Activate virtual environment in sidebar.",
+            "title": "%contributes.walkthroughs.ruyi.welcome.steps.activate.title%",
+            "description": "%contributes.walkthroughs.ruyi.welcome.steps.activate.description%",
             "completionEvents": [
               "onCommand:ruyi.venv.activate"
             ],
             "media": {
               "image": "media/activate-venv.png",
-              "altText": "Manage virtual environment in sidebar view of RuyiSDK"
+              "altText": "%contributes.walkthroughs.ruyi.welcome.steps.activate.media.altText%"
             }
           },
           {
             "id": "news",
-            "title": "Read Ruyi News",
-            "description": "[Read latest Ruyi News](command:ruyi.news.showCards) inside editor",
+            "title": "%contributes.walkthroughs.ruyi.welcome.steps.news.title%",
+            "description": "%contributes.walkthroughs.ruyi.welcome.steps.news.description%",
             "completionEvents": [
               "onCommand:ruyi.news.showCards"
             ],
             "media": {
               "image": "media/news.png",
-              "altText": "Ruyi SDK News"
+              "altText": "%contributes.walkthroughs.ruyi.welcome.steps.news.media.altText%"
             }
           },
           {
             "id": "example",
-            "title": "Build example executable",
-            "description": "[Follow our guide](https://ruyisdk.org/en/docs/VSCode-Plugins/cases/case1/) to build a binary and run it on a RISC-V Development Board.",
+            "title": "%contributes.walkthroughs.ruyi.welcome.steps.example.title%",
+            "description": "%contributes.walkthroughs.ruyi.welcome.steps.example.description%",
             "media": {
               "image": "media/example.png",
-              "altText": "CoreMark: Build with Extension (Example: LicheePi 4A)"
+              "altText": "%contributes.walkthroughs.ruyi.welcome.steps.example.media.altText%"
             }
           }
         ]
@@ -127,12 +127,12 @@
       "ruyi": [
         {
           "id": "ruyiPackagesView",
-          "name": "Packages",
+          "name": "%contributes.views.ruyiPackagesView.name%",
           "icon": "$(package)"
         },
         {
           "id": "ruyiVenvsView",
-          "name": "Virtual Environments",
+          "name": "%contributes.views.ruyiVenvsView.name%",
           "icon": "$(server-process)"
         }
       ]
@@ -140,125 +140,125 @@
     "commands": [
       {
         "command": "ruyi.board-docs",
-        "title": "Show Board Docs",
+        "title": "%contributes.commands.ruyi.board-docs.title%",
         "category": "Ruyi"
       },
       {
         "command": "ruyi.setup.detect",
-        "title": "Detect Ruyi Installation",
+        "title": "%contributes.commands.ruyi.setup.detect.title%",
         "category": "Ruyi"
       },
       {
         "command": "ruyi.setup.install",
-        "title": "Install RuyiSDK",
+        "title": "%contributes.commands.ruyi.setup.install.title%",
         "category": "Ruyi"
       },
       {
         "command": "ruyi.setup.update",
-        "title": "Update RuyiSDK",
+        "title": "%contributes.commands.ruyi.setup.update.title%",
         "category": "Ruyi"
       },
       {
         "command": "ruyi.setup.manage",
-        "title": "Manage RuyiSDK Installations",
+        "title": "%contributes.commands.ruyi.setup.manage.title%",
         "category": "Ruyi"
       },
       {
         "command": "ruyi.home.show",
-        "title": "Show Home Page",
+        "title": "%contributes.commands.ruyi.home.show.title%",
         "category": "Ruyi"
       },
       {
         "command": "ruyi.news.search",
-        "title": "Search News",
+        "title": "%contributes.commands.ruyi.news.search.title%",
         "category": "Ruyi",
         "icon": "$(search)"
       },
       {
         "command": "ruyi.news.clearSearch",
-        "title": "Clear Search",
+        "title": "%contributes.commands.ruyi.news.clearSearch.title%",
         "category": "Ruyi",
         "icon": "$(clear-all)"
       },
       {
         "command": "ruyi.news.showCards",
-        "title": "Show News Cards",
+        "title": "%contributes.commands.ruyi.news.showCards.title%",
         "category": "Ruyi",
         "icon": "$(layout)"
       },
       {
         "command": "ruyi.packages.search",
-        "title": "Search Packages",
+        "title": "%contributes.commands.ruyi.packages.search.title%",
         "category": "Ruyi",
         "icon": "$(search)"
       },
       {
         "command": "ruyi.packages.clearSearch",
-        "title": "Clear Package Search",
+        "title": "%contributes.commands.ruyi.packages.clearSearch.title%",
         "category": "Ruyi",
         "icon": "$(clear-all)"
       },
       {
         "command": "ruyi.packages.install",
-        "title": "Install Package",
+        "title": "%contributes.commands.ruyi.packages.install.title%",
         "category": "Ruyi",
         "icon": "$(cloud-download)"
       },
       {
         "command": "ruyi.packages.uninstall",
-        "title": "Uninstall Package",
+        "title": "%contributes.commands.ruyi.packages.uninstall.title%",
         "category": "Ruyi",
         "icon": "$(trash)"
       },
       {
         "command": "ruyi.packages.refresh",
-        "title": "Refresh Package List",
+        "title": "%contributes.commands.ruyi.packages.refresh.title%",
         "category": "Ruyi",
         "icon": "$(refresh)"
       },
       {
         "command": "ruyi.venv.refresh",
-        "title": "Detect Venvs",
+        "title": "%contributes.commands.ruyi.venv.refresh.title%",
         "category": "Ruyi",
         "icon": "$(refresh)"
       },
       {
         "command": "ruyi.venv.create",
-        "title": "Create a New Venv",
+        "title": "%contributes.commands.ruyi.venv.create.title%",
         "category": "Ruyi",
         "icon": "$(plus)"
       },
       {
         "command": "ruyi.venv.clean",
-        "title": "Remove a Venv",
+        "title": "%contributes.commands.ruyi.venv.clean.title%",
         "category": "Ruyi",
         "icon": "$(trash)"
       },
       {
         "command": "ruyi.venv.activate",
-        "title": "Activate Venv",
+        "title": "%contributes.commands.ruyi.venv.activate.title%",
         "category": "Ruyi",
         "icon": "$(check)"
       },
       {
         "command": "ruyi.venv.deactivate",
-        "title": "Deactivate Venv",
+        "title": "%contributes.commands.ruyi.venv.deactivate.title%",
         "category": "Ruyi",
         "icon": "$(close)"
       },
       {
         "command": "ruyi.extract",
-        "title": "Extract RuyiSDK Package",
+        "title": "%contributes.commands.ruyi.extract.title%",
         "category": "Ruyi"
       },
       {
         "command": "ruyi.telemetry.configure",
-        "title": "Configure Telemetry Settings",
+        "title": "%contributes.commands.ruyi.telemetry.configure.title%",
         "category": "Ruyi"
       },
       {
         "command": "ruyi.build.run",
-        "title": "Build Project",
+        "title": "%contributes.commands.ruyi.build.run.title%",
         "category": "Ruyi",
         "icon": "$(play)"
       }
@@ -347,16 +347,16 @@
         "ruyi.checkForUpdates": {
           "type": "boolean",
           "default": true,
-          "description": "Automatically check for Ruyi updates when running detect command."
+          "description": "%contributes.configuration.properties.ruyi.checkForUpdates.description%"
         },
         "ruyi.ruyiPath": {
           "type": "string",
           "default": "",
-          "description": "Custom path to the Ruyi executable. Leave empty to use automatic detection."
+          "description": "%contributes.configuration.properties.ruyi.ruyiPath.description%"
         },
         "ruyi.telemetry": {
           "type": "boolean",
-          "description": "Enable telemetry collection to help improve RuyiSDK. Leave unset to be prompted on first use."
+          "description": "%contributes.configuration.properties.ruyi.telemetry.description%"
         }
       }
     }
