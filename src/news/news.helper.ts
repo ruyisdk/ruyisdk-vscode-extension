@@ -4,7 +4,6 @@
  * RuyiSDK VS Code Extension - News Module - Helper Utilities
  *
  * Contains reusable pure helpers for the news module:
- * - `parseNewsList`: converts CLI stdout into typed rows.
  * - `extractNewsSummary`: derives short summaries from markdown bodies.
  */
 
@@ -12,7 +11,6 @@ import { logger } from '../common/logger'
 
 import type { NewsRow } from './news.service'
 
-const ROW_RE = /^\s*(\d+)\s+(\S+)\s+(.+)\s*$/
 const DATE_RE = /^(\d{4}-\d{2}-\d{2})\b/
 
 interface NewsItemLang {
@@ -29,17 +27,24 @@ interface NewsItemJson {
   langs: NewsItemLang[]
 }
 
-export function parseNewsList(stdout: string): NewsRow[] {
-  return stdout.split(/\r?\n/)
-    .map(line => ROW_RE.exec(line))
-    .filter((match): match is RegExpExecArray => !!match)
-    .map(([, no, id, title]) => ({
-      no: Number(no),
-      id,
-      title: title.trim(),
-      date: DATE_RE.exec(id)?.[1],
-      read: false,
-    }))
+function normalizeNewsTitle(rawTitle: string): string {
+  const trimmed = rawTitle.trim()
+  const prefixed = trimmed.match(/^title\s*:\s*(.+)$/i)
+  if (!prefixed) {
+    return trimmed
+  }
+
+  const cleaned = prefixed[1]
+    .trim()
+    .replace(/^["'`‘’“”]+/, '')
+    .replace(/["'`‘’“”]+$/, '')
+    .trim()
+
+  return cleaned || trimmed
+}
+
+export function stripLeadingFrontMatter(markdown: string): string {
+  return markdown.replace(/^\s*---\s*\r?\n[\s\S]*?\r?\n---\s*\r?\n?/, '')
 }
 
 export function parseNewsListPorcelain(stdout: string, preferredLang?: string): NewsRow[] {
@@ -83,7 +88,7 @@ export function parseNewsListPorcelain(stdout: string, preferredLang?: string): 
         result.push({
           no: item.ord,
           id: item.id,
-          title: contentObj.display_title,
+          title: normalizeNewsTitle(contentObj.display_title),
           date: DATE_RE.exec(item.id)?.[1],
           read: item.is_read,
           summary,
@@ -99,7 +104,8 @@ export function parseNewsListPorcelain(stdout: string, preferredLang?: string): 
 
 export function extractNewsSummary(markdown: string): string | undefined {
   try {
-    const lines = markdown.split(/\r?\n/)
+    const content = stripLeadingFrontMatter(markdown)
+    const lines = content.split(/\r?\n/)
     const blocks: string[] = []
     let current: string[] = []
 
