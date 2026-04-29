@@ -5,7 +5,7 @@ import { logger } from '../common/logger'
 import ruyi from '../ruyi'
 import type { RuyiListOutput } from '../ruyi/types'
 
-import type { Toolchain } from './types'
+import type { PkgInfo, Toolchain } from './types'
 
 export type { Toolchain }
 
@@ -68,4 +68,39 @@ export async function getToolchainsFromRuyi(): Promise<Toolchain[]> {
 
   logger.error(`Failed to get toolchains: ${result.stderr}`)
   throw new Error(`Failed to get toolchains: ${result.stderr}`)
+}
+
+/**
+ * Parses the raw stdout from `ruyi list --porcelain` command to extract package information.
+ * Filters and transforms the NDJSON output into a structured array of PkgInfo objects.
+ *
+ * @param output - Raw NDJSON output from ruyi list command
+ * @returns Array of PkgInfo objects
+ */
+export function parsePkgs(output: string): PkgInfo[] {
+  const result: PkgInfo[] = []
+
+  // Use parseNDJSON helper to parse newline-delimited JSON
+  const objects = parseNDJSON<RuyiListOutput>(output)
+
+  for (const obj of objects) {
+    const name = obj.name || ''
+
+    // vers is an array to be iterated
+    if (Array.isArray(obj.vers)) {
+      for (const v of obj.vers) {
+        const semver = v.semver || ''
+        // remarks is always an array based on actual CLI output
+        const remarks = (v.remarks || []).join(', ')
+
+        result.push({
+          name,
+          semver,
+          remarks,
+        })
+      }
+    }
+  }
+
+  return result
 }

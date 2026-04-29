@@ -17,11 +17,13 @@ import ruyi from '../ruyi'
 import { scanWorkspaceForVenvs } from './detection.helper'
 import { getEmulatorsFromRuyi } from './emulator.helper'
 import { getProfilesFromRuyi } from './profile.helper'
+import { getSysrootPkgsFromRuyi } from './sysroot.helper'
 import type {
   VenvInfo,
   Toolchain,
   EmulatorResult,
   ProfilesMap,
+  SysrootPkgResult,
 } from './types'
 import { getToolchainsFromRuyi } from './venv.helper'
 
@@ -106,6 +108,13 @@ export class VenvService implements vscode.Disposable {
    */
   public async getEmulators(): Promise<EmulatorResult> {
     return getEmulatorsFromRuyi()
+  }
+
+  /**
+   * Gets available Ruyi sysroot packages.
+   */
+  public async getSysrootPkgs(): Promise<SysrootPkgResult> {
+    return getSysrootPkgsFromRuyi()
   }
 
   /**

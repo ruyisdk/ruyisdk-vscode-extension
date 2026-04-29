@@ -22,12 +22,16 @@ type EmulatorPick = vscode.QuickPickItem & {
   noBinary: boolean
 }
 
+type SysrootPkgPick = vscode.QuickPickItem & InstallableDependency
+
 type InstallableDependency = {
   rawName: string
   version: string
   latest: boolean
   installed: boolean
 }
+
+class CancelledError extends Error {}
 
 function buildPackageSpec(pkg: Pick<InstallableDependency, 'rawName' | 'version' | 'latest'>): string {
   if (pkg.latest || !pkg.version) {
@@ -216,9 +220,16 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
   const venvPath = pathInput.trim()
 
   // 6. Sysroot (Optional)
-  const sysrootFrom = await vscode.window.showInputBox({
-    placeHolder: '(Optional) Specify sysroot package. Press enter without input for default. Or ESC to skip.',
-  })
+  let sysrootFrom: string | undefined
+  try {
+    sysrootFrom = await selectSysroot(service)
+  }
+  catch (error) {
+    if (error instanceof CancelledError) {
+      return
+    }
+    throw error
+  }
 
   // 7. Extra Commands (Optional)
   const extraCommands: string[] = []
@@ -302,6 +313,64 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
       )
     }
   }
+}
+
+async function selectSysroot(service: VenvService): Promise<string | undefined> {
+  const withSysroot = await vscode.window.showQuickPick(
+    [{ label: 'Disabled' }, { label: 'Default' }, { label: 'Select a Package' }],
+    { placeHolder: 'Include a sysroot in the new venv?' },
+  )
+
+  if (withSysroot?.label === 'Select a Package') {
+    const sysrootPkgsResult = await service.getSysrootPkgs()
+    if ('errorMsg' in sysrootPkgsResult) {
+      vscode.window.showErrorMessage(sysrootPkgsResult.errorMsg)
+      throw new CancelledError()
+    }
+
+    const sysrootItems: SysrootPkgPick[] = sysrootPkgsResult.map((sp) => {
+      const isLatest = sp.remarks.includes('latest')
+      const isInstalled = sp.remarks.includes('installed')
+
+      const icons = [
+        isLatest ? '$(star-full)' : '',
+        isInstalled ? '$(check)' : '',
+      ].filter(Boolean).join(' ')
+
+      return {
+        label: [icons, sp.name].filter(Boolean).join(' '),
+        description: sp.semver ? `v${sp.semver}` : undefined,
+        detail: [
+          isLatest ? 'Latest' : 'Legacy',
+          isInstalled ? 'Installed' : undefined,
+        ].filter(Boolean).join('   '),
+        rawName: sp.name,
+        version: sp.semver,
+        latest: isLatest,
+        installed: isInstalled,
+      }
+    })
+
+    const pickedSysroot = await vscode.window.showQuickPick(sysrootItems, {
+      placeHolder: 'Select a sysroot (Star=Latest, Check=Installed)',
+      matchOnDescription: true,
+      matchOnDetail: true,
+    })
+
+    if (!pickedSysroot) {
+      throw new CancelledError()
+    }
+
+    return buildPackageSpec(pickedSysroot)
+  }
+  else if (withSysroot?.label === 'Default') {
+    return ''
+  }
+  else if (withSysroot?.label === 'Disabled') {
+    return undefined
+  }
+
+  throw new CancelledError()
 }
 
 /**
