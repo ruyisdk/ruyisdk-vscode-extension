@@ -37,12 +37,12 @@ export interface Toolchain {
 }
 
 /**
- * Represents a Ruyi emulator package.
+ * Represents a Ruyi package.
  */
-export interface EmulatorInfo {
-  /** Emulator package name */
+export interface PkgInfo {
+  /** Package name */
   name: string
-  /** Semantic version of the emulator */
+  /** Semantic version of the package */
   semver: string
   /** Installation status remarks */
   remarks: string
@@ -74,4 +74,9 @@ export type ProfilesMap = Record<string, string | undefined>
 /**
  * Result type for emulator fetching that can be either success or error.
  */
-export type EmulatorResult = EmulatorInfo[] | { errorMsg: string }
+export type EmulatorResult = PkgInfo[] | { errorMsg: string }
+
+/**
+ * Result type for sysroot package fetching that can be either success or error.
+ */
+export type SysrootPkgResult = PkgInfo[] | { errorMsg: string }
