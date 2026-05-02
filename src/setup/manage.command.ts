@@ -3,6 +3,7 @@ import * as path from 'path'
 import * as vscode from 'vscode'
 
 import { configuration } from '../common/configuration'
+import { pickFile } from '../common/helpers'
 import { logger } from '../common/logger'
 
 import type { RuyiInstallation } from './manage.service'
@@ -17,25 +18,15 @@ interface RuyiPathQuickPickItem extends vscode.QuickPickItem {
 const MANUAL_TOKEN = '__manual__'
 
 async function promptManualInput(): Promise<void> {
-  const currentPath = configuration.ruyiPath || ''
-  const manualPath = await vscode.window.showInputBox({
-    prompt: 'Enter the full path to the ruyi executable',
-    placeHolder: '/path/to/ruyi',
-    value: currentPath,
-    validateInput: (input: string) => {
-      if (!input || input.trim() === '') {
-        return 'Path cannot be empty'
-      }
-      if (!path.isAbsolute(input)) {
-        return 'Please provide an absolute path'
-      }
-      return undefined
-    },
+  const initPath = configuration.ruyiPath ? path.dirname(configuration.ruyiPath) : undefined
+  const manualUri = await pickFile({
+    initPath,
+    absolute: true,
   })
-
-  if (manualPath) {
-    await manageService.setRuyiPath(manualPath.trim())
+  if (!manualUri) {
+    return
   }
+  await manageService.setRuyiPath(manualUri)
 }
 
 function buildQuickPickItems(installations: RuyiInstallation[]): RuyiPathQuickPickItem[] {
