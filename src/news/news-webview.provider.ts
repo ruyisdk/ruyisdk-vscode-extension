@@ -166,7 +166,7 @@ export class NewsWebviewProvider {
         ? sortedRows.filter(row => this.matchesSearch(row))
         : sortedRows
 
-      this.panel.webview.html = getCardsHtml(this.panel.webview, filteredRows, this.showUnreadOnly)
+      this.panel.webview.html = getCardsHtml(this.panel.webview, this.searchQuery, filteredRows, this.showUnreadOnly)
     }
     catch (error) {
       if (!this.panel) return
