@@ -33,13 +33,21 @@ function createCardHtml(row: NewsRow): string {
     </div>`
 }
 
-export function getCardsHtml(webview: vscode.Webview, rows: NewsRow[], showUnreadOnly: boolean): string {
+export function getCardsHtml(webview: vscode.Webview, searchQuery: string, rows: NewsRow[], showUnreadOnly: boolean): string {
   const nonce = getNonce()
   const csp = [
     `default-src 'none';`,
     `style-src 'unsafe-inline' ${webview.cspSource};`,
     `script-src 'nonce-${nonce}';`,
   ].join(' ')
+
+  let mainTitle: string
+  if (searchQuery) {
+    mainTitle = `Search results for "${escapeHtml(searchQuery)}"`
+  }
+  else {
+    mainTitle = 'Ruyi News'
+  }
 
   const cardsHtml = rows.map(row => createCardHtml(row)).join('')
 
@@ -179,7 +187,7 @@ export function getCardsHtml(webview: vscode.Webview, rows: NewsRow[], showUnrea
 </head>
 <body>
   <div class="header">
-    <div class="title">Ruyi News</div>
+    <div class="title">${mainTitle}</div>
     <div class="controls">
       <button class="btn" id="searchBtn">Search</button>
       <button class="btn" id="clearSearchBtn">Clear</button>
