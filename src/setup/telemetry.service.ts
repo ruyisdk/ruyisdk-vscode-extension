@@ -32,7 +32,7 @@ export class TelemetryService implements vscode.Disposable {
       }
 
       this.syncFromConfiguration().catch((err) => {
-        vscode.window.showErrorMessage(`Error setting telemetry: ${this.formatError(err)}`)
+        vscode.window.showErrorMessage(vscode.l10n.t('Error setting telemetry: {0}', this.formatError(err)))
       })
     })
   }
@@ -81,13 +81,17 @@ export class TelemetryService implements vscode.Disposable {
       const result = await ruyi.telemetry(enabled)
       const expected: TelemetryStatus = enabled ? 'on' : 'off'
       if (result.status !== expected) {
-        vscode.window.showErrorMessage(`Failed to ${enabled ? 'enable' : 'disable'} telemetry, status is ${result.status}`)
+        vscode.window.showErrorMessage(vscode.l10n.t(
+          'Failed to {0} telemetry, status is {1}',
+          enabled ? 'enable' : 'disable',
+          result.status,
+        ))
         return false
       }
       return true
     }
     catch (error) {
-      vscode.window.showErrorMessage(`Error setting telemetry: ${this.formatError(error)}`)
+      vscode.window.showErrorMessage(vscode.l10n.t('Error setting telemetry: {0}', this.formatError(error)))
       return false
     }
   }

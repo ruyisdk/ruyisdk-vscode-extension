@@ -17,24 +17,24 @@ export async function uninstallPackage(name: string, version?: string): Promise<
   const packageSpec = version ? `${name}(==${version})` : name
 
   const choice = await vscode.window.showWarningMessage(
-    `Uninstall ${packageName} ${displayVersion}?`,
+    vscode.l10n.t('Uninstall {0} {1}?', packageName, displayVersion),
     { modal: false },
-    'Uninstall',
-    'Cancel',
+    vscode.l10n.t('Uninstall'),
+    vscode.l10n.t('Cancel'),
   )
 
-  if (choice !== 'Uninstall') {
+  if (choice !== vscode.l10n.t('Uninstall')) {
     return false
   }
 
   const confirmation = await vscode.window.showWarningMessage(
-    `Are you sure you want to uninstall ${packageName} ${displayVersion}? This action cannot be undone.`,
+    vscode.l10n.t('Are you sure you want to uninstall {0} {1}? This action cannot be undone.', packageName, displayVersion),
     { modal: false },
-    'Yes, Uninstall',
-    'Cancel',
+    vscode.l10n.t('Yes, Uninstall'),
+    vscode.l10n.t('Cancel'),
   )
 
-  if (confirmation !== 'Yes, Uninstall') {
+  if (confirmation !== vscode.l10n.t('Yes, Uninstall')) {
     return false
   }
 
@@ -42,20 +42,22 @@ export async function uninstallPackage(name: string, version?: string): Promise<
   await vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Notification,
-      title: `Uninstalling ${packageName}...`,
+      title: vscode.l10n.t('Uninstalling {0}...', packageName),
       cancellable: false,
     },
     async (progress) => {
-      progress.report({ message: 'Running ruyi remove...' })
+      progress.report({ message: vscode.l10n.t('Running ruyi remove...') })
 
       const result = await ruyi.timeout(60_000).uninstall(packageSpec)
       if (result.code === 0) {
-        vscode.window.showInformationMessage(`✓ Successfully uninstalled ${packageName} ${displayVersion}`)
+        vscode.window.showInformationMessage(
+          '✓ ' + vscode.l10n.t('Successfully uninstalled {0} {1}', packageName, displayVersion),
+        )
         success = true
       }
       else {
-        const errorMsg = result.stderr || result.stdout || 'Unknown error'
-        vscode.window.showErrorMessage(`Failed to uninstall ${packageName}: ${errorMsg}`)
+        const errorMsg = result.stderr || result.stdout || vscode.l10n.t('Unknown error')
+        vscode.window.showErrorMessage(vscode.l10n.t('Failed to uninstall {0}: {1}', packageName, errorMsg))
       }
     },
   )
@@ -68,7 +70,7 @@ export default function registerUninstallCommand(ctx: vscode.ExtensionContext) {
     'ruyi.packages.uninstall',
     async (item: VersionItem) => {
       if (!(item instanceof VersionItem)) {
-        vscode.window.showErrorMessage('Invalid package selection.')
+        vscode.window.showErrorMessage(vscode.l10n.t('Invalid package selection.'))
         return
       }
 

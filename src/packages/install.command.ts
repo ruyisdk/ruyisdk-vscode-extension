@@ -20,13 +20,13 @@ export async function installPackage(name: string, version?: string, skipConfirm
 
   if (!skipConfirm) {
     const choice = await vscode.window.showInformationMessage(
-      `Install ${packageName} ${displayVersion}?`,
+      vscode.l10n.t('Install {0} {1}?', packageName, displayVersion),
       { modal: false },
-      'Install',
-      'Cancel',
+      vscode.l10n.t('Install'),
+      vscode.l10n.t('Cancel'),
     )
 
-    if (choice !== 'Install') {
+    if (choice !== vscode.l10n.t('Install')) {
       return false
     }
   }
@@ -35,11 +35,11 @@ export async function installPackage(name: string, version?: string, skipConfirm
   await vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Notification,
-      title: `Installing ${packageName}...`,
+      title: vscode.l10n.t('Installing {0}...', packageName),
       cancellable: false,
     },
     async (progress) => {
-      progress.report({ message: 'Starting installation...', increment: 0 })
+      progress.report({ message: vscode.l10n.t('Starting installation...'), increment: 0 })
 
       const [onProgress, getLastPercent] = createProgressTracker(progress)
 
@@ -51,17 +51,17 @@ export async function installPackage(name: string, version?: string, skipConfirm
       if (result.code === 0) {
         const finalIncrement = Math.max(0, 100 - getLastPercent())
         if (finalIncrement > 0) {
-          progress.report({ message: 'Installation complete', increment: finalIncrement })
+          progress.report({ message: vscode.l10n.t('Installation complete'), increment: finalIncrement })
         }
         else {
-          progress.report({ message: 'Installation complete' })
+          progress.report({ message: vscode.l10n.t('Installation complete') })
         }
-        vscode.window.showInformationMessage(`✓ Successfully installed ${packageName} ${displayVersion}`)
+        vscode.window.showInformationMessage('✓ ' + vscode.l10n.t('Successfully installed {0} {1}', packageName, displayVersion))
         success = true
       }
       else {
-        const errorMsg = result.stderr || result.stdout || 'Unknown error'
-        vscode.window.showErrorMessage(`Failed to install ${packageName}: ${errorMsg}`)
+        const errorMsg = result.stderr || result.stdout || vscode.l10n.t('Unknown error')
+        vscode.window.showErrorMessage(vscode.l10n.t('Failed to install {0}: {1}', packageName, errorMsg))
       }
     },
   )
@@ -74,7 +74,7 @@ export default function registerInstallCommand(ctx: vscode.ExtensionContext) {
     'ruyi.packages.install',
     async (item: VersionItem) => {
       if (!(item instanceof VersionItem)) {
-        vscode.window.showErrorMessage('Invalid package selection.')
+        vscode.window.showErrorMessage(vscode.l10n.t('Invalid package selection.'))
         return
       }
 

@@ -13,7 +13,7 @@ export async function deactivateVenvCommand(
   service: VenvService,
 ): Promise<void> {
   if (!service.getCurrentVenv()) {
-    vscode.window.showErrorMessage('No virtual environment is currently active.')
+    vscode.window.showErrorMessage(vscode.l10n.t('No virtual environment is currently active.'))
     return
   }
 
