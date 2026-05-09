@@ -117,11 +117,11 @@ export function determineVersionTags(version: string, releases: GitHubRelease[])
   if (matchingRelease) {
     // Found matching release
     if (matchingRelease.prerelease) {
-      tags.push('$(beaker) Prereleased')
+      tags.push('$(beaker) ' + vscode.l10n.t('Prereleased'))
     }
     else if (!latestThreeStable.includes(currentVersion.version)) {
       // It's a stable release but not in the latest 3
-      tags.push('$(warning) Outdated')
+      tags.push('$(warning) ' + vscode.l10n.t('Outdated'))
     }
   }
   else {
@@ -130,7 +130,7 @@ export function determineVersionTags(version: string, releases: GitHubRelease[])
     if (latestStableVersion && semver.lt(currentVersion, latestStableVersion)) {
       // Version is older than the latest stable
       if (!latestThreeStable.includes(currentVersion.version)) {
-        tags.push('$(warning) Outdated')
+        tags.push('$(warning) ' + vscode.l10n.t('Outdated'))
       }
     }
   }
@@ -272,8 +272,8 @@ export class ManageService implements vscode.Disposable {
       1000,
     )
     this.statusBarItem.command = 'ruyi.setup.manage'
-    this.statusBarItem.text = '$(tools) <No RuyiSDK>'
-    this.statusBarItem.tooltip = 'Click to select RuyiSDK installation'
+    this.statusBarItem.text = '$(tools) ' + vscode.l10n.t('<No RuyiSDK>')
+    this.statusBarItem.tooltip = vscode.l10n.t('Click to select RuyiSDK installation')
     this.statusBarItem.show()
     context.subscriptions.push(this.statusBarItem)
 
@@ -338,8 +338,8 @@ export class ManageService implements vscode.Disposable {
     }
 
     if (!currentPath) {
-      this.statusBarItem.text = '$(tools) <No RuyiSDK>'
-      this.statusBarItem.tooltip = 'Click to select RuyiSDK installation'
+      this.statusBarItem.text = '$(tools) ' + vscode.l10n.t('<No RuyiSDK>')
+      this.statusBarItem.tooltip = vscode.l10n.t('Click to select RuyiSDK installation')
       return
     }
 
@@ -348,12 +348,12 @@ export class ManageService implements vscode.Disposable {
       // Extract full version string including prerelease suffix
       const match = version.match(/(\d+\.\d+\.\d+[^\s]*)/)
       const versionLabel = match ? match[1] : version.replace(/^Ruyi\s+/i, '')
-      const pathInfo = configuration.ruyiPath ? `Path: ${path.dirname(currentPath)}` : `Auto-detected: ${path.dirname(currentPath)}`
+      const pathInfo = configuration.ruyiPath ? vscode.l10n.t('Path: {0}', path.dirname(currentPath)) : vscode.l10n.t('Auto-detected: {0}', path.dirname(currentPath))
       this.statusBarItem.text = `$(tools) RuyiSDK ${versionLabel}`
       this.statusBarItem.tooltip = `RuyiSDK ${version}\n${pathInfo}`
     }
     else {
-      const pathInfo = configuration.ruyiPath ? 'RuyiSDK' : 'RuyiSDK (Auto-detected)'
+      const pathInfo = configuration.ruyiPath ? 'RuyiSDK' : vscode.l10n.t('RuyiSDK (Auto-detected)')
       this.statusBarItem.text = `$(tools) ${path.basename(currentPath)}`
       this.statusBarItem.tooltip = `${pathInfo}: ${path.dirname(currentPath)}`
     }

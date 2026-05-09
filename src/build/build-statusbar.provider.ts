@@ -46,19 +46,21 @@ export class BuildStatusBarProvider implements vscode.Disposable {
   private update(): void {
     const venvPath = this.venvService.getCurrentVenv()
 
-    this.item.text = '$(play) Build'
+    this.item.text = '$(play) ' + vscode.l10n.t('Build')
 
     if (venvPath) {
       const venvName = path.basename(path.normalize(venvPath))
       this.item.tooltip = new vscode.MarkdownString(
-        `**RuyiSDK Build**\n\nClick to build the project.\n\n`
-        + `Venv: \`${venvName}\` — build tools from the virtual environment will be used.`,
+        `**${vscode.l10n.t('RuyiSDK Build')}**\n\n`
+        + `${vscode.l10n.t('Click to build the project.')}\n\n`
+        + `${vscode.l10n.t('Venv')}: \`${venvName}\` — ${vscode.l10n.t('build tools from the virtual environment will be used.')}`,
       )
     }
     else {
       this.item.tooltip = new vscode.MarkdownString(
-        `**RuyiSDK Build**\n\nClick to build the project.\n\n`
-        + `_No active venv — system build tools will be used._`,
+        `**${vscode.l10n.t('RuyiSDK Build')}**\n\n`
+        + `${vscode.l10n.t('Click to build the project.')}\n\n`
+        + `_${vscode.l10n.t('No active venv — system build tools will be used.')}_`,
       )
     }
 

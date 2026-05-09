@@ -107,7 +107,7 @@ export async function extractPackage(uri?: vscode.Uri): Promise<void> {
     const sourcePackages = await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: 'Fetching available source packages...',
+        title: vscode.l10n.t('Fetching available source packages...'),
         cancellable: false,
       },
       async () => fetchSourcePackages(),
@@ -116,8 +116,8 @@ export async function extractPackage(uri?: vscode.Uri): Promise<void> {
     const selectedLabel = await vscode.window.showQuickPick(
       sourcePackages.map(p => p.label),
       {
-        placeHolder: 'Select a package version to extract',
-        title: 'Extract RuyiSDK Package',
+        placeHolder: vscode.l10n.t('Select a package version to extract'),
+        title: vscode.l10n.t('Extract RuyiSDK Package'),
       },
     )
 
@@ -146,11 +146,11 @@ export async function extractPackage(uri?: vscode.Uri): Promise<void> {
     catch {
       const option = await vscode.window.showQuickPick(
         [
-          { label: `Extract to current folder: ${baseDir}`, value: 'base' },
-          { label: `Extract to new subfolder: ${subfolderDir}`, value: 'subfolder' },
-          { label: 'Manually select...', value: 'manual' },
+          { label: vscode.l10n.t('Extract to current folder: {0}', baseDir), value: 'base' },
+          { label: vscode.l10n.t('Extract to new subfolder: {0}', subfolderDir), value: 'subfolder' },
+          { label: vscode.l10n.t('Manually select...'), value: 'manual' },
         ],
-        { placeHolder: 'Select extraction folder' },
+        { placeHolder: vscode.l10n.t('Select extraction folder') },
       )
       if (!option) return
 
@@ -167,8 +167,8 @@ export async function extractPackage(uri?: vscode.Uri): Promise<void> {
           canSelectFolders: true,
           canSelectFiles: false,
           canSelectMany: false,
-          openLabel: 'Select Extraction Folder',
-          title: 'Select Extraction Folder',
+          openLabel: vscode.l10n.t('Select Extraction Folder'),
+          title: vscode.l10n.t('Select Extraction Folder'),
         })
         if (!folders || !folders[0]) return
         const parentDir = folders[0].fsPath
@@ -180,14 +180,14 @@ export async function extractPackage(uri?: vscode.Uri): Promise<void> {
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: `Extracting ${selectedLabel}...`,
+        title: vscode.l10n.t('Extracting {0}...', selectedLabel),
         cancellable: false,
       },
       async progress => extractSelectedPackage(selectedPackage.value, targetDir, progress),
     )
 
     await vscode.window.showInformationMessage(
-      `Successfully extracted ${selectedLabel} to ${targetDir}`,
+      vscode.l10n.t('Successfully extracted {0} to {1}', selectedLabel, targetDir),
     )
 
     await vscode.commands.executeCommand('ruyi.packages.refresh')
@@ -200,7 +200,7 @@ export async function extractPackage(uri?: vscode.Uri): Promise<void> {
     }
     else {
       await vscode.window.showErrorMessage(
-        `Error occurred during extraction: ${errorMessage}`,
+        vscode.l10n.t('Error occurred during extraction: {0}', errorMessage),
       )
     }
   }

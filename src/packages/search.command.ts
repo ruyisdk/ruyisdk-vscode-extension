@@ -13,19 +13,19 @@ export default function registerSearchCommand(
       await vscode.window.withProgress(
         {
           location: vscode.ProgressLocation.Notification,
-          title: 'Preparing search...',
+          title: vscode.l10n.t('Preparing search...'),
           cancellable: false,
         },
         async (progress) => {
-          progress.report({ message: 'Loading all packages...' })
+          progress.report({ message: vscode.l10n.t('Loading all packages...') })
           await provider.prepareForSearch()
         },
       )
 
       // Now show search input - search will be instant
       const query = await vscode.window.showInputBox({
-        prompt: 'Search packages by name or category',
-        placeHolder: 'Enter search term...',
+        prompt: vscode.l10n.t('Search packages by name or category'),
+        placeHolder: vscode.l10n.t('Enter search term...'),
         value: provider.getSearchQuery(),
         ignoreFocusOut: true,
       })

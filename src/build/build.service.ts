@@ -303,8 +303,7 @@ export class BuildService implements vscode.Disposable {
           catch (err) {
             this.outputChannel.appendLine(`\n✗ Step '${step.name}' could not start: ${err}`)
             vscode.window.showErrorMessage(
-              `Build failed: could not start '${step.command}'. `
-              + 'Is it installed and on PATH?',
+              vscode.l10n.t(`Build failed: could not start '{0}'. Is it installed and on PATH?`, step.command),
             )
             return
           }
@@ -313,10 +312,10 @@ export class BuildService implements vscode.Disposable {
             this.outputChannel.appendLine(
               `\n✗ Step '${step.name}' failed (exit code ${exitCode})`,
             )
-            vscode.window.showErrorMessage(
-              `Build failed at step '${step.name}' (exit code ${exitCode}). `
-              + 'See the "RuyiSDK Build" output panel for details.',
-            )
+            vscode.window.showErrorMessage(vscode.l10n.t(
+              'Build failed at step \'{0}\' (exit code {1}). See the "RuyiSDK Build" output panel for details.',
+              step.name, exitCode,
+            ))
             return
           }
 
@@ -325,7 +324,7 @@ export class BuildService implements vscode.Disposable {
 
         progress.report({ increment: 100, message: 'Done' })
         this.outputChannel.appendLine('=== Build succeeded ===')
-        vscode.window.showInformationMessage(`✓ Build succeeded (${rule.name})`)
+        vscode.window.showInformationMessage('✓ ' + vscode.l10n.t('Build succeeded ({0})', rule.name))
       },
     )
   }

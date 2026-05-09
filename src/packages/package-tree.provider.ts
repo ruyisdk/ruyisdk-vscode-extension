@@ -85,7 +85,7 @@ export class PackagesTreeProvider implements
     }
 
     this.treeView.description = this.searchQuery
-      ? `Searching '${this.searchQuery}'`
+      ? vscode.l10n.t(`Searching '{0}'`, this.searchQuery)
       : undefined
   }
 
@@ -206,7 +206,7 @@ class PackageCategoryItem extends vscode.TreeItem {
     this.contextValue = 'ruyiPackage.category'
     // Show package count in description
     if (count !== undefined) {
-      this.description = `${count} package${count !== 1 ? 's' : ''}`
+      this.description = vscode.l10n.t('{0} package(s)', count)
     }
   }
 }
@@ -222,10 +222,10 @@ class PackageItem extends vscode.TreeItem {
     const installedCount
       = pkg.versions.filter(v => v.isInstalled).length
     if (installedCount > 0) {
-      this.description = `(${installedCount}/${pkg.versions.length} installed)`
+      this.description = vscode.l10n.t('({0}/{1} installed)', installedCount, pkg.versions.length)
     }
     else {
-      this.description = `(${pkg.versions.length} versions)`
+      this.description = vscode.l10n.t('({0} version[s])', pkg.versions.length)
     }
 
     this.iconPath = new vscode.ThemeIcon('package')
@@ -285,16 +285,16 @@ export class VersionItem extends vscode.TreeItem {
     let tooltip = `${this.pkg.name}@${this.versionInfo.version}\n`
 
     if (this.versionInfo.isInstalled) {
-      tooltip += '✓ Installed\n'
+      tooltip += '✓ ' + vscode.l10n.t('Installed') + '\n'
     }
     if (this.versionInfo.isLatest) {
-      tooltip += '⭐ Latest version\n'
+      tooltip += '⭐ ' + vscode.l10n.t('Latest version') + '\n'
     }
     if (this.versionInfo.isPrerelease) {
-      tooltip += '🚧 Prerelease version\n'
+      tooltip += '🚧 ' + vscode.l10n.t('Prerelease version') + '\n'
     }
     if (!this.versionInfo.isBinaryAvailable) {
-      tooltip += '⚠️ No binary available for current platform\n'
+      tooltip += '⚠️ ' + vscode.l10n.t('No binary available for current platform') + '\n'
     }
 
     return tooltip.trim()

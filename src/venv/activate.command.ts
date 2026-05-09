@@ -19,7 +19,7 @@ export async function activateVenvCommand(
   venvPath: string,
 ): Promise<void> {
   if (!venvPath) {
-    vscode.window.showErrorMessage('Invalid virtual environment: no path found.')
+    vscode.window.showErrorMessage(vscode.l10n.t('Invalid virtual environment: no path found.'))
     return
   }
 
@@ -38,7 +38,7 @@ export async function activateVenvCommand(
   // Check if already active
   const currentVenv = service.getCurrentVenv()
   if (currentVenv && path.normalize(currentVenv) === path.normalize(absVenvPath)) {
-    vscode.window.showInformationMessage('Virtual environment is already active.')
+    vscode.window.showInformationMessage(vscode.l10n.t('Virtual environment is already active.'))
     return
   }
 
@@ -56,7 +56,7 @@ export default function registerActivateCommand(ctx: vscode.ExtensionContext, se
       const venvPath = resolveVenvPathArg(arg)
 
       if (!venvPath) {
-        vscode.window.showErrorMessage('No virtual environment selected.')
+        vscode.window.showErrorMessage(vscode.l10n.t('No virtual environment selected.'))
         return
       }
 

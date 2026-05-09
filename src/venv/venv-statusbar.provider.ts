@@ -45,13 +45,13 @@ export class VenvStatusBarProvider implements vscode.Disposable {
   private update(): void {
     const current = this.service.getCurrentVenv()
     if (current) {
-      const displayName = path.basename(path.normalize(current)) || 'Unknown Venv'
+      const displayName = path.basename(path.normalize(current)) || vscode.l10n.t('Unknown Venv')
       this.statusBarItem.text = `$(check) ${displayName}`
-      this.statusBarItem.tooltip = `Active Ruyi Venv: ${displayName}`
+      this.statusBarItem.tooltip = vscode.l10n.t('Active Ruyi Venv: {0}', displayName)
     }
     else {
-      this.statusBarItem.text = '$(circle-slash) No Active Venv'
-      this.statusBarItem.tooltip = 'No Ruyi virtual environment is currently active'
+      this.statusBarItem.text = '$(circle-slash) ' + vscode.l10n.t('No Active Venv')
+      this.statusBarItem.tooltip = vscode.l10n.t('No Ruyi virtual environment is currently active')
     }
   }
 

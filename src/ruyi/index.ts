@@ -250,7 +250,7 @@ function executeCommand(
 
       resolve({
         stdout,
-        stderr: stderr || err.message || 'Failed to execute command',
+        stderr: stderr || err.message || vscode.l10n.t('Failed to execute command'),
         code: 1,
       })
     })
@@ -266,7 +266,7 @@ function executeCommand(
 
       if (timedOut) {
         exitCode = exitCode || 1
-        errorOutput += (errorOutput ? '\n' : '') + 'Command timed out'
+        errorOutput += (errorOutput ? '\n' : '') + vscode.l10n.t('Command timed out')
       }
 
       resolve({
