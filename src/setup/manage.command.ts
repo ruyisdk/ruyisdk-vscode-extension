@@ -19,15 +19,15 @@ const MANUAL_TOKEN = '__manual__'
 async function promptManualInput(): Promise<void> {
   const currentPath = configuration.ruyiPath || ''
   const manualPath = await vscode.window.showInputBox({
-    prompt: 'Enter the full path to the ruyi executable',
+    prompt: vscode.l10n.t('Enter the full path to the ruyi executable'),
     placeHolder: '/path/to/ruyi',
     value: currentPath,
     validateInput: (input: string) => {
       if (!input || input.trim() === '') {
-        return 'Path cannot be empty'
+        return vscode.l10n.t('Path cannot be empty')
       }
       if (!path.isAbsolute(input)) {
-        return 'Please provide an absolute path'
+        return vscode.l10n.t('Please provide an absolute path')
       }
       return undefined
     },
@@ -47,23 +47,23 @@ function buildQuickPickItems(installations: RuyiInstallation[]): RuyiPathQuickPi
     return {
       label: `$(package) ${path.basename(installation.path)}${versionSuffix}${tagsDisplay}`,
       description: path.dirname(installation.path),
-      detail: installation.version ? `Version: ${installation.version}` : installation.path,
+      detail: installation.version ? vscode.l10n.t('Version: {0}', installation.version) : installation.path,
       targetPath: installation.path,
     }
   })
 
   if (configuration.ruyiPath) {
     items.unshift({
-      label: '$(clear-all) Clear Setting (Use Auto-detection)',
-      description: 'Remove custom path and use automatic detection',
+      label: '$(clear-all) ' + vscode.l10n.t('Clear Setting (Use Auto-detection)'),
+      description: vscode.l10n.t('Remove custom path and use automatic detection'),
       detail: '',
       targetPath: '',
     })
   }
 
   items.push({
-    label: '$(edit) Manual Input',
-    description: 'Enter a custom path manually',
+    label: '$(edit) ' + vscode.l10n.t('Manual Input'),
+    description: vscode.l10n.t('Enter a custom path manually'),
     detail: '',
     targetPath: MANUAL_TOKEN,
   })
@@ -77,22 +77,22 @@ export function registerManageCommand(ctx: vscode.ExtensionContext): void {
       const installations = await vscode.window.withProgress(
         {
           location: vscode.ProgressLocation.Notification,
-          title: 'Detecting RuyiSDK installations...',
+          title: vscode.l10n.t('Detecting RuyiSDK installations...'),
         },
         () => listAllInstallations(),
       )
 
       if (installations.length === 0) {
         const choice = await vscode.window.showInformationMessage(
-          'RuyiSDK not found. Choose an option:',
-          'Install RuyiSDK',
-          'Enter Path Manually',
+          vscode.l10n.t('RuyiSDK not found. Choose an option:'),
+          vscode.l10n.t('Install RuyiSDK'),
+          vscode.l10n.t('Enter Path Manually'),
         )
 
-        if (choice === 'Install RuyiSDK') {
+        if (choice === vscode.l10n.t('Install RuyiSDK')) {
           await vscode.commands.executeCommand('ruyi.setup.install')
         }
-        else if (choice === 'Enter Path Manually') {
+        else if (choice === vscode.l10n.t('Enter Path Manually')) {
           await promptManualInput()
         }
         return
@@ -101,7 +101,7 @@ export function registerManageCommand(ctx: vscode.ExtensionContext): void {
       const items = buildQuickPickItems(installations)
 
       const selection = await vscode.window.showQuickPick(items, {
-        placeHolder: 'Select RuyiSDK installation',
+        placeHolder: vscode.l10n.t('Select RuyiSDK installation'),
         matchOnDescription: true,
         matchOnDetail: true,
       })
@@ -139,13 +139,13 @@ export function registerDetectCommand(ctx: vscode.ExtensionContext): void {
 
     if (!installation.version) {
       vscode.window.showWarningMessage(
-        `Ruyi found at ${installation.path} but version check failed. Please check your installation.`,
+        vscode.l10n.t('Ruyi found at {0} but version check failed. Please check your installation.', installation.path),
       )
       return
     }
 
     vscode.window.showInformationMessage(
-      `Ruyi detected: ${installation.version} (${installation.path})`,
+      vscode.l10n.t('Ruyi detected: {0} ({1})', installation.version, installation.path),
     )
 
     await vscode.commands.executeCommand('setContext', 'ruyi.tutorial.installationComplete', true)

@@ -87,7 +87,7 @@ export class VenvItem extends vscode.TreeItem {
 
 class PlaceholderItem extends vscode.TreeItem {
   constructor() {
-    super('No venvs detected', vscode.TreeItemCollapsibleState.None)
+    super(vscode.l10n.t('No venvs detected'), vscode.TreeItemCollapsibleState.None)
     this.iconPath = new vscode.ThemeIcon('info')
     this.contextValue = 'ruyiVenv.placeholder'
   }

@@ -16,17 +16,17 @@ export async function cleanVenvCommand(
   venvPath: string,
 ): Promise<void> {
   if (!venvPath) {
-    vscode.window.showErrorMessage('Invalid virtual environment: no path found.')
+    vscode.window.showErrorMessage(vscode.l10n.t('Invalid virtual environment: no path found.'))
     return
   }
 
   const confirm = await vscode.window.showWarningMessage(
-    'Delete the selected venv? This action cannot be undone.',
+    vscode.l10n.t('Delete the selected venv? This action cannot be undone.'),
     { modal: true },
-    'Delete',
+    vscode.l10n.t('Delete'),
   )
 
-  if (confirm !== 'Delete') {
+  if (confirm !== vscode.l10n.t('Delete')) {
     return
   }
 
@@ -44,7 +44,7 @@ export default function registerCleanCommand(ctx: vscode.ExtensionContext, servi
       const venvPath = resolveVenvPathArg(arg)
 
       if (!venvPath) {
-        vscode.window.showErrorMessage('No virtual environment selected.')
+        vscode.window.showErrorMessage(vscode.l10n.t('No virtual environment selected.'))
         return
       }
 

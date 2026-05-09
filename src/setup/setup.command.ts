@@ -30,15 +30,16 @@ async function showErrorWithCopyDetails(
   const details = getErrorDetails(error)
   logger.error(`${operation} failed via ${methodName}:`, details)
 
+  const displayOperation = operation === 'install' ? vscode.l10n.t('Installation') : vscode.l10n.t('Update')
   const action = await vscode.window.showErrorMessage(
-    `${operation === 'install' ? 'Installation' : 'Update'} failed via ${methodName}.`,
-    'Copy Details',
-    'OK',
+    vscode.l10n.t('{0} failed via {1}.', displayOperation, methodName),
+    vscode.l10n.t('Copy Details'),
+    vscode.l10n.t('OK'),
   )
 
-  if (action === 'Copy Details') {
+  if (action === vscode.l10n.t('Copy Details')) {
     await vscode.env.clipboard.writeText(details)
-    await vscode.window.showInformationMessage('Error details copied to clipboard.')
+    await vscode.window.showInformationMessage(vscode.l10n.t('Error details copied to clipboard.'))
   }
 }
 
@@ -50,21 +51,21 @@ async function handleSuccessAndPromptReload(
   const version = installation?.version
 
   const successMessage = action === 'install'
-    ? `Ruyi installed via ${methodName}: ${version}`
-    : `Ruyi updated via ${methodName}: ${version}`
+    ? vscode.l10n.t('Ruyi installed via {0}: {1}', methodName, `${version}`)
+    : vscode.l10n.t('Ruyi updated via {0}: {1}', methodName, `${version}`)
 
   const verificationFailureMessage = action === 'install'
-    ? 'Installation completed, but Ruyi installation could not be verified. Please reload the window manually.'
-    : 'Update completed, but the local Ruyi version could not be verified. Please reload the window manually.'
+    ? vscode.l10n.t('Installation completed, but Ruyi installation could not be verified. Please reload the window manually.')
+    : vscode.l10n.t('Update completed, but the local Ruyi version could not be verified. Please reload the window manually.')
 
   if (version) {
     await vscode.commands.executeCommand('ruyi.packages.refresh')
     const userAction = await vscode.window.showInformationMessage(
       successMessage,
-      'Reload Window',
-      'Later',
+      vscode.l10n.t('Reload Window'),
+      vscode.l10n.t('Later'),
     )
-    if (userAction === 'Reload Window') {
+    if (userAction === vscode.l10n.t('Reload Window')) {
       await vscode.commands.executeCommand('workbench.action.reloadWindow')
     }
   }
@@ -110,12 +111,12 @@ export async function checkRuyiUpdate(currentVersion: string): Promise<void> {
     }
 
     const choice = await vscode.window.showInformationMessage(
-      `A new version of Ruyi is available: ${latestVersion} (current: ${currentCoerced.version})`,
-      'Update now',
-      'Later',
+      vscode.l10n.t('A new version of Ruyi is available: {0} (current: {1})', latestVersion, currentCoerced.version),
+      vscode.l10n.t('Update now'),
+      vscode.l10n.t('Later'),
     )
 
-    if (choice === 'Update now') {
+    if (choice === vscode.l10n.t('Update now')) {
       await vscode.commands.executeCommand('ruyi.setup.update')
     }
   }
@@ -128,11 +129,11 @@ export function registerInstallCommand(ctx: vscode.ExtensionContext): void {
   const disposable = vscode.commands.registerCommand('ruyi.setup.install', async () => {
     if (process.platform !== 'linux') {
       const choice = await vscode.window.showWarningMessage(
-        'Automatic installation is only supported on Linux. Please install Ruyi manually.',
-        'Open Installation Guide',
-        'Cancel',
+        vscode.l10n.t('Automatic installation is only supported on Linux. Please install Ruyi manually.'),
+        vscode.l10n.t('Open Installation Guide'),
+        vscode.l10n.t('Cancel'),
       )
-      if (choice === 'Open Installation Guide') {
+      if (choice === vscode.l10n.t('Open Installation Guide')) {
         vscode.env.openExternal(vscode.Uri.parse(INSTALLATION_GUIDE_URL))
       }
       return
@@ -140,7 +141,7 @@ export function registerInstallCommand(ctx: vscode.ExtensionContext): void {
 
     const existingInstallation = await detectRuyiInstallation()
     if (existingInstallation?.version) {
-      vscode.window.showInformationMessage(`Ruyi already installed: ${existingInstallation.version}`)
+      vscode.window.showInformationMessage(vscode.l10n.t('Ruyi already installed: {0}', existingInstallation.version))
       return
     }
 
@@ -151,7 +152,7 @@ export function registerInstallCommand(ctx: vscode.ExtensionContext): void {
         await vscode.window.withProgress(
           {
             location: vscode.ProgressLocation.Notification,
-            title: `Installing Ruyi via ${methodName}...`,
+            title: vscode.l10n.t('Installing Ruyi via {0}...', methodName),
             cancellable: false,
           },
           () => executeRuyiInstall(methodName, { timeout: 60000 }),
@@ -167,8 +168,8 @@ export function registerInstallCommand(ctx: vscode.ExtensionContext): void {
 
         if (nextMethodName) {
           await vscode.window.showWarningMessage(
-            `${methodName} installation failed. Trying ${nextMethodName} instead...`,
-            'OK',
+            vscode.l10n.t('{0} installation failed. Trying {1} instead...', methodName, nextMethodName),
+            vscode.l10n.t('OK'),
           )
         }
         else {
@@ -178,12 +179,12 @@ export function registerInstallCommand(ctx: vscode.ExtensionContext): void {
     }
 
     const manualChoice = await vscode.window.showErrorMessage(
-      'Automatic installation failed. Please install Ruyi manually.',
-      'Open Installation Guide',
-      'Cancel',
+      vscode.l10n.t('Automatic installation failed. Please install Ruyi manually.'),
+      vscode.l10n.t('Open Installation Guide'),
+      vscode.l10n.t('Cancel'),
     )
 
-    if (manualChoice === 'Open Installation Guide') {
+    if (manualChoice === vscode.l10n.t('Open Installation Guide')) {
       vscode.env.openExternal(vscode.Uri.parse(INSTALLATION_GUIDE_URL))
     }
   })
@@ -195,7 +196,7 @@ export function registerUpdateCommand(ctx: vscode.ExtensionContext): void {
   const disposable = vscode.commands.registerCommand('ruyi.setup.update', async () => {
     const selectedMethod = await vscode.window.showQuickPick(
       Object.keys(PACKAGE_METHODS),
-      { placeHolder: 'Select the installation method you used to install Ruyi' },
+      { placeHolder: vscode.l10n.t('Select the installation method you used to install Ruyi') },
     )
     if (!selectedMethod) {
       return
@@ -203,7 +204,7 @@ export function registerUpdateCommand(ctx: vscode.ExtensionContext): void {
 
     const method = PACKAGE_METHODS[selectedMethod as PackageMethodKey]
     if (!method) {
-      vscode.window.showWarningMessage(`Unknown installation method: ${selectedMethod}`)
+      vscode.window.showWarningMessage(vscode.l10n.t('Unknown installation method: {0}', selectedMethod))
       return
     }
 
@@ -211,7 +212,7 @@ export function registerUpdateCommand(ctx: vscode.ExtensionContext): void {
       await vscode.window.withProgress(
         {
           location: vscode.ProgressLocation.Notification,
-          title: `Updating Ruyi via ${selectedMethod}...`,
+          title: vscode.l10n.t('Updating Ruyi via {0}...', selectedMethod),
           cancellable: false,
         },
         async () => {

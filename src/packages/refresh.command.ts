@@ -13,7 +13,7 @@ export default function registerRefreshCommand(
       await vscode.window.withProgress(
         {
           location: vscode.ProgressLocation.Notification,
-          title: 'Refreshing package list...',
+          title: vscode.l10n.t('Refreshing package list...'),
           cancellable: false,
         },
         async () => {

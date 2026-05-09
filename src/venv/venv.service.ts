@@ -124,7 +124,7 @@ export class VenvService implements vscode.Disposable {
   public async activateVenv(item: vscode.TreeItem | string | null): Promise<void> {
   // Handle null case
     if (!item) {
-      vscode.window.showWarningMessage('No virtual environment selected.')
+      vscode.window.showWarningMessage(vscode.l10n.t('No virtual environment selected.'))
       return
     }
 
@@ -144,18 +144,18 @@ export class VenvService implements vscode.Disposable {
         venvPath = typeof item.label === 'string' ? item.label : item.label.label
       }
       else {
-        vscode.window.showErrorMessage('Invalid virtual environment item: no path found.')
+        vscode.window.showErrorMessage(vscode.l10n.t('Invalid virtual environment item: no path found.'))
         return
       }
     }
     else {
-      vscode.window.showErrorMessage('Invalid virtual environment item type.')
+      vscode.window.showErrorMessage(vscode.l10n.t('Invalid virtual environment item type.'))
       return
     }
 
     // Validate that we have a non-empty path
     if (!venvPath || venvPath.trim() === '') {
-      vscode.window.showErrorMessage('Invalid virtual environment path.')
+      vscode.window.showErrorMessage(vscode.l10n.t('Invalid virtual environment path.'))
       return
     }
 
@@ -164,7 +164,7 @@ export class VenvService implements vscode.Disposable {
       workspaceRoot = getWorkspaceFolderPath()
     }
     catch {
-      vscode.window.showWarningMessage('Open a workspace folder before activating a Ruyi venv.')
+      vscode.window.showWarningMessage(vscode.l10n.t('Open a workspace folder before activating a Ruyi venv.'))
       return
     }
 
@@ -237,7 +237,10 @@ export class VenvService implements vscode.Disposable {
       if (progressReporter && getLastPercent) {
         const finalIncrement = Math.max(0, 100 - getLastPercent())
         if (finalIncrement > 0) {
-          progressReporter.report({ message: 'Venv creation complete', increment: finalIncrement })
+          progressReporter.report({
+            message: vscode.l10n.t('Venv creation complete'),
+            increment: finalIncrement,
+          })
         }
       }
 
