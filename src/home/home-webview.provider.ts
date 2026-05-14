@@ -36,6 +36,9 @@ async function handleMessage(msg: { type: string }) {
   else if (msg.type === 'openForum') {
     await vscode.env.openExternal(vscode.Uri.parse('https://ruyisdk.cn'))
   }
+  else if (msg.type === 'openBoardDocs') {
+    await vscode.commands.executeCommand('ruyi.board-docs')
+  }
 }
 
 function getHtml(): string {
@@ -125,6 +128,13 @@ function getHtml(): string {
         <p>Browse, install, and manage software packages</p>
       </div>
       <button onclick="vscode.postMessage({type:'openPackages'})">Browse Package</button>
+    </article>
+    <article class="card">
+      <div>
+        <h2>RuyiSDK Examples</h2>
+        <p>Visit RuyiSDK Examples to run your first program on a RISC-V board.</p>
+      </div>
+      <button onclick="vscode.postMessage({type:'openBoardDocs'})">Open RuyiSDK Examples</button>
     </article>
     <article class="card">
       <div>
