@@ -112,7 +112,9 @@ export interface VenvOptions {
   toolchain?: string | string[]
   emulator?: string
   withSysroot?: boolean
-  sysrootFrom?: string
+  copySysrootFromPkg?: string
+  copySysrootFromDir?: string
+  symlinkSysrootFromDir?: string
   extraCommandsFrom?: string | string[]
 }
 
@@ -518,8 +520,14 @@ export class Ruyi {
     else if (options?.withSysroot === true) {
       args.push('--with-sysroot')
     }
-    if (options?.sysrootFrom) {
-      args.push('--sysroot-from', options.sysrootFrom)
+    if (options?.copySysrootFromPkg) {
+      args.push('--copy-sysroot-from-pkg', options.copySysrootFromPkg)
+    }
+    if (options?.copySysrootFromDir) {
+      args.push('--copy-sysroot-from-dir', options.copySysrootFromDir)
+    }
+    if (options?.symlinkSysrootFromDir) {
+      args.push('--symlink-sysroot-from-dir', options.symlinkSysrootFromDir)
     }
     if (options?.extraCommandsFrom) {
       const extras = Array.isArray(options.extraCommandsFrom)
