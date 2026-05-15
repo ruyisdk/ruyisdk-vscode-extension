@@ -24,6 +24,11 @@ type EmulatorPick = vscode.QuickPickItem & {
 
 type SysrootPkgPick = vscode.QuickPickItem & InstallableDependency
 
+type SelectedSysroot = {
+  kind: 'pkg' | 'copy-dir' | 'symlink-dir'
+  data: string
+}
+
 type InstallableDependency = {
   rawName: string
   version: string
@@ -220,9 +225,20 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
   const venvPath = pathInput.trim()
 
   // 6. Sysroot (Optional)
-  let sysrootFrom: string | undefined
+  let copySysrootFromPkg: string | undefined
+  let copySysrootFromDir: string | undefined
+  let symlinkSysrootFromDir: string | undefined
   try {
-    sysrootFrom = await selectSysroot(service)
+    const selectedSysroot = await selectSysroot(service)
+    if (selectedSysroot?.kind == 'pkg') {
+      copySysrootFromPkg = selectedSysroot.data
+    }
+    else if (selectedSysroot?.kind == 'copy-dir') {
+      copySysrootFromDir = selectedSysroot.data
+    }
+    else if (selectedSysroot?.kind == 'symlink-dir') {
+      symlinkSysrootFromDir = selectedSysroot.data
+    }
   }
   catch (error) {
     if (error instanceof CancelledError) {
@@ -263,8 +279,10 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
           toolchains: toolchainSpecs,
           emulator: emulatorSpec,
           // Enter -> true even if input is empty str; ESC -> false.
-          withSysroot: sysrootFrom !== undefined,
-          sysrootFrom: sysrootFrom || undefined,
+          withSysroot: !!(copySysrootFromPkg ?? copySysrootFromDir ?? symlinkSysrootFromDir),
+          copySysrootFromPkg,
+          copySysrootFromDir,
+          symlinkSysrootFromDir,
           extraCommandsFrom: extraCommands.length > 0 ? extraCommands : undefined,
         }, progress)
 
@@ -315,62 +333,110 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
   }
 }
 
-async function selectSysroot(service: VenvService): Promise<string | undefined> {
+async function selectSysroot(service: VenvService): Promise<SelectedSysroot | undefined> {
   const withSysroot = await vscode.window.showQuickPick(
-    [{ label: 'Disabled' }, { label: 'Default' }, { label: 'Select a Package' }],
-    { placeHolder: 'Include a sysroot in the new venv?' },
+    [
+      { id: 'disabled', label: vscode.l10n.t('Disabled') },
+      { id: 'default', label: vscode.l10n.t('Default') },
+      { id: 'pkg', label: vscode.l10n.t('Select a Package') },
+      { id: 'copy-dir', label: vscode.l10n.t('Copy from Directory') },
+      { id: 'symlink-dir', label: vscode.l10n.t('Symlink from Directory') },
+    ],
+    { placeHolder: vscode.l10n.t('Include a sysroot in the new venv?') },
   )
 
-  if (withSysroot?.label === 'Select a Package') {
-    const sysrootPkgsResult = await service.getSysrootPkgs()
-    if ('errorMsg' in sysrootPkgsResult) {
-      vscode.window.showErrorMessage(sysrootPkgsResult.errorMsg)
-      throw new CancelledError()
+  if (withSysroot?.id === 'copy-dir') {
+    const path = await selectSysrootDir()
+
+    return {
+      kind: 'copy-dir',
+      data: path,
     }
+  }
+  else if (withSysroot?.id === 'symlink-dir') {
+    const path = await selectSysrootDir()
 
-    const sysrootItems: SysrootPkgPick[] = sysrootPkgsResult.map((sp) => {
-      const isLatest = sp.remarks.includes('latest')
-      const isInstalled = sp.remarks.includes('installed')
-
-      const icons = [
-        isLatest ? '$(star-full)' : '',
-        isInstalled ? '$(check)' : '',
-      ].filter(Boolean).join(' ')
-
-      return {
-        label: [icons, sp.name].filter(Boolean).join(' '),
-        description: sp.semver ? `v${sp.semver}` : undefined,
-        detail: [
-          isLatest ? 'Latest' : 'Legacy',
-          isInstalled ? 'Installed' : undefined,
-        ].filter(Boolean).join('   '),
-        rawName: sp.name,
-        version: sp.semver,
-        latest: isLatest,
-        installed: isInstalled,
-      }
-    })
-
-    const pickedSysroot = await vscode.window.showQuickPick(sysrootItems, {
-      placeHolder: 'Select a sysroot (Star=Latest, Check=Installed)',
-      matchOnDescription: true,
-      matchOnDetail: true,
-    })
-
-    if (!pickedSysroot) {
-      throw new CancelledError()
+    return {
+      kind: 'symlink-dir',
+      data: path,
     }
+  }
+  else if (withSysroot?.id === 'pkg') {
+    const pickedSysrootPkg = await selectSysrootPkg(service)
 
-    return buildPackageSpec(pickedSysroot)
+    return {
+      kind: 'pkg',
+      data: pickedSysrootPkg,
+    }
   }
-  else if (withSysroot?.label === 'Default') {
-    return ''
+  else if (withSysroot?.id === 'default') {
+    return {
+      kind: 'pkg',
+      data: '',
+    }
   }
-  else if (withSysroot?.label === 'Disabled') {
+  else if (withSysroot?.id === 'disabled') {
     return undefined
   }
 
   throw new CancelledError()
+}
+
+async function selectSysrootPkg(service: VenvService): Promise<string> {
+  const sysrootPkgsResult = await service.getSysrootPkgs()
+  if ('errorMsg' in sysrootPkgsResult) {
+    vscode.window.showErrorMessage(sysrootPkgsResult.errorMsg)
+    throw new CancelledError()
+  }
+
+  const sysrootItems: SysrootPkgPick[] = sysrootPkgsResult.map((sp) => {
+    const isLatest = sp.remarks.includes('latest')
+    const isInstalled = sp.remarks.includes('installed')
+
+    const icons = [
+      isLatest ? '$(star-full)' : '',
+      isInstalled ? '$(check)' : '',
+    ].filter(Boolean).join(' ')
+
+    return {
+      label: [icons, sp.name].filter(Boolean).join(' '),
+      description: sp.semver ? `v${sp.semver}` : undefined,
+      detail: [
+        isLatest ? 'Latest' : 'Legacy',
+        isInstalled ? 'Installed' : undefined,
+      ].filter(Boolean).join('   '),
+      rawName: sp.name,
+      version: sp.semver,
+      latest: isLatest,
+      installed: isInstalled,
+    }
+  })
+
+  const pickedSysroot = await vscode.window.showQuickPick(sysrootItems, {
+    placeHolder: 'Select a sysroot (Star=Latest, Check=Installed)',
+    matchOnDescription: true,
+    matchOnDetail: true,
+  })
+
+  if (!pickedSysroot) {
+    throw new CancelledError()
+  }
+
+  return buildPackageSpec(pickedSysroot)
+}
+
+async function selectSysrootDir(): Promise<string> {
+  const dir = await vscode.window.showOpenDialog({
+    canSelectFiles: false,
+    canSelectFolders: true,
+    canSelectMany: false,
+  })
+
+  if (!dir || dir?.length !== 1) {
+    throw new CancelledError()
+  }
+
+  return dir[0].fsPath
 }
 
 /**
