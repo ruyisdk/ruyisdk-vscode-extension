@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
+import { randomUUID } from 'crypto'
 import * as vscode from 'vscode'
 
 import type { NewsRow } from './news.service'
@@ -14,15 +15,6 @@ export function escapeHtml(text: string): string {
   }[match]!))
 }
 
-export function getNonce(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  let result = ''
-  for (let i = 0; i < 32; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  return result
-}
-
 function createCardHtml(row: NewsRow): string {
   const cardClass = row.read ? 'card' : 'card unread'
   return `<div class="${cardClass}" data-no="${row.no}" data-title="${escapeHtml(row.title)}">
@@ -34,7 +26,7 @@ function createCardHtml(row: NewsRow): string {
 }
 
 export function getCardsHtml(webview: vscode.Webview, searchQuery: string, rows: NewsRow[], showUnreadOnly: boolean): string {
-  const nonce = getNonce()
+  const nonce = randomUUID()
   const csp = [
     `default-src 'none';`,
     `style-src 'unsafe-inline' ${webview.cspSource};`,
