@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
+import { randomUUID } from 'crypto'
 import * as vscode from 'vscode'
 
-import { escapeHtml, getNonce } from './news-cards.view'
+import { escapeHtml } from './news-cards.view'
 
 export function getReaderHtml(
   webview: vscode.Webview,
@@ -11,7 +12,7 @@ export function getReaderHtml(
   availableLocales: string[],
   title: string,
 ): string {
-  const nonce = getNonce()
+  const nonce = randomUUID()
   const markdownItJs = webview.asWebviewUri(
     vscode.Uri.joinPath(extensionUri, 'media', 'markdown-it.min.js'))
   const highlightJs = webview.asWebviewUri(
