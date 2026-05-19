@@ -8,19 +8,14 @@
  * - Marks items as read and extracts summaries for the UI layer.
  */
 
-import * as dns from 'dns'
-import * as https from 'https'
 import * as os from 'os'
 import * as path from 'path'
-import { promisify } from 'util'
 import * as vscode from 'vscode'
 
 import { logger } from '../common/logger'
 import ruyi from '../ruyi'
 
 import { parseNewsListPorcelain, stripLeadingFrontMatter } from './news.helper'
-
-const resolve4 = promisify(dns.resolve4)
 
 export type NewsRow = {
   no: number
@@ -59,13 +54,10 @@ export class NewsService {
 
   private async isNetworkAvailable(): Promise<boolean> {
     try {
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('DNS lookup timeout')), 5000)
+      await fetch('https://detectportal.firefox.com/success.txt', {
+        method: 'HEAD',
+        signal: AbortSignal.timeout(5000),
       })
-
-      const lookupPromise = resolve4('detectportal.firefox.com')
-
-      await Promise.race([lookupPromise, timeoutPromise])
       return true
     }
     catch {
@@ -277,34 +269,19 @@ export class NewsService {
     return { id: newsItem.id, entries }
   }
 
-  private fetchJson<T>(url: string): Promise<T> {
-    return new Promise((resolve, reject) => {
-      const options = {
-        headers: {
-          'User-Agent': 'ruyisdk-vscode-extension',
-          'Accept': 'application/vnd.github.v3+json',
-        },
-      }
-      https.get(url, options, (res) => {
-        if (res.statusCode !== 200) {
-          reject(new Error(`HTTP ${res.statusCode} for ${url}`))
-          res.resume()
-          return
-        }
-        let data = ''
-        res.on('data', (chunk: string) => {
-          data += chunk
-        })
-        res.on('end', () => {
-          try {
-            resolve(JSON.parse(data) as T)
-          }
-          catch (e) {
-            reject(e)
-          }
-        })
-      }).on('error', reject)
+  private async fetchJson<T>(url: string): Promise<T> {
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'ruyisdk-vscode-extension',
+        'Accept': 'application/vnd.github.v3+json',
+      },
     })
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} for ${url}`)
+    }
+
+    return (await response.json()) as T
   }
 
   private async markAsRead(no: number): Promise<void> {
