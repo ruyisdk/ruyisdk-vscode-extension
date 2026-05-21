@@ -181,14 +181,14 @@ export function getCardsHtml(webview: vscode.Webview, searchQuery: string, rows:
   <div class="header">
     <div class="title">${mainTitle}</div>
     <div class="controls">
-      <button class="btn" id="searchBtn">Search</button>
-      <button class="btn" id="clearSearchBtn">Clear</button>
-      <button class="btn" id="toggleFilter">${showUnreadOnly ? 'Show All' : 'Show Unread'}</button>
-      <button class="btn" id="refreshBtn">Refresh</button>
+      <button class="btn" id="searchBtn">${vscode.l10n.t('Search')}</button>
+      <button class="btn" id="clearSearchBtn">${vscode.l10n.t('Clear')}</button>
+      <button class="btn" id="toggleFilter">${showUnreadOnly ? vscode.l10n.t('Show All') : vscode.l10n.t('Show Unread')}</button>
+      <button class="btn" id="refreshBtn">${vscode.l10n.t('Refresh')}</button>
     </div>
   </div>
   <div class="cards-container" id="cardsContainer">
-    ${rows.length === 0 ? '<div class="empty-state">No news items found.</div>' : cardsHtml}
+    ${rows.length === 0 ? '<div class="empty-state">' + vscode.l10n.t('No news items found.') + '</div>' : cardsHtml}
   </div>
   <script nonce="${nonce}">
     const vscode = acquireVsCodeApi();
@@ -227,7 +227,7 @@ export function getErrorHtml(message: string): string {
 </head>
 <body>
   <div style="padding: 20px; color: var(--vscode-errorForeground);">
-    <h3>Failed to load news</h3>
+    <h3>${vscode.l10n.t('Failed to load news')}</h3>
     <p>${escapeHtml(message)}</p>
   </div>
 </body>

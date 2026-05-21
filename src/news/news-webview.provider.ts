@@ -34,8 +34,8 @@ export class NewsWebviewProvider {
 
   registerStatusBar(): vscode.Disposable {
     const item = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 1000)
-    item.text = '$(info) Read RuyiNews'
-    item.tooltip = 'Open Ruyi News Cards'
+    item.text = '$(info) ' + vscode.l10n.t('Read RuyiNews')
+    item.tooltip = vscode.l10n.t('Open Ruyi News Cards')
     item.command = 'ruyi.news.showCards'
     item.show()
     return item
@@ -50,7 +50,7 @@ export class NewsWebviewProvider {
 
     this.panel = vscode.window.createWebviewPanel(
       'ruyiNewsCards',
-      'Ruyi News Cards',
+      vscode.l10n.t('Ruyi News Cards'),
       vscode.ViewColumn.One,
       {
         enableScripts: true,
@@ -72,8 +72,8 @@ export class NewsWebviewProvider {
 
   async promptSearch(): Promise<void> {
     const query = await vscode.window.showInputBox({
-      prompt: 'Search news by title, date, or ID',
-      placeHolder: 'Enter search term...',
+      prompt: vscode.l10n.t('Search news by title, date, or ID'),
+      placeHolder: vscode.l10n.t('Enter search term...'),
       value: this.searchQuery,
       ignoreFocusOut: true,
     })
@@ -115,12 +115,12 @@ export class NewsWebviewProvider {
       if (!this.panel) return
 
       await this.updateContent()
-      vscode.window.showInformationMessage('News data refreshed successfully')
+      vscode.window.showInformationMessage(vscode.l10n.t('News data refreshed successfully'))
     }
     catch (error) {
       if (!this.panel) return
       const msg = error instanceof Error ? error.message : String(error)
-      vscode.window.showErrorMessage(`Failed to refresh news: ${msg}`)
+      vscode.window.showErrorMessage(vscode.l10n.t('Failed to refresh news: {0}', msg))
     }
   }
 
@@ -134,7 +134,7 @@ export class NewsWebviewProvider {
     }
     catch (error) {
       const msg = error instanceof Error ? error.message : String(error)
-      vscode.window.showErrorMessage(`Failed to read news: ${msg}`)
+      vscode.window.showErrorMessage(vscode.l10n.t('Failed to read news: {0}', msg))
     }
   }
 
