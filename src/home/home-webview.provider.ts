@@ -105,43 +105,43 @@ function getHtml(): string {
 <body>
   <header>
     <h1>RuyiSDK</h1>
-    <p class="subtitle">Welcome to RuyiSDK — your all-in-one toolkit for development and package management.</p>
+    <p class="subtitle">${vscode.l10n.t('Welcome to RuyiSDK — your all-in-one toolkit for development and package management.')}</p>
   </header>
   <section class="cards">
     <article class="card">
       <div>
-        <h2>Walkthrough</h2>
-        <p>Open the getting started walkthrough and follow the guided setup flow</p>
+        <h2>${vscode.l10n.t('Walkthrough')}</h2>
+        <p>${vscode.l10n.t('Open the getting started walkthrough and follow the guided setup flow')}</p>
       </div>
-      <button onclick="vscode.postMessage({type:'openWalkthrough'})">Open Walkthrough</button>
+      <button onclick="vscode.postMessage({type:'openWalkthrough'})">${vscode.l10n.t('Open Walkthrough')}</button>
     </article>
     <article class="card">
       <div>
-        <h2>News</h2>
-        <p>View the latest RuyiSDK release notes and announcements</p>
+        <h2>${vscode.l10n.t('News')}</h2>
+        <p>${vscode.l10n.t('View the latest RuyiSDK release notes and announcements')}</p>
       </div>
-      <button onclick="vscode.postMessage({type:'openNews'})">View News</button>
+      <button onclick="vscode.postMessage({type:'openNews'})">${vscode.l10n.t('View News')}</button>
     </article>
     <article class="card">
       <div>
-        <h2>Package</h2>
-        <p>Browse, install, and manage software packages</p>
+        <h2>${vscode.l10n.t('Package')}</h2>
+        <p>${vscode.l10n.t('Browse, install, and manage software packages')}</p>
       </div>
-      <button onclick="vscode.postMessage({type:'openPackages'})">Browse Package</button>
+      <button onclick="vscode.postMessage({type:'openPackages'})">${vscode.l10n.t('Browse Package')}</button>
     </article>
     <article class="card">
       <div>
-        <h2>RuyiSDK Examples</h2>
-        <p>Visit RuyiSDK Examples to run your first program on a RISC-V board.</p>
+        <h2>${vscode.l10n.t('RuyiSDK Examples')}</h2>
+        <p>${vscode.l10n.t('Visit RuyiSDK Examples to run your first program on a RISC-V board.')}</p>
       </div>
-      <button onclick="vscode.postMessage({type:'openBoardDocs'})">Open RuyiSDK Examples</button>
+      <button onclick="vscode.postMessage({type:'openBoardDocs'})">${vscode.l10n.t('Open RuyiSDK Examples')}</button>
     </article>
     <article class="card">
       <div>
-        <h2>Forum</h2>
-        <p>Visit the Ruyi community forum and discover more resources</p>
+        <h2>${vscode.l10n.t('Forum')}</h2>
+        <p>${vscode.l10n.t('Visit the Ruyi community forum and discover more resources')}</p>
       </div>
-      <button onclick="vscode.postMessage({type:'openForum'})">Go to Forum</button>
+      <button onclick="vscode.postMessage({type:'openForum'})">${vscode.l10n.t('Go to Forum')}</button>
     </article>
   </section>
   <script>const vscode = acquireVsCodeApi();</script>
