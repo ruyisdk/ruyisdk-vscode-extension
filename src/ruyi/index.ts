@@ -8,6 +8,7 @@
 
 import { spawn } from 'child_process'
 import type { SpawnOptions } from 'child_process'
+import { access, constants } from 'fs/promises'
 import * as path from 'path'
 import * as vscode from 'vscode'
 
@@ -127,8 +128,8 @@ export interface VenvOptions {
  */
 async function isExecutable(filePath: string): Promise<boolean> {
   try {
-    const stat = await vscode.workspace.fs.stat(vscode.Uri.file(filePath))
-    return stat.type === vscode.FileType.File
+    await access(filePath, constants.X_OK)
+    return true
   }
   catch {
     return false
