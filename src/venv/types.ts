@@ -44,8 +44,8 @@ export interface PkgInfo {
   name: string
   /** Semantic version of the package */
   semver: string
-  /** Installation status remarks */
-  remarks: string
+  /** Installation status remarks (e.g. ['installed', 'latest']) */
+  remarks: string[]
 }
 
 /**

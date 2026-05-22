@@ -91,7 +91,7 @@ export function parsePkgs(output: string): PkgInfo[] {
       for (const v of obj.vers) {
         const semver = v.semver || ''
         // remarks is always an array based on actual CLI output
-        const remarks = (v.remarks || []).join(', ')
+        const remarks: string[] = v.remarks || []
 
         result.push({
           name,
