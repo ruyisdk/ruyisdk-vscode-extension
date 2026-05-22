@@ -285,6 +285,7 @@ export class VenvService implements vscode.Disposable {
   }
 
   public dispose() {
+    this.ruyiTerminal?.dispose()
     this.disposables.forEach(d => d.dispose())
     this._onDidChangeVenv.dispose()
   }
