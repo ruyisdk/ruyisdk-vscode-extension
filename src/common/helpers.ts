@@ -17,8 +17,7 @@ import { ConfigKey } from './constants'
 export function getWorkspaceFolderPath(): string {
   const workspaceFolder = vscode.workspace.workspaceFolders?.[0]
   if (!workspaceFolder) {
-    throw `Exception: No workspace folder is open in VSCode.
-      We need a workspace folder to run the command in context.`
+    throw new Error('No workspace folder is open in VSCode. A workspace folder is needed to run the command.')
   }
   const workspacePath = workspaceFolder.uri.fsPath
   return workspacePath
