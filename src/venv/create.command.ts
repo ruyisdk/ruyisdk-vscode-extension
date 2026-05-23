@@ -287,8 +287,7 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
           path: venvPath,
           toolchains: toolchainSpecs,
           emulator: emulatorSpec,
-          // Enter -> true even if input is empty str; ESC -> false.
-          withSysroot: !!(copySysrootFromPkg ?? copySysrootFromDir ?? symlinkSysrootFromDir),
+          withSysroot: (copySysrootFromPkg ?? copySysrootFromDir ?? symlinkSysrootFromDir) !== undefined,
           copySysrootFromPkg,
           copySysrootFromDir,
           symlinkSysrootFromDir,
