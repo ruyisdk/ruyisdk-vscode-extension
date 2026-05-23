@@ -54,17 +54,23 @@ async function ensureDependencyInstalled(
   }
 
   const selection = await vscode.window.showWarningMessage(
-    `The selected ${dependencyType} "${item.rawName}" is not installed.\nWould you like to install it now?`,
-    'Install',
-    'Cancel',
+    vscode.l10n.t(
+      'The selected {0} "{1}" is not installed.\nWould you like to install it now?',
+      dependencyType, item.rawName,
+    ),
+    vscode.l10n.t('Install'),
+    vscode.l10n.t('Cancel'),
   )
-  if (selection !== 'Install') {
+  if (selection !== vscode.l10n.t('Install')) {
     return false
   }
 
   const success = await installPackage(item.rawName, item.latest ? undefined : item.version, true)
   if (!success) {
-    vscode.window.showErrorMessage(`Failed to install ${dependencyType} "${item.rawName}". Venv creation cancelled.`)
+    vscode.window.showErrorMessage(vscode.l10n.t(
+      'Failed to install {0} "{1}". Venv creation cancelled.',
+      dependencyType, item.rawName,
+    ))
     return false
   }
 
@@ -78,10 +84,10 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
   // 1. Check workspace
   if (!vscode.workspace.workspaceFolders?.length) {
     const action = await vscode.window.showWarningMessage(
-      'Venv creation requires an open workspace folder. Please open a folder first.',
-      'Open Folder',
+      vscode.l10n.t('Venv creation requires an open workspace folder. Please open a folder first.'),
+      vscode.l10n.t('Open Folder'),
     )
-    if (action === 'Open Folder') {
+    if (action === vscode.l10n.t('Open Folder')) {
       await vscode.commands.executeCommand('vscode.openFolder')
     }
     return
@@ -95,7 +101,7 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
   }))
 
   const pickedProfile = await vscode.window.showQuickPick(profileItems, {
-    placeHolder: 'Select a profile for the new venv',
+    placeHolder: vscode.l10n.t('Select a profile for the new venv'),
     matchOnDescription: true,
   })
   if (!pickedProfile) {
@@ -120,7 +126,7 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
   }))
 
   const pickedToolchains = await vscode.window.showQuickPick(toolchainItems, {
-    placeHolder: 'Select one or more toolchains for the new venv',
+    placeHolder: vscode.l10n.t('Select one or more toolchains for the new venv'),
     canPickMany: true,
     matchOnDescription: true,
     matchOnDetail: true,
@@ -143,11 +149,11 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
   // 4. Select Emulator (Optional)
   let emulatorSpec: string | undefined
   const includeEmulator = await vscode.window.showQuickPick(
-    [{ label: 'Yes' }, { label: 'No' }],
-    { placeHolder: 'Include an emulator in the new venv?' },
+    [{ label: vscode.l10n.t('Yes') }, { label: vscode.l10n.t('No') }],
+    { placeHolder: vscode.l10n.t('Include an emulator in the new venv?') },
   )
 
-  if (includeEmulator?.label === 'Yes') {
+  if (includeEmulator?.label === vscode.l10n.t('Yes')) {
     const emulatorsResult = await service.getEmulators()
     if ('errorMsg' in emulatorsResult) {
       vscode.window.showErrorMessage(emulatorsResult.errorMsg)
@@ -182,7 +188,7 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
     })
 
     const pickedEmulator = await vscode.window.showQuickPick(emulatorItems, {
-      placeHolder: 'Select an emulator (Star=Latest, Check=Installed, Cross=No Binary)',
+      placeHolder: vscode.l10n.t('Select an emulator (Star=Latest, Check=Installed, Cross=No Binary)'),
       matchOnDescription: true,
       matchOnDetail: true,
     })
@@ -192,7 +198,10 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
     }
 
     if (pickedEmulator.noBinary) {
-      vscode.window.showWarningMessage(`The selected emulator "${pickedEmulator.rawName}" has no binary for the current host.`)
+      vscode.window.showWarningMessage(vscode.l10n.t(
+        'The selected emulator "{0}" has no binary for the current host.',
+        pickedEmulator.rawName,
+      ))
       return
     }
 
@@ -209,11 +218,11 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
   // Default path format: ./ruyi-venv-{profile}
   const suggestedPath = `./ruyi-venv-${profile.replace(/\s+/g, '-')}`
   const pathInput = await vscode.window.showInputBox({
-    placeHolder: 'Path to create the new venv',
+    placeHolder: vscode.l10n.t('Path to create the new venv'),
     value: suggestedPath,
     validateInput: (value) => {
       if (!value || value.trim().length === 0) {
-        return 'Path cannot be empty'
+        return vscode.l10n.t('Path cannot be empty')
       }
       return undefined
     },
@@ -252,7 +261,7 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
   let addingCommands = true
   while (addingCommands) {
     const cmd = await vscode.window.showInputBox({
-      placeHolder: '(Optional) Specifier of extra package to add commands. Press ESC to finish.',
+      placeHolder: vscode.l10n.t('(Optional) Specifier of extra package to add commands. Press ESC to finish.'),
     })
     if (cmd) {
       extraCommands.push(cmd)
@@ -267,11 +276,11 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
   await vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Notification,
-      title: 'Creating venv',
+      title: vscode.l10n.t('Creating venv'),
       cancellable: false,
     },
     async (progress) => {
-      progress.report({ message: 'Initializing...' })
+      progress.report({ message: vscode.l10n.t('Initializing...') })
       try {
         await service.createVenv({
           profile,
@@ -286,15 +295,15 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
           extraCommandsFrom: extraCommands.length > 0 ? extraCommands : undefined,
         }, progress)
 
-        vscode.window.showInformationMessage('Venv created successfully.')
+        vscode.window.showInformationMessage(vscode.l10n.t('Venv created successfully.'))
         created = true
       }
       catch (error) {
         if (error instanceof Error) {
-          vscode.window.showErrorMessage(`Failed to create venv: ${error.message}`)
+          vscode.window.showErrorMessage(vscode.l10n.t('Failed to create venv: {0}', error.message))
         }
         else {
-          vscode.window.showErrorMessage(`Failed to create venv: ${error}`)
+          vscode.window.showErrorMessage(vscode.l10n.t('Failed to create venv: {0}', `${error}`))
         }
       }
     },
@@ -326,9 +335,9 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
     }
 
     if (!autoDetected) {
-      vscode.window.showWarningMessage(
+      vscode.window.showWarningMessage(vscode.l10n.t(
         'The newly created venv is outside the workspace or too deep (>2 levels). It will not be detected automatically.',
-      )
+      ))
     }
   }
 }
@@ -413,7 +422,7 @@ async function selectSysrootPkg(service: VenvService): Promise<string> {
   })
 
   const pickedSysroot = await vscode.window.showQuickPick(sysrootItems, {
-    placeHolder: 'Select a sysroot (Star=Latest, Check=Installed)',
+    placeHolder: vscode.l10n.t('Select a sysroot (Star=Latest, Check=Installed)'),
     matchOnDescription: true,
     matchOnDetail: true,
   })
