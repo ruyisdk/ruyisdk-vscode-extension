@@ -80,6 +80,9 @@ export function getReaderHtml(
     font-size: 12px;
     font-family: var(--md-font);
     transition: all 0.15s;
+    min-width: 48px;
+    text-align: center;
+    line-height: 1.5;
   }
   .lang-btn:hover {
     background: var(--vscode-button-hoverBackground);

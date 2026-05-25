@@ -88,10 +88,9 @@ export function getCardsHtml(webview: vscode.Webview, searchQuery: string, rows:
     background-color: var(--vscode-button-hoverBackground);
   }
   .cards-container {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 16px;
-    align-items: flex-start;
   }
   .card {
     border: 1px solid var(--vscode-panel-border);
@@ -101,7 +100,7 @@ export function getCardsHtml(webview: vscode.Webview, searchQuery: string, rows:
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
-    flex: 1 1 300px;
+    min-width: 0;
     box-sizing: border-box;
   }
   .card:hover {
@@ -150,6 +149,7 @@ export function getCardsHtml(webview: vscode.Webview, searchQuery: string, rows:
     word-break: break-word;
   }
   .empty-state {
+    grid-column: 1 / -1;
     text-align: center;
     padding: 40px;
     color: var(--vscode-descriptionForeground);
