@@ -306,23 +306,23 @@ export class ManageService implements vscode.Disposable {
       }
 
       const message = newPath
-        ? `RuyiSDK path set to: ${newPath}`
-        : 'RuyiSDK path cleared. Using automatic detection.'
+        ? vscode.l10n.t('RuyiSDK path set to: {0}', newPath)
+        : vscode.l10n.t('RuyiSDK path cleared. Using automatic detection.')
 
       const choice = await vscode.window.showInformationMessage(
         message,
-        'Reload Window',
-        'Later',
+        vscode.l10n.t('Reload Window'),
+        vscode.l10n.t('Later'),
       )
 
-      if (choice === 'Reload Window') {
+      if (choice === vscode.l10n.t('Reload Window')) {
         await vscode.commands.executeCommand('workbench.action.reloadWindow')
       }
     }
     catch (error) {
       const reason = error instanceof Error ? error.message : String(error)
       logger.error('Failed to update Ruyi path configuration', error)
-      vscode.window.showErrorMessage(`Failed to update configuration: ${reason}`)
+      vscode.window.showErrorMessage(vscode.l10n.t('Failed to update configuration: {0}', reason))
     }
   }
 
