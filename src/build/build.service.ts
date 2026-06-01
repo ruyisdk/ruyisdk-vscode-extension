@@ -249,9 +249,9 @@ export class BuildService implements vscode.Disposable {
     const detected = await this.detectBuildSystem(extensionUri)
     if (!detected) {
       vscode.window.showWarningMessage(
-        'No supported build system found in the workspace. '
-        + 'Supported: CMake (CMakeLists.txt), GNU Make (Makefile), GCC (*.c). '
-        + 'You can also add a .ruyi-build-rules.json to the workspace root to define custom rules.',
+        vscode.l10n.t('No supported build system found in the workspace. ')
+        + vscode.l10n.t('Supported: CMake (CMakeLists.txt), GNU Make (Makefile), GCC (*.c). ')
+        + vscode.l10n.t('You can also add a .ruyi-build-rules.json to the workspace root to define custom rules.'),
       )
       return
     }
