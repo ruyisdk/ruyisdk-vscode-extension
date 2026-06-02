@@ -355,6 +355,11 @@
           "default": "",
           "description": "%contributes.configuration.properties.ruyi.ruyiPath.description%"
         },
+        "ruyi.quietRuyiPath": {
+          "type": "boolean",
+          "default": false,
+          "description": "%contributes.configuration.properties.ruyi.quietRuyiPath.description%"
+        },
         "ruyi.telemetry": {
           "type": "boolean",
           "description": "%contributes.configuration.properties.ruyi.telemetry.description%"

@@ -63,7 +63,7 @@ export function activate(context: vscode.ExtensionContext) {
         await vscode.commands.executeCommand('ruyi.home.show')
       }
 
-      await vscode.commands.executeCommand('ruyi.setup.detect')
+      await vscode.commands.executeCommand('ruyi.setup.detect', true)
       await vscode.commands.executeCommand('ruyi.venv.refresh')
     }
     catch (error) {
