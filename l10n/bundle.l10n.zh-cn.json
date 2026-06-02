@@ -95,6 +95,7 @@
   "Select RuyiSDK installation": "选择 RuyiSDK 安装位置",
   "Ruyi found at {0} but version check failed. Please check your installation.": "在 {0} 找到 Ruyi，但版本检查失败。请检查您的安装。",
   "Ruyi detected: {0} ({1})": "检测到 Ruyi：{0}（{1}）",
+  "Don't show again": "不再提示",
   "Failed to execute command": "执行命令失败",
   "Command timed out": "命令超时",
   "Uninstall {0} {1}?": "确认卸载 {0} {1}？",

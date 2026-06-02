@@ -119,7 +119,7 @@ export function registerManageCommand(ctx: vscode.ExtensionContext): void {
 }
 
 export function registerDetectCommand(ctx: vscode.ExtensionContext): void {
-  const disposable = vscode.commands.registerCommand('ruyi.setup.detect', async () => {
+  const disposable = vscode.commands.registerCommand('ruyi.setup.detect', async (auto?: boolean) => {
     const installation = await detectRuyiInstallation()
 
     if (!installation) {
@@ -135,9 +135,18 @@ export function registerDetectCommand(ctx: vscode.ExtensionContext): void {
       return
     }
 
-    vscode.window.showInformationMessage(
-      vscode.l10n.t('Ruyi detected: {0} ({1})', installation.version, installation.path),
-    )
+    if (!auto || !configuration.quietRuyiPath) {
+      const message = vscode.l10n.t('Ruyi detected: {0} ({1})', installation.version, installation.path)
+      if (auto) {
+        const result = await vscode.window.showInformationMessage(message, vscode.l10n.t('Don\'t show again'))
+        if (result === vscode.l10n.t('Don\'t show again')) {
+          await configuration.setQuietRuyiPath(true)
+        }
+      }
+      else {
+        vscode.window.showInformationMessage(message)
+      }
+    }
 
     await vscode.commands.executeCommand('setContext', 'ruyi.tutorial.installationComplete', true)
 

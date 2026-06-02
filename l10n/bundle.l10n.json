@@ -95,6 +95,7 @@
   "Select RuyiSDK installation": "Select RuyiSDK installation",
   "Ruyi found at {0} but version check failed. Please check your installation.": "Ruyi found at {0} but version check failed. Please check your installation.",
   "Ruyi detected: {0} ({1})": "Ruyi detected: {0} ({1})",
+  "Don't show again": "Don't show again",
   "Failed to execute command": "Failed to execute command",
   "Command timed out": "Command timed out",
   "Uninstall {0} {1}?": "Uninstall {0} {1}?",

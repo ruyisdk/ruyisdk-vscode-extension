@@ -11,6 +11,7 @@ export type ConfigKey = typeof CONFIG_KEYS[keyof typeof CONFIG_KEYS]
 /** Configuration keys */
 export const CONFIG_KEYS = {
   CHECK_FOR_UPDATES: 'checkForUpdates',
+  QUIET_RUYI_PATH: 'quietRuyiPath',
   RUYI_PATH: 'ruyiPath',
   TELEMETRY: 'telemetry',
 } as const

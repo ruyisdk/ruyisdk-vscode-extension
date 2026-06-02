@@ -44,5 +44,6 @@
     "contributes.commands.ruyi.build.run.title": "Build Project",
     "contributes.configuration.properties.ruyi.checkForUpdates.description": "Automatically check for Ruyi updates when running detect command.",
     "contributes.configuration.properties.ruyi.ruyiPath.description": "Path to RuyiSDK installation. If not set, will try to detect automatically.",
-    "contributes.configuration.properties.ruyi.telemetry.description": "Enable telemetry collection to help improve RuyiSDK. Leave unset to be prompted on first use."
+    "contributes.configuration.properties.ruyi.telemetry.description": "Enable telemetry collection to help improve RuyiSDK. Leave unset to be prompted on first use.",
+    "contributes.configuration.properties.ruyi.quietRuyiPath.description": "Suppress successful Ruyi path check message on every VSCode start."
 }
