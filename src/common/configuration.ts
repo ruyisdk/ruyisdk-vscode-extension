@@ -44,6 +44,10 @@ class ConfigurationService implements vscode.Disposable {
     return this.get(CONFIG_KEYS.CHECK_FOR_UPDATES, true)
   }
 
+  public get quietRuyiPath(): boolean {
+    return this.get(CONFIG_KEYS.QUIET_RUYI_PATH, false)
+  }
+
   public get ruyiPath(): string | undefined {
     const path = this.get(CONFIG_KEYS.RUYI_PATH, '')
     return path.trim() || undefined
@@ -56,6 +60,10 @@ class ConfigurationService implements vscode.Disposable {
 
   public async setTelemetry(enabled: boolean): Promise<void> {
     await this.config.update(CONFIG_KEYS.TELEMETRY, enabled, true)
+  }
+
+  public async setQuietRuyiPath(enabled: boolean): Promise<void> {
+    await this.config.update(CONFIG_KEYS.QUIET_RUYI_PATH, enabled, true)
   }
 
   public reload(): void {
