@@ -42,6 +42,12 @@
     "contributes.commands.ruyi.extract.title": "提取 RuyiSDK 包",
     "contributes.commands.ruyi.telemetry.configure.title": "配置遥测设置",
     "contributes.commands.ruyi.build.run.title": "构建项目",
+    "contributes.commands.ruyi.repo.manage.title": "管理仓库",
+    "contributes.commands.ruyi.repo.remove.title": "删除仓库",
+    "contributes.commands.ruyi.repo.add.title": "添加仓库",
+    "contributes.commands.ruyi.repo.enable.title": "启用仓库",
+    "contributes.commands.ruyi.repo.disable.title": "禁用仓库",
+    "contributes.commands.ruyi.repo.set-priority.title": "设置仓库优先级",
     "contributes.configuration.properties.ruyi.checkForUpdates.description": "运行检测命令时自动检测 Ruyi 更新。",
     "contributes.configuration.properties.ruyi.ruyiPath.description": "RuyiSDK 安装路径。如果未设置，将尝试自动检测。",
     "contributes.configuration.properties.ruyi.telemetry.description": "启用遥测收集以帮助改进 RuyiSDK。未设置时将在首次使用时提示。"

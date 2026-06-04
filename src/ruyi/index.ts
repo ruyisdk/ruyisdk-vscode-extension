@@ -119,6 +119,13 @@ export interface VenvOptions {
   extraCommandsFrom?: string | string[]
 }
 
+export interface RepoAddOptions {
+  local?: string
+  name?: string
+  priority?: number
+  branch?: string
+}
+
 // ============================================================================
 // Core Execution
 // ============================================================================
@@ -734,6 +741,60 @@ export class Ruyi {
    */
   async selfUninstall(): Promise<RuyiResult> {
     return runRuyi(['self', 'uninstall'], this.options)
+  }
+
+  // ============================================================================
+  // Repo Command
+  // ============================================================================
+
+  /**
+   * List repositories
+   */
+  async repoList(): Promise<RuyiResult> {
+    return runRuyi(['--porcelain', 'repo', 'list'], this.options)
+  }
+
+  async repoAdd(id: string, url: string, options: RepoAddOptions): Promise<RuyiResult> {
+    const args = ['repo', 'add']
+
+    if (options.branch) {
+      args.push('--branch', options.branch)
+    }
+    if (options.local) {
+      args.push('--local', options.local)
+    }
+    if (options.name) {
+      args.push('--name', options.name)
+    }
+    if (options.priority !== undefined) {
+      args.push('--priority', String(options.priority))
+    }
+    args.push(id, url)
+
+    return runRuyi(args)
+  }
+
+  async repoRemove(id: string, purge: boolean): Promise<RuyiResult> {
+    const args = ['repo', 'remove']
+
+    if (purge) {
+      args.push('--purge')
+    }
+    args.push(id)
+
+    return runRuyi(args, this.options)
+  }
+
+  async repoEnable(id: string): Promise<RuyiResult> {
+    return runRuyi(['repo', 'enable', id], this.options)
+  }
+
+  async repoDisable(id: string): Promise<RuyiResult> {
+    return runRuyi(['repo', 'disable', id], this.options)
+  }
+
+  async repoSetPriority(id: string, priority: number): Promise<RuyiResult> {
+    return runRuyi(['repo', 'set-priority', id, String(priority)], this.options)
   }
 }
 

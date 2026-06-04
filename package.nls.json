@@ -42,6 +42,12 @@
     "contributes.commands.ruyi.extract.title": "Extract RuyiSDK Package",
     "contributes.commands.ruyi.telemetry.configure.title": "Configure Telemetry Settings",
     "contributes.commands.ruyi.build.run.title": "Build Project",
+    "contributes.commands.ruyi.repo.manage.title": "Manage Repositories",
+    "contributes.commands.ruyi.repo.remove.title": "Remove Repository",
+    "contributes.commands.ruyi.repo.add.title": "Add Repository",
+    "contributes.commands.ruyi.repo.enable.title": "Enable Repository",
+    "contributes.commands.ruyi.repo.disable.title": "Disable Repository",
+    "contributes.commands.ruyi.repo.set-priority.title": "Set Repository Priority",
     "contributes.configuration.properties.ruyi.checkForUpdates.description": "Automatically check for Ruyi updates when running detect command.",
     "contributes.configuration.properties.ruyi.ruyiPath.description": "Path to RuyiSDK installation. If not set, will try to detect automatically.",
     "contributes.configuration.properties.ruyi.telemetry.description": "Enable telemetry collection to help improve RuyiSDK. Leave unset to be prompted on first use."
