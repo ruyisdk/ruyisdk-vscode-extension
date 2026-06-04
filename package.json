@@ -2,7 +2,7 @@
   "name": "ruyisdk-vscode-extension",
   "displayName": "RuyiSDK",
   "description": "VS Code integration for the Ruyi package manager.",
-  "version": "0.1.4-beta.3",
+  "version": "0.1.4",
   "publisher": "RuyiSDK",
   "license": "Apache-2.0",
   "repository": {
