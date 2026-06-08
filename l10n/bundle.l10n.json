@@ -179,5 +179,7 @@
   "Click to build the project.": "Click to build the project.",
   "Venv": "Venv",
   "build tools from the virtual environment will be used.": "build tools from the virtual environment will be used.",
-  "No active venv — system build tools will be used.": "No active venv — system build tools will be used."
+  "No active venv — system build tools will be used.": "No active venv — system build tools will be used.",
+  "Network Unavailable": "Network Unavailable",
+  "To use RuyiSDK Examples, you must be connected to the Internet.": "To use RuyiSDK Examples, you must be connected to the Internet."
 }
