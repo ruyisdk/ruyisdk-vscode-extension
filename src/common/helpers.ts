@@ -139,3 +139,16 @@ export function parseDownloadProgress(line: string): number | null {
   }
   return null
 }
+
+export async function isNetworkAvailable(): Promise<boolean> {
+  try {
+    await fetch('https://detectportal.firefox.com/success.txt', {
+      method: 'HEAD',
+      signal: AbortSignal.timeout(5000),
+    })
+    return true
+  }
+  catch {
+    return false
+  }
+}

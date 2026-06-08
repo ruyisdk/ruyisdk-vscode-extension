@@ -179,5 +179,7 @@
   "Click to build the project.": "点击构建项目。",
   "Venv": "虚拟环境",
   "build tools from the virtual environment will be used.": "将使用虚拟环境中的构建工具。",
-  "No active venv — system build tools will be used.": "未激活虚拟环境 — 将使用系统构建工具。"
+  "No active venv — system build tools will be used.": "未激活虚拟环境 — 将使用系统构建工具。",
+  "Network Unavailable": "网络不可用",
+  "To use RuyiSDK Examples, you must be connected to the Internet.": "要使用 RuyiSDK 示例，您必须连接到互联网。"
 }
