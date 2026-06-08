@@ -12,6 +12,7 @@ import * as os from 'os'
 import * as path from 'path'
 import * as vscode from 'vscode'
 
+import { isNetworkAvailable } from '../common/helpers'
 import { logger } from '../common/logger'
 import ruyi from '../ruyi'
 
@@ -50,19 +51,6 @@ export class NewsService {
       NewsService.instance = new NewsService(context)
     }
     return NewsService.instance
-  }
-
-  private async isNetworkAvailable(): Promise<boolean> {
-    try {
-      await fetch('https://detectportal.firefox.com/success.txt', {
-        method: 'HEAD',
-        signal: AbortSignal.timeout(5000),
-      })
-      return true
-    }
-    catch {
-      return false
-    }
   }
 
   private async loadCache(allowExpired = false): Promise<NewsCache | null> {
@@ -121,7 +109,7 @@ export class NewsService {
   async list(unread = false, forceRefresh = false): Promise<NewsRow[]> {
     // forceRefresh implies trying to update the repo from remote
     if (forceRefresh) {
-      const isOnline = await this.isNetworkAvailable()
+      const isOnline = await isNetworkAvailable()
       if (isOnline) {
         try {
           await this.refreshNewsRepo()
@@ -187,7 +175,7 @@ export class NewsService {
 
   async initialize(): Promise<void> {
     try {
-      const isOnline = await this.isNetworkAvailable()
+      const isOnline = await isNetworkAvailable()
       if (isOnline) {
         await this.list(false, true)
         logger.log('News service initialized')
