@@ -37,6 +37,7 @@
   "Select a Package": "选择一个软件包",
   "Copy from Directory": "从目录复制",
   "Symlink from Directory": "从目录创建符号链接",
+  "Project from Directory": "从目录投射",
   "Include a sysroot in the new venv?": "是否在新建的虚拟环境中包含 sysroot？",
   "Select a sysroot (Star=Latest, Check=Installed)": "选择 sysroot（星标=最新版，对勾=已安装）",
   "Invalid virtual environment: no path found.": "无效的虚拟环境：未找到路径。",

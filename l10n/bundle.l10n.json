@@ -37,6 +37,7 @@
   "Select a Package": "Select a Package",
   "Copy from Directory": "Copy from Directory",
   "Symlink from Directory": "Symlink from Directory",
+  "Project from Directory": "Project from Directory",
   "Include a sysroot in the new venv?": "Include a sysroot in the new venv?",
   "Select a sysroot (Star=Latest, Check=Installed)": "Select a sysroot (Star=Latest, Check=Installed)",
   "Invalid virtual environment: no path found.": "Invalid virtual environment: no path found.",
