@@ -129,8 +129,10 @@ export class NewsWebviewProvider {
     const title = typeof message.title === 'string' ? message.title : `Ruyi News #${message.no}`
     try {
       const { defaultLocale, content, availableLocales } = await this.service.readDefault(message.no)
+      // Open reader immediately so user sees content without waiting for card list refresh
       this.openReader(message.no, { [defaultLocale]: content }, availableLocales, title)
-      await this.updateContent()
+      // Refresh card list in background to update read/unread status
+      void this.updateContent()
     }
     catch (error) {
       const msg = error instanceof Error ? error.message : String(error)
