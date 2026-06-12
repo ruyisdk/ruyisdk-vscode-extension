@@ -36,6 +36,7 @@ export type NewsCache = {
 export class NewsService {
   private static instance: NewsService | null = null
   private cachePath: string
+  private localNewsDir: string
   private readonly CACHE_VERSION = '1.0.0'
   private readonly CACHE_EXPIRY_MS = 24 * 60 * 60 * 1000
   private newsEntriesCache = new Map<number, Array<{ name: string, url: string, locale: string }>>()
@@ -44,6 +45,7 @@ export class NewsService {
     this.cachePath = context
       ? path.join(context.globalStorageUri.fsPath, 'news-cache.json')
       : path.join(os.homedir(), '.vscode', 'ruyi-news-cache.json')
+    this.localNewsDir = path.join(os.homedir(), '.cache', 'ruyi', 'repos', 'ruyisdk', 'news')
   }
 
   static getInstance(context?: vscode.ExtensionContext): NewsService {
@@ -194,9 +196,9 @@ export class NewsService {
 
   async readDefault(no: number): Promise<{ defaultLocale: string, content: string, availableLocales: string[] }> {
     try {
-      const { entries } = await this.getNewsEntries(no)
+      const { id, entries } = await this.getNewsEntries(no)
       if (entries.length === 0) {
-        throw new Error('No news files found on GitHub')
+        throw new Error('No news files found')
       }
       const availableLocales = entries.map(e => e.locale)
       const vscodeLang = vscode.env.language
@@ -204,16 +206,28 @@ export class NewsService {
       const defaultEntry = entries.find(e => e.locale === (prefersZh ? 'zh_CN' : 'en_US'))
         ?? entries.find(e => e.locale === (prefersZh ? 'en_US' : 'zh_CN'))
         ?? entries[0]
-      const fileData = await this.fetchJson<{ content: string }>(defaultEntry.url)
-      const cleaned = fileData.content.replace(/\n/g, '')
-      const content = stripLeadingFrontMatter(Buffer.from(cleaned, 'base64').toString('utf8'))
+
+      // Priority 1: read from local ruyi news cache
+      let content = await this.readLocalNewsContent(id, defaultEntry.locale)
+
+      // Priority 2: fetch from GitHub API (only when URL is available — local entries have no URL)
+      if (content === null && defaultEntry.url) {
+        const fileData = await this.fetchJson<{ content: string }>(defaultEntry.url)
+        const cleaned = fileData.content.replace(/\n/g, '')
+        content = stripLeadingFrontMatter(Buffer.from(cleaned, 'base64').toString('utf8'))
+      }
+
+      if (content === null) {
+        throw new Error('News file not found in local cache and no GitHub URL available')
+      }
+
+      // Success — mark as read locally; sync to ruyi in background (non-blocking)
       await this.markAsRead(no)
-      // Sync read status to local ruyi - ensure completion before returning
-      await ruyi.newsRead(no).catch(err => logger.warn('Failed to sync read status to ruyi:', err))
+      ruyi.newsRead(no).catch(err => logger.warn('Failed to sync read status to ruyi:', err))
       return { defaultLocale: defaultEntry.locale, content, availableLocales }
     }
     catch (error) {
-      logger.warn('Failed to read news from GitHub, falling back to ruyi CLI:', error)
+      logger.warn('Failed to read news, falling back to ruyi CLI:', error)
       const result = await ruyi.newsRead(no)
       if (result.code !== 0) {
         throw new Error(result.stderr || 'ruyi news read failed')
@@ -224,14 +238,67 @@ export class NewsService {
   }
 
   async readLocale(no: number, locale: string): Promise<string> {
-    const { entries } = await this.getNewsEntries(no)
+    const { id, entries } = await this.getNewsEntries(no)
     const entry = entries.find(e => e.locale === locale)
     if (!entry) {
       throw new Error(`Locale "${locale}" not found`)
     }
-    const fileData = await this.fetchJson<{ content: string }>(entry.url)
-    const cleaned = fileData.content.replace(/\n/g, '')
-    return stripLeadingFrontMatter(Buffer.from(cleaned, 'base64').toString('utf8'))
+
+    // Priority 1: read from local ruyi news cache
+    const localContent = await this.readLocalNewsContent(id, locale)
+    if (localContent !== null) {
+      return localContent
+    }
+
+    // Priority 2: fetch from GitHub API (only when URL is available — local entries have no URL)
+    if (entry.url) {
+      const fileData = await this.fetchJson<{ content: string }>(entry.url)
+      const cleaned = fileData.content.replace(/\n/g, '')
+      return stripLeadingFrontMatter(Buffer.from(cleaned, 'base64').toString('utf8'))
+    }
+
+    throw new Error(`Locale "${locale}" not available in local cache and no GitHub URL`)
+  }
+
+  /**
+   * Scan the local ruyi news cache directory for files matching a given news item ID.
+   * File naming convention: `{id}.{locale}.md`, e.g. `2024-01-14-ruyi-news.zh_CN.md`
+   */
+  private async scanLocalNewsFiles(id: string): Promise<Array<{ name: string, url: string, locale: string }> | null> {
+    try {
+      const dirUri = vscode.Uri.file(this.localNewsDir)
+      const entries = await vscode.workspace.fs.readDirectory(dirUri)
+      const localeRe = /\.([a-z]{2}_[A-Z]{2})\.md$/
+
+      const files = entries
+        .filter(([name, fileType]) => fileType === vscode.FileType.File && name.startsWith(id))
+        .map(([name]) => {
+          const localeMatch = name.match(localeRe)
+          const locale = localeMatch ? localeMatch[1] : 'default'
+          return { name, url: '', locale }
+        })
+
+      return files.length > 0 ? files : null
+    }
+    catch {
+      // Directory doesn't exist or can't be read — fall back to GitHub API
+      return null
+    }
+  }
+
+  /**
+   * Read a single locale's markdown content from the local ruyi news cache.
+   */
+  private async readLocalNewsContent(id: string, locale: string): Promise<string | null> {
+    try {
+      const filePath = path.join(this.localNewsDir, `${id}.${locale}.md`)
+      const fileUri = vscode.Uri.file(filePath)
+      const raw = await vscode.workspace.fs.readFile(fileUri)
+      return stripLeadingFrontMatter(raw.toString())
+    }
+    catch {
+      return null
+    }
   }
 
   private async getNewsEntries(no: number): Promise<{ id: string, entries: Array<{ name: string, url: string, locale: string }> }> {
@@ -244,6 +311,15 @@ export class NewsService {
     if (cached) {
       return { id: newsItem.id, entries: cached }
     }
+
+    // Priority 1: scan local ruyi news cache directory
+    const localEntries = await this.scanLocalNewsFiles(newsItem.id)
+    if (localEntries) {
+      this.newsEntriesCache.set(no, localEntries)
+      return { id: newsItem.id, entries: localEntries }
+    }
+
+    // Priority 2: fall back to GitHub API
     const dirUrl = 'https://api.github.com/repos/ruyisdk/packages-index/contents/news?ref=main'
     const rawEntries = await this.fetchJson<Array<{ name: string, url: string, type: string }>>(dirUrl)
     const entries = rawEntries
