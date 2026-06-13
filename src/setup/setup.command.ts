@@ -15,7 +15,7 @@ import {
   type PackageMethod,
 } from './setup.helper'
 
-const INSTALLATION_GUIDE_URL = 'https://ruyisdk.org/en/docs/Package-Manager/installation'
+const INSTALLATION_GUIDE_URL = vscode.l10n.t('https://ruyisdk.org/en/docs/Package-Manager/installation')
 
 function getErrorDetails(error: unknown): string {
   const execError = error as ExecException

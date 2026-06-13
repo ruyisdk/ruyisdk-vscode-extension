@@ -50,6 +50,7 @@
   "Disable": "禁用",
   "Ruyi telemetry enabled. Thank you!": "Ruyi 遥测已启用。感谢您的支持！",
   "Ruyi telemetry disabled.": "Ruyi 遥测已禁用。",
+  "https://ruyisdk.org/en/docs/Package-Manager/installation": "https://ruyisdk.org/docs/Package-Manager/installation",
   "Installation": "安装",
   "Update": "更新",
   "{0} failed via {1}.": "通过 {1} 进行 {0} 失败。",
