@@ -116,6 +116,7 @@ export interface VenvOptions {
   copySysrootFromPkg?: string
   copySysrootFromDir?: string
   symlinkSysrootFromDir?: string
+  projectSysrootFromRootfs?: string
   extraCommandsFrom?: string | string[]
 }
 
@@ -526,6 +527,9 @@ export class Ruyi {
     }
     if (options?.copySysrootFromDir) {
       args.push('--copy-sysroot-from-dir', options.copySysrootFromDir)
+    }
+    if (options?.projectSysrootFromRootfs) {
+      args.push('--project-sysroot-from-rootfs', options.projectSysrootFromRootfs)
     }
     if (options?.symlinkSysrootFromDir) {
       args.push('--symlink-sysroot-from-dir', options.symlinkSysrootFromDir)

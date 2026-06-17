@@ -5,6 +5,7 @@ import * as vscode from 'vscode'
 import { getWorkspaceFolderPath } from '../common/helpers'
 import { installPackage } from '../packages/install.command'
 
+import { ruyiVersionIsAbove } from './venv.helper'
 import type { VenvService } from './venv.service'
 
 type ToolchainPick = vscode.QuickPickItem & {
@@ -25,7 +26,7 @@ type EmulatorPick = vscode.QuickPickItem & {
 type SysrootPkgPick = vscode.QuickPickItem & InstallableDependency
 
 type SelectedSysroot = {
-  kind: 'pkg' | 'copy-dir' | 'symlink-dir'
+  kind: 'pkg' | 'copy-dir' | 'symlink-dir' | 'project-dir'
   data: string
 }
 
@@ -237,6 +238,7 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
   let copySysrootFromPkg: string | undefined
   let copySysrootFromDir: string | undefined
   let symlinkSysrootFromDir: string | undefined
+  let projectSysrootFromRootfs: string | undefined
   try {
     const selectedSysroot = await selectSysroot(service)
     if (selectedSysroot?.kind == 'pkg') {
@@ -247,6 +249,9 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
     }
     else if (selectedSysroot?.kind == 'symlink-dir') {
       symlinkSysrootFromDir = selectedSysroot.data
+    }
+    else if (selectedSysroot?.kind == 'project-dir') {
+      projectSysrootFromRootfs = selectedSysroot.data
     }
   }
   catch (error) {
@@ -287,10 +292,11 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
           path: venvPath,
           toolchains: toolchainSpecs,
           emulator: emulatorSpec,
-          withSysroot: (copySysrootFromPkg ?? copySysrootFromDir ?? symlinkSysrootFromDir) !== undefined,
+          withSysroot: (copySysrootFromPkg ?? copySysrootFromDir ?? symlinkSysrootFromDir ?? projectSysrootFromRootfs) !== undefined,
           copySysrootFromPkg,
           copySysrootFromDir,
           symlinkSysrootFromDir,
+          projectSysrootFromRootfs,
           extraCommandsFrom: extraCommands.length > 0 ? extraCommands : undefined,
         }, progress)
 
@@ -342,14 +348,19 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
 }
 
 async function selectSysroot(service: VenvService): Promise<SelectedSysroot | undefined> {
+  const availableWays = [
+    { id: 'disabled', label: vscode.l10n.t('Disabled') },
+    { id: 'default', label: vscode.l10n.t('Default') },
+    { id: 'pkg', label: vscode.l10n.t('Select a Package') },
+    { id: 'copy-dir', label: vscode.l10n.t('Copy from Directory') },
+    { id: 'symlink-dir', label: vscode.l10n.t('Symlink from Directory') },
+  ]
+  if (await ruyiVersionIsAbove('0.49.0')) {
+    availableWays.push({ id: 'project-dir', label: vscode.l10n.t('Project from Directory') })
+  }
+
   const withSysroot = await vscode.window.showQuickPick(
-    [
-      { id: 'disabled', label: vscode.l10n.t('Disabled') },
-      { id: 'default', label: vscode.l10n.t('Default') },
-      { id: 'pkg', label: vscode.l10n.t('Select a Package') },
-      { id: 'copy-dir', label: vscode.l10n.t('Copy from Directory') },
-      { id: 'symlink-dir', label: vscode.l10n.t('Symlink from Directory') },
-    ],
+    availableWays,
     { placeHolder: vscode.l10n.t('Include a sysroot in the new venv?') },
   )
 
@@ -366,6 +377,14 @@ async function selectSysroot(service: VenvService): Promise<SelectedSysroot | un
 
     return {
       kind: 'symlink-dir',
+      data: path,
+    }
+  }
+  else if (withSysroot?.id === 'project-dir') {
+    const path = await selectSysrootDir()
+
+    return {
+      kind: 'project-dir',
       data: path,
     }
   }
