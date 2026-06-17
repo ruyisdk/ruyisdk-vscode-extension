@@ -35,6 +35,7 @@ export interface VenvCreateParams {
   withSysroot?: boolean
   copySysrootFromPkg?: string
   copySysrootFromDir?: string
+  projectSysrootFromRootfs?: string
   symlinkSysrootFromDir?: string
   extraCommandsFrom?: string[]
 }
@@ -214,7 +215,7 @@ export class VenvService implements vscode.Disposable {
    * Creates a new virtual environment.
    */
   public async createVenv(params: VenvCreateParams, progressReporter?: vscode.Progress<{ message?: string, increment?: number }>): Promise<boolean> {
-    const { profile, path: venvPath, toolchains, emulator, withSysroot, copySysrootFromPkg, copySysrootFromDir, symlinkSysrootFromDir, extraCommandsFrom } = params
+    const { profile, path: venvPath, toolchains, emulator, withSysroot, copySysrootFromPkg, copySysrootFromDir, symlinkSysrootFromDir, extraCommandsFrom, projectSysrootFromRootfs } = params
 
     try {
       let getLastPercent: (() => number) | undefined
@@ -235,6 +236,7 @@ export class VenvService implements vscode.Disposable {
         copySysrootFromPkg,
         copySysrootFromDir,
         symlinkSysrootFromDir,
+        projectSysrootFromRootfs,
         extraCommandsFrom,
       })
 
