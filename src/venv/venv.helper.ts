@@ -70,6 +70,25 @@ export async function getToolchainsFromRuyi(): Promise<Toolchain[]> {
   throw new Error(`Failed to get toolchains: ${result.stderr}`)
 }
 
+export async function ruyiVersionIsAbove(expected: string): Promise<boolean> {
+  const result = await ruyi.version()
+  if (!result) {
+    return false
+  }
+
+  const actual = result.split('-')[0].split('+')[0]
+  const [actualMajor, actualMinor, actualPatch] = actual.split('.').map(Number)
+  const [expectedMajor, expectedMinor, expectedPatch] = expected.split('.').map(Number)
+
+  if (actualMajor > expectedMajor) return true
+  if (actualMajor < expectedMajor) return false
+
+  if (actualMinor > expectedMinor) return true
+  if (actualMinor < expectedMinor) return false
+
+  return actualPatch >= expectedPatch
+}
+
 /**
  * Parses the raw stdout from `ruyi list --porcelain` command to extract package information.
  * Filters and transforms the NDJSON output into a structured array of PkgInfo objects.
