@@ -61,6 +61,7 @@ Available settings in VS Code:
 | `ruyi.checkForUpdates` | Automatically check for updates on startup | `true` |
 | `ruyi.ruyiPath` | Custom RuyiSDK path | Auto-detect |
 | `ruyi.telemetry` | Telemetry data collection | Prompted on first use |
+| `ruyi.quietRuyiPath` | Disable Ruyi path prompt on VS Code launch | Prompted on VS Code launch |
 
 ## Feedback & Support
 
