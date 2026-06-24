@@ -262,10 +262,50 @@
         "title": "%contributes.commands.ruyi.build.run.title%",
         "category": "Ruyi",
         "icon": "$(play)"
+      },
+      {
+        "command": "ruyi.repo.manage",
+        "title": "%contributes.commands.ruyi.repo.manage.title%",
+        "category": "Ruyi",
+        "icon": "$(repo)"
+      },
+      {
+        "command": "ruyi.repo.add",
+        "title": "%contributes.commands.ruyi.repo.add.title%",
+        "category": "Ruyi",
+        "icon": "$(plus)"
+      },
+      {
+        "command": "ruyi.repo.set-priority",
+        "title": "%contributes.commands.ruyi.repo.set-priority.title%",
+        "category": "Ruyi",
+        "icon": "$(symbol-numeric)"
+      },
+      {
+        "command": "ruyi.repo.disable",
+        "title": "%contributes.commands.ruyi.repo.disable.title%",
+        "category": "Ruyi",
+        "icon": "$(chevron-right)"
+      },
+      {
+        "command": "ruyi.repo.enable",
+        "title": "%contributes.commands.ruyi.repo.enable.title%",
+        "category": "Ruyi",
+        "icon": "$(chevron-right)"
+      },
+      {
+        "command": "ruyi.repo.remove",
+        "title": "%contributes.commands.ruyi.repo.remove.title%",
+        "category": "Ruyi",
+        "icon": "$(chevron-right)"
       }
     ],
     "menus": {
       "view/title": [
+        {
+          "command": "ruyi.repo.manage",
+          "when": "view == ruyiPackagesView"
+        },
         {
           "command": "ruyi.packages.search",
           "when": "view == ruyiPackagesView",
