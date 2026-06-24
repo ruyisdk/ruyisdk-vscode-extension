@@ -21,3 +21,16 @@ export interface RuyiListOutput {
   name: string
   vers: RuyiVersionInfo[]
 }
+
+/** Output line from `ruyi --porcelain repo list` */
+export interface RuyiRepoListOutput {
+  ty: string
+  id: string
+  name: string
+  remote: string
+  branch: string
+  local_path: string | null
+  priority: number
+  active: boolean
+  is_system: boolean
+}
