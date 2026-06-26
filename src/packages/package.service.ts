@@ -11,6 +11,8 @@ export interface RuyiPackageVersion {
   isLatestPrerelease: boolean
   isInstalled: boolean
   isBinaryAvailable: boolean
+  downloadSize?: number
+  installSize?: number
   slug?: string
 }
 
@@ -149,6 +151,8 @@ export class PackageService {
             isPrerelease,
             isLatestPrerelease,
             isBinaryAvailable: !v.remarks.includes('no-binary-for-current-host'),
+            downloadSize: v.download_size_host_bytes,
+            installSize: v.install_size,
             slug,
           }
         })

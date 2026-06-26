@@ -4,6 +4,7 @@ import * as vscode from 'vscode'
 import { logger } from '../common/logger.js'
 import type { PackageCategory } from '../ruyi'
 
+import { formatSize } from './package.helper.js'
 import { RuyiPackage, RuyiPackageVersion, PackageService } from './package.service'
 
 // Define tree node types
@@ -285,7 +286,11 @@ export class VersionItem extends vscode.TreeItem {
     let tooltip = `${this.pkg.name}@${this.versionInfo.version}\n`
 
     if (this.versionInfo.isInstalled) {
-      tooltip += '✓ ' + vscode.l10n.t('Installed') + '\n'
+      tooltip += '✓ ' + vscode.l10n.t('Installed')
+      if (this.versionInfo.installSize) {
+        tooltip += ` (${formatSize(this.versionInfo.installSize)})`
+      }
+      tooltip += '\n'
     }
     if (this.versionInfo.isLatest) {
       tooltip += '⭐ ' + vscode.l10n.t('Latest version') + '\n'
@@ -295,6 +300,9 @@ export class VersionItem extends vscode.TreeItem {
     }
     if (!this.versionInfo.isBinaryAvailable) {
       tooltip += '⚠️ ' + vscode.l10n.t('No binary available for current platform') + '\n'
+    }
+    if (this.versionInfo.downloadSize) {
+      tooltip += '⬇️ ' + vscode.l10n.t('Download size: {0}', formatSize(this.versionInfo.downloadSize)) + '\n'
     }
 
     return tooltip.trim()
