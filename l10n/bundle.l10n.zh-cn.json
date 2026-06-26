@@ -152,6 +152,7 @@
   "Latest version": "最新版本",
   "Prerelease version": "预发布版本",
   "No binary available for current platform": "当前平台无可用二进制文件",
+  "Download size: {0}": "下载的大小：{0}",
   "Install {0} {1}?": "确认安装 {0} {1}？",
   "Installing {0}...": "正在安装 {0}...",
   "Starting installation...": "开始安装...",
