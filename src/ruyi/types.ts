@@ -6,6 +6,8 @@ export interface RuyiVersionInfo {
   remarks: string[]
   is_downloaded: boolean
   is_installed: boolean
+  download_size_host_bytes?: number
+  install_size?: number
   pm?: {
     metadata?: {
       desc?: string

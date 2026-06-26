@@ -152,6 +152,7 @@
   "Latest version": "Latest version",
   "Prerelease version": "Prerelease version",
   "No binary available for current platform": "No binary available for current platform",
+  "Download size: {0}": "Download size: {0}",
   "Install {0} {1}?": "Install {0} {1}?",
   "Installing {0}...": "Installing {0}...",
   "Starting installation...": "Starting installation...",
