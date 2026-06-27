@@ -35,10 +35,10 @@ export function getCardsHtml(webview: vscode.Webview, searchQuery: string, rows:
 
   let mainTitle: string
   if (searchQuery) {
-    mainTitle = `Search results for "${escapeHtml(searchQuery)}"`
+    mainTitle = vscode.l10n.t('Search results for "{0}"', escapeHtml(searchQuery))
   }
   else {
-    mainTitle = 'Ruyi News'
+    mainTitle = vscode.l10n.t('Ruyi News')
   }
 
   const cardsHtml = rows.map(row => createCardHtml(row)).join('')
