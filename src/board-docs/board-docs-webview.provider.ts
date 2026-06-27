@@ -13,7 +13,7 @@ export async function showBoardDocsPanel(ctx: vscode.ExtensionContext): Promise<
     return
   }
 
-  panel = vscode.window.createWebviewPanel('ruyiBoardDocs', 'RuyiSDK Board Docs', vscode.ViewColumn.One, {
+  panel = vscode.window.createWebviewPanel('ruyiBoardDocs', vscode.l10n.t('RuyiSDK Examples'), vscode.ViewColumn.One, {
     enableScripts: true,
   })
 
