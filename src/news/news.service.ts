@@ -40,6 +40,7 @@ export class NewsService {
   private readonly CACHE_VERSION = '1.0.0'
   private readonly CACHE_EXPIRY_MS = 24 * 60 * 60 * 1000
   private newsEntriesCache = new Map<number, Array<{ name: string, url: string, locale: string }>>()
+  private pendingSyncReads = new Set<number>()
 
   private constructor(context?: vscode.ExtensionContext) {
     this.cachePath = context
@@ -143,14 +144,14 @@ export class NewsService {
 
     let fullData = parseNewsListPorcelain(result.stdout, vscode.env.language)
 
-    // Merge with local cache to preserve any read status updates that haven't synced to ruyi CLI yet
+    // Retain the local "read" flag for items whose ruyi sync is still in-flight,
+    // so the card list doesn't flicker back to unread before the CLI is updated.
     const cache = await this.loadCache(true)
     if (cache) {
       const cacheMap = new Map(cache.data.map(item => [item.no, item]))
       fullData = fullData.map((item) => {
         const cached = cacheMap.get(item.no)
-        // Use cached read status if it's more recent (i.e., if cached item is read, use it)
-        if (cached && cached.read && !item.read) {
+        if (cached && cached.read && !item.read && this.pendingSyncReads.has(item.no)) {
           return { ...item, read: true }
         }
         return item
@@ -223,7 +224,12 @@ export class NewsService {
 
       // Success — mark as read locally; sync to ruyi in background (non-blocking)
       await this.markAsRead(no)
-      ruyi.newsRead(no).catch(err => logger.warn('Failed to sync read status to ruyi:', err))
+      ruyi.newsRead(no)
+        .then(() => this.pendingSyncReads.delete(no))
+        .catch((err) => {
+          this.pendingSyncReads.delete(no)
+          logger.warn('Failed to sync read status to ruyi:', err)
+        })
       return { defaultLocale: defaultEntry.locale, content, availableLocales }
     }
     catch (error) {
@@ -233,6 +239,7 @@ export class NewsService {
         throw new Error(result.stderr || 'ruyi news read failed')
       }
       await this.markAsRead(no)
+      this.pendingSyncReads.delete(no)
       return { defaultLocale: 'default', content: result.stdout, availableLocales: ['default'] }
     }
   }
@@ -356,7 +363,7 @@ export class NewsService {
       const newsItem = cache.data.find(item => item.no === no)
       if (newsItem && !newsItem.read) {
         newsItem.read = true
-        // No need to extract summary again as it should be there from porcelain list
+        this.pendingSyncReads.add(no)
         await this.saveCache(cache.data)
       }
     }
