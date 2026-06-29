@@ -63,6 +63,10 @@ Available settings in VS Code:
 | `ruyi.telemetry` | Telemetry data collection | Prompted on first use |
 | `ruyi.quietRuyiPath` | Disable Ruyi path prompt on VS Code launch | Prompted on VS Code launch |
 
+## Contributing
+
+Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) to get started.
+
 ## Feedback & Support
 
 - Report Issues: [GitHub Issues](https://github.com/ruyisdk/ruyisdk-vscode-extension/issues)
