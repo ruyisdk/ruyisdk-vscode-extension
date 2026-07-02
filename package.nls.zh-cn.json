@@ -18,6 +18,7 @@
     "contributes.walkthroughs.ruyi.welcome.steps.example.title": "构建示例二进制",
     "contributes.walkthroughs.ruyi.welcome.steps.example.description": "[跟着我们的指南](https://ruyisdk.org/en/docs/VSCode-Plugins/cases/case1/) 构建二进制并运行在 RISC-V 开发板上。",
     "contributes.walkthroughs.ruyi.welcome.steps.example.media.altText": "CoreMark: 用扩展构建（例如 LicheePi 4A）",
+    "contributes.viewsWelcome.ruyiVenvsView.contents": "找不到虚拟环境。\n[创建虚拟环境](command:ruyi.venv.create)",
     "contributes.views.ruyiPackagesView.name": "RuyiSDK 软件包",
     "contributes.views.ruyiVenvsView.name": "RuyiSDK 虚拟环境",
     "contributes.commands.ruyi.board-docs.title": "展示开发板文档",

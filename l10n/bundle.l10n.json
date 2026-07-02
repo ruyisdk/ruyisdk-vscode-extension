@@ -5,7 +5,6 @@
   "Invalid virtual environment path.": "Invalid virtual environment path.",
   "Open a workspace folder before activating a Ruyi venv.": "Open a workspace folder before activating a Ruyi venv.",
   "Venv creation complete": "Venv creation complete",
-  "No venvs detected": "No venvs detected",
   "Unknown Venv": "Unknown Venv",
   "Active Ruyi Venv: {0}": "Active Ruyi Venv: {0}",
   "No Active Venv": "No Active Venv",
