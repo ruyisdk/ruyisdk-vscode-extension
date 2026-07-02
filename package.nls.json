@@ -18,6 +18,7 @@
     "contributes.walkthroughs.ruyi.welcome.steps.example.title": "Build example executable",
     "contributes.walkthroughs.ruyi.welcome.steps.example.description": "[Follow our guide](https://ruyisdk.org/en/docs/VSCode-Plugins/cases/case1/) to build a binary and run it on a RISC-V Development Board.",
     "contributes.walkthroughs.ruyi.welcome.steps.example.media.altText": "CoreMark: Build with Extension (Example: LicheePi 4A)",
+    "contributes.viewsWelcome.ruyiVenvsView.contents": "No virtual environments found.\n[Create Virtual Environment](command:ruyi.venv.create)",
     "contributes.views.ruyiPackagesView.name": "RuyiSDK Packages",
     "contributes.views.ruyiVenvsView.name": "RuyiSDK Virtual Environment",
     "contributes.commands.ruyi.board-docs.title": "Show Board Docs",

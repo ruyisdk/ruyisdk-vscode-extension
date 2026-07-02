@@ -5,7 +5,6 @@
   "Invalid virtual environment path.": "无效的虚拟环境路径。",
   "Open a workspace folder before activating a Ruyi venv.": "请先打开一个工作区文件夹，再激活 Ruyi 虚拟环境。",
   "Venv creation complete": "虚拟环境创建完成",
-  "No venvs detected": "未检测到虚拟环境",
   "Unknown Venv": "未知的虚拟环境",
   "Active Ruyi Venv: {0}": "当前激活的 Ruyi 虚拟环境：{0}",
   "No Active Venv": "未激活任何虚拟环境",
