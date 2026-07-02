@@ -7,7 +7,7 @@ import { getWorkspaceFolderPath } from '../common/helpers'
 import type { VenvInfo } from './types'
 import { VenvService } from './venv.service'
 
-type VenvTreeElement = VenvItem | PlaceholderItem
+type VenvTreeElement = VenvItem
 
 export class VenvTreeProvider implements vscode.TreeDataProvider<VenvTreeElement> {
   private static _instance: VenvTreeProvider
@@ -39,9 +39,6 @@ export class VenvTreeProvider implements vscode.TreeDataProvider<VenvTreeElement
     }
 
     const venvs = await this.service.listVenvs()
-    if (!venvs.length) {
-      return [new PlaceholderItem()]
-    }
 
     const current = this.service.getCurrentVenv()
     return venvs.map(venv => new VenvItem(venv, this.isCurrentVenv(venv, current)))
@@ -82,13 +79,5 @@ export class VenvItem extends vscode.TreeItem {
       ? new vscode.ThemeIcon('check', new vscode.ThemeColor('testing.iconPassed'))
       : new vscode.ThemeIcon('file-directory')
     this.resourceUri = vscode.Uri.file(venv.path)
-  }
-}
-
-class PlaceholderItem extends vscode.TreeItem {
-  constructor() {
-    super(vscode.l10n.t('No venvs detected'), vscode.TreeItemCollapsibleState.None)
-    this.iconPath = new vscode.ThemeIcon('info')
-    this.contextValue = 'ruyiVenv.placeholder'
   }
 }

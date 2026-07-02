@@ -124,6 +124,12 @@
         }
       ]
     },
+    "viewsWelcome": [
+      {
+        "view": "ruyiVenvsView",
+        "contents": "%contributes.viewsWelcome.ruyiVenvsView.contents%"
+      }
+    ],
     "views": {
       "ruyi": [
         {
