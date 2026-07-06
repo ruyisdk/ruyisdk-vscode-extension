@@ -362,19 +362,42 @@ which fails on Windows. Now using path.join for cross-platform support.
 
 ## Localization
 
-This project supports both English and Chinese. Localization files are in the
-`l10n/` directory:
+This project uses [`vscode-l10n`](https://github.com/microsoft/vscode-l10n) for
+localization. Currently, Chinese and English are supported.
+
+Message files are in the `l10n/` directory:
 
 - `bundle.l10n.json` — English source file
 - `bundle.l10n.zh-cn.json` — Chinese translation
+
+To learn how to add new messages in TypeScript code, see
+[vscode-l10n-dev](https://github.com/microsoft/vscode-l10n/tree/main/l10n-dev).
 
 User-visible strings in `package.json` are localized via:
 
 - `package.nls.json` — English
 - `package.nls.zh-cn.json` — Chinese
 
-When adding new user-visible text, update both localization files. Use the
+When adding new user-visible text in `package.json`, update both localization files. Use the
 `%key%` syntax to reference localization strings in `package.json`.
+
+The key in `%key%` is the path to the item. If the item needs to be accessed through
+an array, the position in the array is represented as the field that makes the item unique (
+e.g., `id`). For example, in `package.json`:
+
+```json
+"contributes": {
+  "walkthroughs": [
+    {
+        "id": "ruyi.welcome",
+        "title": "%contributes.walkthroughs.ruyi.welcome.title%",
+        "description": "%contributes.walkthroughs.ruyi.welcome.description%",
+    }
+  ]
+}
+```
+
+The "key" to the "title" above is `contributes.walkthroughs.ruyi.welcome.title`.
 
 ## Testing
 

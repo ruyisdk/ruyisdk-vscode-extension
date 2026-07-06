@@ -347,17 +347,37 @@ which fails on Windows. Now using path.join for cross-platform support.
 
 ## 本地化
 
-本项目支持中英文双语。本地化文件位于 `l10n/` 目录：
+本项目使用 [`vscode-l10n`](https://github.com/microsoft/vscode-l10n) 进行本地化。目前支持中文和英文。
+
+消息文件位于 `l10n/` 目录中：
 
 - `bundle.l10n.json` — 英文源文件
-- `bundle.l10n.zh-cn.json` — 中文翻译
+- `bundle.l10n.zh-cn.json` — 中文翻译文件
 
-`package.json` 中的用户可见字符串通过以下文件本地化：
+要了解如何在 TypeScript 代码中添加新消息，请参阅 [vscode-l10n-dev](https://github.com/microsoft/vscode-l10n/tree/main/l10n-dev)。
+
+`package.json` 中面向用户的字符串通过以下文件进行本地化：
 
 - `package.nls.json` — 英文
 - `package.nls.zh-cn.json` — 中文
 
-新增用户可见文本时，请同时更新中英文两套本地化文件。使用 `%key%` 语法在 `package.json` 中引用本地化字符串。
+在 `package.json` 中添加新的面向用户文本时，请同时更新这两个本地化文件。使用 `%key%` 语法在 `package.json` 中引用本地化字符串。
+
+`%key%` 中的键（key）以该项的路径命名。如果该项需要通过数组访问，则数组中的位置用使该项唯一的字段（例如 `id`）来表示。例如，在 `package.json` 中：
+
+```json
+"contributes": {
+  "walkthroughs": [
+    {
+        "id": "ruyi.welcome",
+        "title": "%contributes.walkthroughs.ruyi.welcome.title%",
+        "description": "%contributes.walkthroughs.ruyi.welcome.description%",
+    }
+  ]
+}
+```
+
+上面 "title" 对应的 "key" 是 `contributes.walkthroughs.ruyi.welcome.title`。
 
 ## 测试
 
