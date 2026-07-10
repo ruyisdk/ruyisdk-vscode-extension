@@ -2,8 +2,6 @@
 import * as path from 'path'
 import * as vscode from 'vscode'
 
-import { getWorkspaceFolderPath } from '../common/helpers'
-
 import { resolveVenvPathArg } from './venv.helper'
 import type { VenvService } from './venv.service'
 
@@ -14,35 +12,29 @@ import type { VenvService } from './venv.service'
  * @param service - The venv service instance
  * @param venvPath - The path to the virtual environment to activate
  */
-export async function activateVenvCommand(
+export function activateVenvCommand(
   service: VenvService,
   venvPath: string,
-): Promise<void> {
-  if (!venvPath) {
+): void {
+  if (!venvPath.trim()) {
     vscode.window.showErrorMessage(vscode.l10n.t('Invalid virtual environment: no path found.'))
     return
   }
 
-  let workspaceRoot = ''
-  try {
-    workspaceRoot = getWorkspaceFolderPath()
-  }
-  catch {
-    // Ignore if no workspace
+  const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
+  if (!workspaceRoot) {
+    vscode.window.showWarningMessage(vscode.l10n.t('Open a workspace folder before activating a Ruyi venv.'))
+    return
   }
 
-  const absVenvPath = (workspaceRoot && !path.isAbsolute(venvPath))
-    ? path.resolve(workspaceRoot, venvPath)
-    : venvPath
+  const absoluteVenvPath = path.resolve(workspaceRoot, venvPath)
 
-  // Check if already active
-  const currentVenv = service.getCurrentVenv()
-  if (currentVenv && path.normalize(currentVenv) === path.normalize(absVenvPath)) {
+  if (service.getCurrentVenv() === absoluteVenvPath) {
     vscode.window.showInformationMessage(vscode.l10n.t('Virtual environment is already active.'))
     return
   }
 
-  await service.activateVenv(venvPath)
+  service.activateVenv(absoluteVenvPath)
 }
 
 /**
@@ -52,15 +44,15 @@ export async function activateVenvCommand(
  */
 export default function registerActivateCommand(ctx: vscode.ExtensionContext, service: VenvService): void {
   ctx.subscriptions.push(
-    vscode.commands.registerCommand('ruyi.venv.activate', async (arg?: unknown) => {
+    vscode.commands.registerCommand('ruyi.venv.activate', (arg?: unknown) => {
       const venvPath = resolveVenvPathArg(arg)
 
-      if (!venvPath) {
+      if (venvPath === undefined) {
         vscode.window.showErrorMessage(vscode.l10n.t('No virtual environment selected.'))
         return
       }
 
-      await activateVenvCommand(service, venvPath)
+      activateVenvCommand(service, venvPath)
     }),
   )
 }

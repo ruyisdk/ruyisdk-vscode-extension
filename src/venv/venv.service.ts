@@ -74,14 +74,13 @@ export class VenvService implements vscode.Disposable {
   }
 
   private setCurrentVenv(venvPath: string | null): void {
-    const normalizedNew = venvPath ? path.normalize(venvPath) : null
-    const normalizedCurrent = this._currentVenv ? path.normalize(this._currentVenv) : null
+    const normalizedPath = venvPath ? path.normalize(venvPath) : null
 
-    if (normalizedCurrent === normalizedNew) {
+    if (this._currentVenv === normalizedPath) {
       return
     }
 
-    this._currentVenv = venvPath
+    this._currentVenv = normalizedPath
     this._onDidChangeVenv.fire(this._currentVenv)
   }
 
@@ -122,83 +121,24 @@ export class VenvService implements vscode.Disposable {
 
   /**
    * Activates a virtual environment in the Ruyi terminal.
-   * @param item The TreeItem, path string, or null representing the venv to activate.
+   * @param venvPath The absolute path to the venv.
    */
-  public async activateVenv(item: vscode.TreeItem | string | null): Promise<void> {
-  // Handle null case
-    if (!item) {
-      vscode.window.showWarningMessage(vscode.l10n.t('No virtual environment selected.'))
-      return
-    }
-
-    let venvPath: string
-
-    // Handle different input types
-    if (typeof item === 'string') {
-      venvPath = item
-    }
-    else if (item instanceof vscode.TreeItem) {
-    // Extract path from TreeItem - try resourceUri first, then label
-      if (item.resourceUri) {
-        venvPath = item.resourceUri.fsPath
-      }
-      else if (item.label) {
-        // label can be string or TreeItemLabel
-        venvPath = typeof item.label === 'string' ? item.label : item.label.label
-      }
-      else {
-        vscode.window.showErrorMessage(vscode.l10n.t('Invalid virtual environment item: no path found.'))
-        return
-      }
-    }
-    else {
-      vscode.window.showErrorMessage(vscode.l10n.t('Invalid virtual environment item type.'))
-      return
-    }
-
-    // Validate that we have a non-empty path
-    if (!venvPath || venvPath.trim() === '') {
-      vscode.window.showErrorMessage(vscode.l10n.t('Invalid virtual environment path.'))
-      return
-    }
-
-    let workspaceRoot: string
-    try {
-      workspaceRoot = getWorkspaceFolderPath()
-    }
-    catch {
-      vscode.window.showWarningMessage(vscode.l10n.t('Open a workspace folder before activating a Ruyi venv.'))
-      return
-    }
-
-    const absPath = path.isAbsolute(venvPath) ? venvPath : path.resolve(workspaceRoot, venvPath)
-
-    // Ensure terminal exists
+  public activateVenv(venvPath: string): void {
     if (!this.ruyiTerminal) {
       this.ruyiTerminal = vscode.window.createTerminal({
         name: 'Ruyi Venv Terminal',
         shellPath: '/bin/bash', // Enforce bash as per requirements/standard
-        cwd: workspaceRoot,
+        cwd: vscode.workspace.workspaceFolders?.[0]?.uri,
       })
       this.ruyiTerminal.show()
     }
 
-    // If switching from another venv, deactivate first (conceptually)
-    // But since we are sourcing, we might want to just deactivate current if active
-    // Actually, the manageRuyiTerminal logic suggests just sourcing the new one
-    // effectively switches it if we handle it right, but a clean deactivate is better.
-
     if (this._currentVenv) {
       this.ruyiTerminal.sendText('ruyi-deactivate')
-    // Small delay to allow deactivate to process if needed, though shell commands are queued
     }
 
-    this.setCurrentVenv(absPath)
-
-    // Wait a tiny bit or just send the command.
-    // The original logic had a setTimeout, but terminal.sendText queues commands.
-    // However, if we want to be safe with the state update visual feedback:
-    this.ruyiTerminal.sendText(`source "${absPath}/bin/ruyi-activate"`)
+    this.setCurrentVenv(venvPath)
+    this.ruyiTerminal.sendText(`source "${venvPath}/bin/ruyi-activate"`)
   }
 
   /**
