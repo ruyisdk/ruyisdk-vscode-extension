@@ -5,7 +5,6 @@ import * as vscode from 'vscode'
 import { configuration } from '../common/configuration'
 import { logger } from '../common/logger'
 
-import { pickFile } from './manage.helper'
 import type { RuyiInstallation } from './manage.service'
 import { detectRuyiInstallation, listAllInstallations, manageService } from './manage.service'
 import { checkRuyiUpdate } from './setup.command'
@@ -18,15 +17,20 @@ interface RuyiPathQuickPickItem extends vscode.QuickPickItem {
 const MANUAL_TOKEN = '__manual__'
 
 async function promptManualInput(): Promise<void> {
-  const initPath = configuration.ruyiPath ? path.dirname(configuration.ruyiPath) : undefined
-  const manualUri = await pickFile({
-    initPath,
-    absolute: true,
-  })
-  if (!manualUri) {
+  const selected = (await vscode.window.showOpenDialog({
+    canSelectFiles: true,
+    canSelectFolders: false,
+    canSelectMany: false,
+    defaultUri: vscode.Uri.file(
+      configuration.ruyiPath ? path.dirname(configuration.ruyiPath) : '/',
+    ),
+    title: vscode.l10n.t('Select RuyiSDK installation'),
+    openLabel: vscode.l10n.t('Select RuyiSDK installation'),
+  }))?.[0]
+  if (!selected) {
     return
   }
-  await manageService.setRuyiPath(manualUri)
+  await manageService.setRuyiPath(selected.fsPath)
 }
 
 function buildQuickPickItems(installations: RuyiInstallation[]): RuyiPathQuickPickItem[] {
@@ -157,7 +161,6 @@ export function registerDetectCommand(ctx: vscode.ExtensionContext): void {
       })
     }
 
-    // Sync telemetry setting
     telemetryService.syncFromConfiguration().catch((error) => {
       logger.error('Telemetry sync failed:', error)
     })

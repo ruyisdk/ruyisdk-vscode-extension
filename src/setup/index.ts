@@ -15,9 +15,6 @@ export default function registerSetupModule(ctx: vscode.ExtensionContext): void 
   registerUpdateCommand(ctx)
   registerTelemetryCommand(ctx)
 
-  // Initialize manage service
-  manageService.initialize(ctx)
-  ctx.subscriptions.push(manageService)
-  // Initialize telemetry service
-  ctx.subscriptions.push(telemetryService)
+  manageService.initialize()
+  ctx.subscriptions.push(manageService, telemetryService)
 }
