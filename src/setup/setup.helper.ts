@@ -1,47 +1,37 @@
 // SPDX-License-Identifier: Apache-2.0
-import * as cp from 'child_process'
-import * as util from 'util'
+import { execFile } from 'node:child_process'
+import { promisify } from 'node:util'
 
-const execAsync = util.promisify(cp.exec)
+const execFileAsync = promisify(execFile)
 
-export const PACKAGE_METHODS = {
+const PACKAGE_METHODS = {
   pip: {
-    installCmd: 'python3 -m pip install --user -U ruyi',
-    updateCmd: 'python3 -m pip install --user -U ruyi',
+    install: ['-m', 'pip', 'install', '--user', '-U', 'ruyi'],
+    update: ['-m', 'pip', 'install', '--user', '-U', 'ruyi'],
   },
   pipx: {
-    installCmd: 'python3 -m pipx install ruyi',
-    updateCmd: 'python3 -m pipx upgrade ruyi',
+    install: ['-m', 'pipx', 'install', 'ruyi'],
+    update: ['-m', 'pipx', 'upgrade', 'ruyi'],
   },
 } as const
 
-export type PackageMethodKey = keyof typeof PACKAGE_METHODS
-export type PackageMethod = (typeof PACKAGE_METHODS)[PackageMethodKey]
+type PackageMethodKey = keyof typeof PACKAGE_METHODS
+type PackageOperation = keyof (typeof PACKAGE_METHODS)[PackageMethodKey]
 
-function getMethodOrThrow(methodKey: PackageMethodKey): PackageMethod {
-  const method = PACKAGE_METHODS[methodKey]
-  if (!method) {
-    throw new Error(`Unknown package method: ${methodKey}`)
-  }
-  return method
+export const PACKAGE_METHOD_KEYS = Object.keys(PACKAGE_METHODS) as PackageMethodKey[]
+
+async function executeRuyiPackageCommand(
+  methodKey: PackageMethodKey,
+  operation: PackageOperation,
+): Promise<void> {
+  const args = PACKAGE_METHODS[methodKey][operation]
+  await execFileAsync('python3', [...args], { timeout: 60_000 })
 }
 
-export async function executeRuyiInstall(
-  methodKey: PackageMethodKey,
-  options?: { timeout?: number },
-): Promise<void> {
-  const method = getMethodOrThrow(methodKey)
-  const timeout = options?.timeout ?? 60000
-
-  await execAsync(method.installCmd, { timeout })
+export function executeRuyiInstall(methodKey: PackageMethodKey): Promise<void> {
+  return executeRuyiPackageCommand(methodKey, 'install')
 }
 
-export async function executeRuyiUpdate(
-  methodKey: PackageMethodKey,
-  options?: { timeout?: number },
-): Promise<void> {
-  const method = getMethodOrThrow(methodKey)
-  const timeout = options?.timeout ?? 60000
-
-  await execAsync(method.updateCmd, { timeout })
+export function executeRuyiUpdate(methodKey: PackageMethodKey): Promise<void> {
+  return executeRuyiPackageCommand(methodKey, 'update')
 }

@@ -12,9 +12,7 @@ import * as vscode from 'vscode'
 import { configuration } from '../common/configuration'
 import { CONFIG_KEYS } from '../common/constants'
 import { fullKey } from '../common/helpers'
-import ruyi, { TelemetryStatus } from '../ruyi'
-
-import { promptForTelemetryConfiguration } from './telemetry.command'
+import ruyi, { type TelemetryStatus } from '../ruyi'
 
 export class TelemetryService implements vscode.Disposable {
   private readonly disposable: vscode.Disposable
@@ -61,15 +59,9 @@ export class TelemetryService implements vscode.Disposable {
    * Mirrors the configuration value to the Ruyi CLI without modifying settings.
    */
   public async syncFromConfiguration(): Promise<boolean> {
-    let enabled = configuration.telemetryEnabled
+    const enabled = configuration.telemetryEnabled
     if (enabled === undefined) {
-      await promptForTelemetryConfiguration()
-      enabled = configuration.telemetryEnabled
-    }
-
-    if (enabled === undefined) {
-      // User has not made a choice, so we can't sync anything.
-      // Return true to indicate that we're not in an error state.
+      await vscode.commands.executeCommand('ruyi.telemetry.configure')
       return true
     }
 

@@ -15,23 +15,25 @@ export default function registerTelemetryCommand(ctx: vscode.ExtensionContext) {
   )
 }
 
-export async function promptForTelemetryConfiguration(): Promise<void> {
+async function promptForTelemetryConfiguration(): Promise<void> {
+  const enableAction = vscode.l10n.t('Enable (Recommended)')
+  const disableAction = vscode.l10n.t('Disable')
   const choice = await vscode.window.showInformationMessage(
     vscode.l10n.t('Ruyi Telemetry: Help us improve by sending anonymous usage data. You can change this setting at any time.'),
     { modal: false },
-    vscode.l10n.t('Enable (Recommended)'),
-    vscode.l10n.t('Disable'),
+    enableAction,
+    disableAction,
   )
 
   switch (choice) {
-    case vscode.l10n.t('Enable (Recommended)'): {
+    case enableAction: {
       const success = await telemetryService.setTelemetryPreference(true)
       if (success) {
         vscode.window.showInformationMessage(vscode.l10n.t('Ruyi telemetry enabled. Thank you!'))
       }
       break
     }
-    case vscode.l10n.t('Disable'): {
+    case disableAction: {
       const success = await telemetryService.setTelemetryPreference(false)
       if (success) {
         vscode.window.showInformationMessage(vscode.l10n.t('Ruyi telemetry disabled.'))
