@@ -18,9 +18,8 @@ export async function uninstallPackage(name: string, version?: string): Promise<
 
   const choice = await vscode.window.showWarningMessage(
     vscode.l10n.t('Uninstall {0} {1}?', packageName, displayVersion),
-    { modal: false },
+    { modal: true },
     vscode.l10n.t('Uninstall'),
-    vscode.l10n.t('Cancel'),
   )
 
   if (choice !== vscode.l10n.t('Uninstall')) {
@@ -29,9 +28,8 @@ export async function uninstallPackage(name: string, version?: string): Promise<
 
   const confirmation = await vscode.window.showWarningMessage(
     vscode.l10n.t('Are you sure you want to uninstall {0} {1}? This action cannot be undone.', packageName, displayVersion),
-    { modal: false },
+    { modal: true },
     vscode.l10n.t('Yes, Uninstall'),
-    vscode.l10n.t('Cancel'),
   )
 
   if (confirmation !== vscode.l10n.t('Yes, Uninstall')) {
