@@ -325,7 +325,15 @@ export async function runRuyi(
  *   - Chained: await Ruyi.cwd('/path').timeout(3000).install('pkg')
  */
 export class Ruyi {
-  constructor(private options: RuyiRunOptions = {}) { }
+  constructor(private readonly options: RuyiRunOptions = {}) { }
+
+  private with(options: Partial<RuyiRunOptions>): Ruyi {
+    return new Ruyi({ ...this.options, ...options })
+  }
+
+  private run(args: string[]): Promise<RuyiResult> {
+    return runRuyi(args, this.options)
+  }
 
   // ============================================================================
   // Builder Methods
@@ -335,28 +343,28 @@ export class Ruyi {
    * Set timeout for command execution
    */
   timeout(ms: number): Ruyi {
-    return new Ruyi({ ...this.options, timeout: ms })
+    return this.with({ timeout: ms })
   }
 
   /**
    * Set working directory for command execution
    */
   cwd(path: string): Ruyi {
-    return new Ruyi({ ...this.options, cwd: path })
+    return this.with({ cwd: path })
   }
 
   /**
    * Set environment variables for command execution
    */
   env(env: NodeJS.ProcessEnv): Ruyi {
-    return new Ruyi({ ...this.options, env })
+    return this.with({ env })
   }
 
   /**
    * Set progress callback for command execution
    */
   onProgress(callback: ProgressCallback): Ruyi {
-    return new Ruyi({ ...this.options, onProgress: callback })
+    return this.with({ onProgress: callback })
   }
 
   // ============================================================================
@@ -368,7 +376,7 @@ export class Ruyi {
    * @returns Version string or null if failed
    */
   async version(): Promise<string | null> {
-    const result = await runRuyi(['--version'], this.options)
+    const result = await this.run(['--version'])
     if (result.code !== 0) return null
     return result.stdout.split('\n', 1)[0]?.trim() || null
   }
@@ -397,14 +405,14 @@ export class Ruyi {
     }
     args.push('--name-contains', options?.nameContains ?? '')
 
-    return runRuyi(args, this.options)
+    return this.run(args)
   }
 
   /**
    * List all available profiles using entity command
    */
   async listProfiles(): Promise<RuyiResult> {
-    return runRuyi(['--porcelain', 'entity', 'list', '-t', 'profile-v1'], this.options)
+    return this.run(['--porcelain', 'entity', 'list', '-t', 'profile-v1'])
   }
 
   // ============================================================================
@@ -433,7 +441,7 @@ export class Ruyi {
     const pkgArray = Array.isArray(packages) ? packages : [packages]
     args.push(...pkgArray)
 
-    return runRuyi(args, this.options)
+    return this.run(args)
   }
 
   // ============================================================================
@@ -449,7 +457,7 @@ export class Ruyi {
     const pkgArray = Array.isArray(packages) ? packages : [packages]
     args.push(...pkgArray)
 
-    return runRuyi(args, this.options)
+    return this.run(args)
   }
 
   /**
@@ -467,7 +475,7 @@ export class Ruyi {
    * Update RuyiSDK repo and packages
    */
   async update(): Promise<RuyiResult> {
-    return runRuyi(['update'], this.options)
+    return this.run(['update'])
   }
 
   // ============================================================================
@@ -499,7 +507,7 @@ export class Ruyi {
     const pkgArray = Array.isArray(packages) ? packages : [packages]
     args.push(...pkgArray)
 
-    return runRuyi(args, this.options)
+    return this.run(args)
   }
 
   // ============================================================================
@@ -550,7 +558,7 @@ export class Ruyi {
 
     args.push(profile, dest)
 
-    return runRuyi(args, this.options)
+    return this.run(args)
   }
 
   // ============================================================================
@@ -561,7 +569,7 @@ export class Ruyi {
    * Interactively initialize a device for development
    */
   async deviceProvision(): Promise<RuyiResult> {
-    return runRuyi(['device', 'provision'], this.options)
+    return this.run(['device', 'provision'])
   }
 
   /**
@@ -591,7 +599,7 @@ export class Ruyi {
       args.push('--new')
     }
 
-    return runRuyi(args, this.options)
+    return this.run(args)
   }
 
   /**
@@ -605,7 +613,7 @@ export class Ruyi {
     const itemArray = Array.isArray(items) ? items : [items]
     args.push(...itemArray.map(String))
 
-    return runRuyi(args, this.options)
+    return this.run(args)
   }
 
   // ============================================================================
@@ -616,7 +624,7 @@ export class Ruyi {
    * Get telemetry status
    */
   async telemetryStatus(): Promise<TelemetryStatus> {
-    const result = await runRuyi(['telemetry', 'status'], this.options)
+    const result = await this.run(['telemetry', 'status'])
 
     const parseStatus = (text: string): TelemetryStatus => {
       const s = text.trim()
@@ -630,7 +638,7 @@ export class Ruyi {
    * Give consent to telemetry data uploads (enable telemetry)
    */
   async telemetryConsent(): Promise<TelemetryStatus> {
-    await runRuyi(['telemetry', 'consent'], this.options)
+    await this.run(['telemetry', 'consent'])
     return this.telemetryStatus()
   }
 
@@ -638,7 +646,7 @@ export class Ruyi {
    * Set telemetry mode to local collection only
    */
   async telemetryLocal(): Promise<TelemetryStatus> {
-    await runRuyi(['telemetry', 'local'], this.options)
+    await this.run(['telemetry', 'local'])
     return this.telemetryStatus()
   }
 
@@ -646,7 +654,7 @@ export class Ruyi {
    * Opt out of telemetry data collection (disable telemetry)
    */
   async telemetryOptout(): Promise<TelemetryStatus> {
-    await runRuyi(['telemetry', 'optout'], this.options)
+    await this.run(['telemetry', 'optout'])
     return this.telemetryStatus()
   }
 
@@ -654,7 +662,7 @@ export class Ruyi {
    * Upload collected telemetry data now
    */
   async telemetryUpload(): Promise<RuyiResult> {
-    return runRuyi(['telemetry', 'upload'], this.options)
+    return this.run(['telemetry', 'upload'])
   }
 
   /**
@@ -681,28 +689,28 @@ export class Ruyi {
    * Get a config value
    */
   async configGet(key: string): Promise<RuyiResult> {
-    return runRuyi(['config', 'get', key], this.options)
+    return this.run(['config', 'get', key])
   }
 
   /**
    * Set a config value
    */
   async configSet(key: string, value: string): Promise<RuyiResult> {
-    return runRuyi(['config', 'set', key, value], this.options)
+    return this.run(['config', 'set', key, value])
   }
 
   /**
    * Unset a config option
    */
   async configUnset(key: string): Promise<RuyiResult> {
-    return runRuyi(['config', 'unset', key], this.options)
+    return this.run(['config', 'unset', key])
   }
 
   /**
    * Remove a section from the config
    */
   async configRemoveSection(section: string): Promise<RuyiResult> {
-    return runRuyi(['config', 'remove-section', section], this.options)
+    return this.run(['config', 'remove-section', section])
   }
 
   // ============================================================================
@@ -737,14 +745,14 @@ export class Ruyi {
       args.push('--telemetry')
     }
 
-    return runRuyi(args, this.options)
+    return this.run(args)
   }
 
   /**
    * Uninstall Ruyi
    */
   async selfUninstall(): Promise<RuyiResult> {
-    return runRuyi(['self', 'uninstall'], this.options)
+    return this.run(['self', 'uninstall'])
   }
 
   // ============================================================================
@@ -755,7 +763,7 @@ export class Ruyi {
    * List repositories
    */
   async repoList(): Promise<RuyiResult> {
-    return runRuyi(['--porcelain', 'repo', 'list'], this.options)
+    return this.run(['--porcelain', 'repo', 'list'])
   }
 
   async repoAdd(id: string, url: string, options: RepoAddOptions): Promise<RuyiResult> {
@@ -775,7 +783,7 @@ export class Ruyi {
     }
     args.push(id, url)
 
-    return runRuyi(args)
+    return this.run(args)
   }
 
   async repoRemove(id: string, purge: boolean): Promise<RuyiResult> {
@@ -786,19 +794,19 @@ export class Ruyi {
     }
     args.push(id)
 
-    return runRuyi(args, this.options)
+    return this.run(args)
   }
 
   async repoEnable(id: string): Promise<RuyiResult> {
-    return runRuyi(['repo', 'enable', id], this.options)
+    return this.run(['repo', 'enable', id])
   }
 
   async repoDisable(id: string): Promise<RuyiResult> {
-    return runRuyi(['repo', 'disable', id], this.options)
+    return this.run(['repo', 'disable', id])
   }
 
   async repoSetPriority(id: string, priority: number): Promise<RuyiResult> {
-    return runRuyi(['repo', 'set-priority', id, String(priority)], this.options)
+    return this.run(['repo', 'set-priority', id, String(priority)])
   }
 }
 
