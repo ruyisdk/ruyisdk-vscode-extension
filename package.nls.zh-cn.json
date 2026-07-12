@@ -34,7 +34,7 @@
     "contributes.commands.ruyi.packages.clearSearch.title": "清除包搜索",
     "contributes.commands.ruyi.packages.install.title": "安装包",
     "contributes.commands.ruyi.packages.uninstall.title": "卸载包",
-    "contributes.commands.ruyi.packages.refresh.title": "刷新包列表",
+    "contributes.commands.ruyi.packages.refresh.title": "更新包管理器索引",
     "contributes.commands.ruyi.venv.refresh.title": "检测虚拟环境",
     "contributes.commands.ruyi.venv.create.title": "创建新的虚拟环境",
     "contributes.commands.ruyi.venv.clean.title": "删除虚拟环境",

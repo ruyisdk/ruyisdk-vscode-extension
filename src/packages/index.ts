@@ -20,11 +20,11 @@ export default function registerPackagesModule(ctx: vscode.ExtensionContext) {
   packagesTreeProvider.setTreeView(packagesTreeView)
   ctx.subscriptions.push(packagesTreeView)
 
-  void packagesTreeProvider.refresh()
+  void packagesTreeProvider.shallowRefresh()
 
-  registerInstallCommand(ctx)
-  registerUninstallCommand(ctx)
+  registerInstallCommand(ctx, packagesTreeProvider)
+  registerUninstallCommand(ctx, packagesTreeProvider)
   registerRefreshCommand(ctx, packagesTreeProvider)
   registerSearchCommand(ctx, packagesTreeProvider)
-  registerExtractCommand(ctx)
+  registerExtractCommand(ctx, packagesTreeProvider)
 }
