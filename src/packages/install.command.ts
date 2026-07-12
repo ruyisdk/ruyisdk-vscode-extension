@@ -4,7 +4,7 @@ import * as vscode from 'vscode'
 import { createProgressTracker } from '../common/helpers'
 import ruyi from '../ruyi'
 
-import { VersionItem } from './package-tree.provider'
+import { PackagesTreeProvider, VersionItem } from './package-tree.provider'
 
 /**
  * Install a package by name and version
@@ -69,7 +69,7 @@ export async function installPackage(name: string, version?: string, skipConfirm
   return success
 }
 
-export default function registerInstallCommand(ctx: vscode.ExtensionContext) {
+export default function registerInstallCommand(ctx: vscode.ExtensionContext, provider: PackagesTreeProvider) {
   const installDisposable = vscode.commands.registerCommand(
     'ruyi.packages.install',
     async (item: VersionItem) => {
@@ -81,7 +81,7 @@ export default function registerInstallCommand(ctx: vscode.ExtensionContext) {
       const success = await installPackage(item.pkg.name, item.versionInfo.version)
 
       if (success) {
-        await vscode.commands.executeCommand('ruyi.packages.refresh')
+        await provider.shallowRefresh()
       }
     },
   )

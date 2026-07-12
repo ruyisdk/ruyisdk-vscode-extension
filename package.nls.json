@@ -34,7 +34,7 @@
     "contributes.commands.ruyi.packages.clearSearch.title": "Clear Package Search",
     "contributes.commands.ruyi.packages.install.title": "Install Package",
     "contributes.commands.ruyi.packages.uninstall.title": "Uninstall Package",
-    "contributes.commands.ruyi.packages.refresh.title": "Refresh Package List",
+    "contributes.commands.ruyi.packages.refresh.title": "Update Package Manager Index",
     "contributes.commands.ruyi.venv.refresh.title": "Detect Venvs",
     "contributes.commands.ruyi.venv.create.title": "Create a New Venv",
     "contributes.commands.ruyi.venv.clean.title": "Remove a Venv",

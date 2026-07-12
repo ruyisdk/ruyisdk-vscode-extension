@@ -6,6 +6,8 @@ import { createProgressTracker, parseNDJSON } from '../common/helpers'
 import ruyi from '../ruyi'
 import type { RuyiListOutput } from '../ruyi/types'
 
+import { PackagesTreeProvider } from './package-tree.provider'
+
 interface SourcePackage {
   label: string
   value: string
@@ -99,8 +101,9 @@ async function extractSelectedPackage(
 /**
  * Extract RuyiSDK Package command handler
  * @param uri - The URI of the folder where the user right-clicked
+ * @param provider - The packages tree provider
  */
-export async function extractPackage(uri?: vscode.Uri): Promise<void> {
+export async function extractPackage(provider: PackagesTreeProvider, uri?: vscode.Uri): Promise<void> {
   try {
     let targetDir = await getTargetDirectory(uri)
 
@@ -190,7 +193,7 @@ export async function extractPackage(uri?: vscode.Uri): Promise<void> {
       vscode.l10n.t('Successfully extracted {0} to {1}', selectedLabel, targetDir),
     )
 
-    await vscode.commands.executeCommand('ruyi.packages.refresh')
+    await provider.shallowRefresh()
   }
   catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
@@ -206,10 +209,10 @@ export async function extractPackage(uri?: vscode.Uri): Promise<void> {
   }
 }
 
-export default function registerExtractCommand(ctx: vscode.ExtensionContext) {
+export default function registerExtractCommand(ctx: vscode.ExtensionContext, provider: PackagesTreeProvider) {
   const disposable = vscode.commands.registerCommand(
     'ruyi.extract',
-    extractPackage,
+    (uri?: vscode.Uri) => extractPackage(provider, uri),
   )
   ctx.subscriptions.push(disposable)
 }

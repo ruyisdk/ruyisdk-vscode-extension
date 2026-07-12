@@ -27,7 +27,7 @@ export class PackagesTreeProvider implements
   /**
    * Refresh the tree view and force data refresh.
    */
-  async refresh(): Promise<void> {
+  async shallowRefresh(): Promise<void> {
     try {
       // Clear category cache on refresh
       this.categoryCache.clear()

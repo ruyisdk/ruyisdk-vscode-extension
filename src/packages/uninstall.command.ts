@@ -3,7 +3,7 @@ import * as vscode from 'vscode'
 
 import ruyi from '../ruyi'
 
-import { VersionItem } from './package-tree.provider'
+import { PackagesTreeProvider, VersionItem } from './package-tree.provider'
 
 /**
  * Uninstall a package by name and version
@@ -65,7 +65,7 @@ export async function uninstallPackage(name: string, version?: string): Promise<
   return success
 }
 
-export default function registerUninstallCommand(ctx: vscode.ExtensionContext) {
+export default function registerUninstallCommand(ctx: vscode.ExtensionContext, provider: PackagesTreeProvider) {
   const uninstallDisposable = vscode.commands.registerCommand(
     'ruyi.packages.uninstall',
     async (item: VersionItem) => {
@@ -77,7 +77,7 @@ export default function registerUninstallCommand(ctx: vscode.ExtensionContext) {
       const success = await uninstallPackage(item.pkg.name, item.versionInfo.version)
 
       if (success) {
-        await vscode.commands.executeCommand('ruyi.packages.refresh')
+        await provider.shallowRefresh()
       }
     },
   )
