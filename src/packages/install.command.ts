@@ -6,14 +6,22 @@ import ruyi from '../ruyi'
 
 import { PackagesTreeProvider, VersionItem } from './package-tree.provider'
 
+type Installable = VersionItem | [string, string?]
+
 /**
  * Install a package by name and version
+ * @param provider The packages tree provider
  * @param name Package name like "toolchain"
  * @param version Package version like "1.0.0", or undefined for latest
  * @param skipConfirm If true, skip the confirmation dialog
  * @returns true if successful, false otherwise
  */
-export async function installPackage(name: string, version?: string, skipConfirm: boolean = false): Promise<boolean> {
+export async function installPackage(
+  provider: PackagesTreeProvider,
+  name: string,
+  version?: string,
+  skipConfirm: boolean = false,
+): Promise<boolean> {
   const packageName = name.split('/').pop() || name
   const displayVersion = version || 'latest'
   const packageSpec = version ? `${name}(==${version})` : name
@@ -39,6 +47,8 @@ export async function installPackage(name: string, version?: string, skipConfirm
       cancellable: false,
     },
     async (progress) => {
+      provider.markPackageInstalling(name, displayVersion)
+
       progress.report({ message: vscode.l10n.t('Starting installation...'), increment: 0 })
 
       const [onProgress, getLastPercent] = createProgressTracker(progress)
@@ -47,6 +57,8 @@ export async function installPackage(name: string, version?: string, skipConfirm
         .timeout(300_000)
         .onProgress(onProgress)
         .install(packageSpec)
+
+      provider.unmarkPackageInstalling(name, displayVersion)
 
       if (result.code === 0) {
         const finalIncrement = Math.max(0, 100 - getLastPercent())
@@ -72,17 +84,30 @@ export async function installPackage(name: string, version?: string, skipConfirm
 export default function registerInstallCommand(ctx: vscode.ExtensionContext, provider: PackagesTreeProvider) {
   const installDisposable = vscode.commands.registerCommand(
     'ruyi.packages.install',
-    async (item: VersionItem) => {
-      if (!(item instanceof VersionItem)) {
+    async (installable: Installable) => {
+      let name: string
+      let version: string | undefined
+
+      if (installable instanceof VersionItem) {
+        name = installable.pkg.name
+        version = installable.versionInfo.version
+      }
+      else if (Array.isArray(installable)) {
+        name = installable[0]
+        version = installable[1]
+      }
+      else {
         vscode.window.showErrorMessage(vscode.l10n.t('Invalid package selection.'))
         return
       }
 
-      const success = await installPackage(item.pkg.name, item.versionInfo.version)
+      const success = await installPackage(provider, name, version)
 
       if (success) {
         await provider.shallowRefresh()
       }
+
+      return success
     },
   )
 
