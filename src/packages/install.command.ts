@@ -36,9 +36,9 @@ export async function installPackage(name: string, version?: string, skipConfirm
     {
       location: vscode.ProgressLocation.Notification,
       title: vscode.l10n.t('Installing {0}...', packageName),
-      cancellable: false,
+      cancellable: true,
     },
-    async (progress) => {
+    async (progress, token) => {
       progress.report({ message: vscode.l10n.t('Starting installation...'), increment: 0 })
 
       const [onProgress, getLastPercent] = createProgressTracker(progress)
@@ -46,6 +46,7 @@ export async function installPackage(name: string, version?: string, skipConfirm
       const result = await ruyi
         .timeout(300_000)
         .onProgress(onProgress)
+        .cancellationToken(token)
         .install(packageSpec)
 
       if (result.code === 0) {

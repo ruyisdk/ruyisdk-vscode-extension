@@ -96,6 +96,7 @@
   "Ruyi found at {0} but version check failed. Please check your installation.": "Ruyi found at {0} but version check failed. Please check your installation.",
   "Ruyi detected: {0} ({1})": "Ruyi detected: {0} ({1})",
   "Don't show again": "Don't show again",
+  "Command cancelled": "Command cancelled",
   "Failed to execute command": "Failed to execute command",
   "Command timed out": "Command timed out",
   "Enter the new priority for the repository": "Enter the new priority for the repository",
