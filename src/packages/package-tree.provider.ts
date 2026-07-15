@@ -17,6 +17,7 @@ export class PackagesTreeProvider implements
   private searchQuery = ''
   private treeView?: vscode.TreeView<TreeElement>
   private categoryCache: Map<string, RuyiPackage[]> = new Map()
+  private installingPackages: Set<string> = new Set()
 
   constructor(private packageService: PackageService) { }
 
@@ -172,7 +173,7 @@ export class PackagesTreeProvider implements
 
     if (element instanceof PackageItem) {
       // Package node: show versions
-      return element.pkg.versions.map(v => new VersionItem(element.pkg, v))
+      return element.pkg.versions.map(v => new VersionItem(element.pkg, v, this.isPackageInstalling(element.pkg.name, v)))
     }
 
     return []
@@ -191,6 +192,22 @@ export class PackagesTreeProvider implements
     const category = pkg.category.toLowerCase()
 
     return name.includes(query) || category.includes(query)
+  }
+
+  markPackageInstalling(pkg: string, version: string): void {
+    this.installingPackages.add(`${pkg}:${version}`)
+    this._onDidChangeTreeData.fire()
+  }
+
+  unmarkPackageInstalling(pkg: string, version: string): void {
+    this.installingPackages.delete(`${pkg}:${version}`)
+    this._onDidChangeTreeData.fire()
+  }
+
+  isPackageInstalling(pkg: string, version: RuyiPackageVersion): boolean {
+    const exactMatch = this.installingPackages.has(`${pkg}:${version.version}`)
+    const latestMatch = version.isLatest && this.installingPackages.has(`${pkg}:latest`)
+    return exactMatch || latestMatch
   }
 }
 
@@ -241,7 +258,8 @@ class PackageItem extends vscode.TreeItem {
 export class VersionItem extends vscode.TreeItem {
   constructor(
     public readonly pkg: RuyiPackage,
-    public readonly versionInfo: RuyiPackageVersion) {
+    public readonly versionInfo: RuyiPackageVersion,
+    public readonly isInstalling: boolean) {
     super(versionInfo.version, vscode.TreeItemCollapsibleState.None)
 
     // Set different icons and context menus according to the version status
@@ -251,6 +269,10 @@ export class VersionItem extends vscode.TreeItem {
     if (versionInfo.isInstalled) {
       this.iconPath = new vscode.ThemeIcon('check', new vscode.ThemeColor('testing.iconPassed'))
       this.contextValue = 'ruyiPackage.installed'
+    }
+    else if (this.isInstalling) {
+      this.iconPath = new vscode.ThemeIcon('loading~spin', new vscode.ThemeColor('testing.iconQueued'))
+      this.contextValue = 'ruyiPackage.installing'
     }
     else if (!versionInfo.isBinaryAvailable) {
       this.iconPath = new vscode.ThemeIcon('warning', new vscode.ThemeColor('problemsWarningIcon.foreground'))
@@ -303,6 +325,9 @@ export class VersionItem extends vscode.TreeItem {
     }
     if (this.versionInfo.downloadSize) {
       tooltip += '⬇️ ' + vscode.l10n.t('Download size: {0}', formatSize(this.versionInfo.downloadSize)) + '\n'
+    }
+    if (this.isInstalling) {
+      tooltip += '🕙 ' + vscode.l10n.t('Installing...') + '\n'
     }
 
     return tooltip.trim()

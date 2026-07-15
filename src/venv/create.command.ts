@@ -3,7 +3,6 @@ import * as path from 'path'
 import * as vscode from 'vscode'
 
 import { getWorkspaceFolderPath } from '../common/helpers'
-import { installPackage } from '../packages/install.command'
 
 import { ruyiVersionIsAbove } from './venv.helper'
 import type { VenvService } from './venv.service'
@@ -46,6 +45,16 @@ function buildPackageSpec(pkg: Pick<InstallableDependency, 'rawName' | 'version'
   return `${pkg.rawName}(==${pkg.version})`
 }
 
+function buildInstallablePackageName(dependencyType: 'toolchain' | 'emulator', rawName: string): string {
+  if (!rawName) {
+    return rawName
+  }
+  if (rawName.includes('/')) {
+    return rawName
+  }
+  return `${dependencyType}/${rawName}`
+}
+
 async function ensureDependencyInstalled(
   dependencyType: 'toolchain' | 'emulator',
   item: InstallableDependency,
@@ -66,7 +75,11 @@ async function ensureDependencyInstalled(
     return false
   }
 
-  const success = await installPackage(item.rawName, item.latest ? undefined : item.version, true)
+  const installableName = buildInstallablePackageName(dependencyType, item.rawName)
+  const success = await vscode.commands.executeCommand(
+    'ruyi.packages.install',
+    [installableName, item.latest ? undefined : item.version],
+  )
   if (!success) {
     vscode.window.showErrorMessage(vscode.l10n.t(
       'Failed to install {0} "{1}". Venv creation cancelled.',
