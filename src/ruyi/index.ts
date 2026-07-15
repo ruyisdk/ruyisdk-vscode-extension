@@ -44,6 +44,7 @@ export interface RuyiRunOptions {
   env?: NodeJS.ProcessEnv
   timeout?: number
   onProgress?: ProgressCallback
+  cancellationToken?: vscode.CancellationToken
 }
 
 // ----------------------------------------------------------------------------
@@ -211,6 +212,24 @@ function executeCommand(
     let timer: NodeJS.Timeout | undefined
     let lastOutputLine = ''
 
+    // Setup cancellation
+    let cancellationDisposable: vscode.Disposable | undefined
+    if (options?.cancellationToken) {
+      cancellationDisposable = options.cancellationToken.onCancellationRequested(() => {
+        if (!settled) {
+          settled = true
+          if (timer) clearTimeout(timer)
+          cancellationDisposable?.dispose()
+          child.kill()
+          resolve({
+            stdout,
+            stderr: vscode.l10n.t('Command cancelled'),
+            code: 1,
+          })
+        }
+      })
+    }
+
     // Setup timeout
     if (timeout > 0) {
       timer = setTimeout(() => {
@@ -344,6 +363,13 @@ export class Ruyi {
    */
   timeout(ms: number): Ruyi {
     return this.with({ timeout: ms })
+  }
+
+  /**
+   * Set cancellation token source for command execution
+   */
+  cancellationToken(token: vscode.CancellationToken): Ruyi {
+    return this.with({ cancellationToken: token })
   }
 
   /**
