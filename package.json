@@ -323,11 +323,6 @@
           "group": "navigation@1"
         },
         {
-          "command": "ruyi.packages.update-index",
-          "when": "view == ruyiPackagesView",
-          "group": "navigation@2"
-        },
-        {
           "command": "ruyi.packages.refresh",
           "when": "view == ruyiPackagesView",
           "group": "navigation@2"
