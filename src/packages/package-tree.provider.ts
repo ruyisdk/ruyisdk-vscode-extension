@@ -202,7 +202,29 @@ class PackageCategoryItem extends vscode.TreeItem {
     public readonly category: string,
     private readonly count?: number,
   ) {
-    super(category, vscode.TreeItemCollapsibleState.Collapsed)
+    let categoryDisplayName = category
+    if (!vscode.env.language.startsWith('en')) {
+      switch (category) {
+        case 'analyzer':
+          categoryDisplayName += vscode.l10n.t(' (Analyzer)')
+          break
+        case 'board-image':
+          categoryDisplayName += vscode.l10n.t(' (Board Image)')
+          break
+        case 'emulator':
+          categoryDisplayName += vscode.l10n.t(' (Emulator)')
+          break
+        case 'extra':
+          categoryDisplayName += vscode.l10n.t(' (Extra)')
+          break
+        case 'toolchain':
+          categoryDisplayName += vscode.l10n.t(' (Toolchain)')
+          break
+        default:
+          break
+      }
+    }
+    super(categoryDisplayName, vscode.TreeItemCollapsibleState.Collapsed)
     this.iconPath = new vscode.ThemeIcon('folder')
     this.contextValue = 'ruyiPackage.category'
     // Show package count in description
