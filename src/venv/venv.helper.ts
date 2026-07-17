@@ -49,6 +49,8 @@ export function parseToolchains(output: string): Toolchain[] {
         installed: remarks.includes('installed'),
         latest: remarks.includes('latest'),
         slug: v.pm?.metadata?.slug || null,
+        remarks,
+        included_sysroot: v.pm?.toolchain?.included_sysroot,
       })
     }
   }

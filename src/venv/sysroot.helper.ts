@@ -7,10 +7,9 @@
  */
 
 import { logger } from '../common/logger'
-import ruyi from '../ruyi'
 
 import { SysrootPkgResult } from './types'
-import { parsePkgs } from './venv.helper'
+import { getToolchainsFromRuyi } from './venv.helper'
 
 /**
  * Fetches all available Ruyi packages that can be used as a sysroot from the ruyi CLI.
@@ -18,15 +17,20 @@ import { parsePkgs } from './venv.helper'
  * @returns Promise resolving to an array of SysrootPkgInfo objects, or an error object on failure
  */
 export async function getSysrootPkgsFromRuyi(): Promise<SysrootPkgResult> {
-  // TODO: Not all `toolchain` packages contains a sysroot, but Ruyi has not provided a way to check
-  // it yet.
-  const result = await ruyi.list({ categoryIs: 'toolchain' })
-
-  if (result.code === 0) {
-    return parsePkgs(result.stdout)
+  try {
+    const toolchains = await getToolchainsFromRuyi()
+    const sysroots = toolchains.filter(toolchain => toolchain.included_sysroot)
+    const sysrootPkgs = sysroots.map(toolchain => (
+      {
+        name: toolchain.name,
+        semver: toolchain.version,
+        remarks: toolchain.remarks,
+      }
+    ))
+    return sysrootPkgs
   }
-  else {
-    const errorMsg = `Failed to get sysroot packages: ${result.stderr}`
+  catch (error) {
+    const errorMsg = `Failed to get sysroot packages: ${error}`
     logger.error(errorMsg)
     return { errorMsg }
   }
