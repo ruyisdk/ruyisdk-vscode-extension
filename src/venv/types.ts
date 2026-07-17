@@ -34,6 +34,10 @@ export interface Toolchain {
   latest: boolean
   /** Package slug for installation */
   slug: string | null
+  /** Installation status remarks (e.g. ['installed', 'latest']) */
+  remarks: string[]
+  /** Included sysroot of the package */
+  included_sysroot?: string
 }
 
 /**

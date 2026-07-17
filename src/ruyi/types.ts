@@ -13,6 +13,9 @@ export interface RuyiVersionInfo {
       desc?: string
       slug?: string
     }
+    toolchain?: {
+      included_sysroot?: string
+    }
   }
 }
 
