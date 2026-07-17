@@ -273,7 +273,7 @@ export class BuildService implements vscode.Disposable {
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: `Building with ${rule.name}`,
+        title: vscode.l10n.t('Building with {0}...', rule.name),
         cancellable: false,
       },
       async (progress) => {
