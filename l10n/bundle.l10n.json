@@ -58,7 +58,7 @@
   "https://ruyisdk.org/en/docs/Package-Manager/installation": "https://ruyisdk.org/en/docs/Package-Manager/installation",
   "Update": "Update",
   "{0} failed via {1}.": "{0} failed via {1}.",
-  "Copy Details": "Copy Details",
+  "View Details": "View Details",
   "OK": "OK",
   "Error details copied to clipboard.": "Error details copied to clipboard.",
   "Ruyi installed via {0}: {1}": "Ruyi installed via {0}: {1}",

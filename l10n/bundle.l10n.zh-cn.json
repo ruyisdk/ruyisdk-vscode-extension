@@ -58,7 +58,7 @@
   "https://ruyisdk.org/en/docs/Package-Manager/installation": "https://ruyisdk.org/docs/Package-Manager/installation",
   "Update": "更新",
   "{0} failed via {1}.": "通过 {1} 进行 {0} 失败。",
-  "Copy Details": "复制详情",
+  "View Details": "查看详情",
   "OK": "确定",
   "Error details copied to clipboard.": "错误详情已复制到剪贴板。",
   "Ruyi installed via {0}: {1}": "已通过 {0} 安装 Ruyi：{1}",
