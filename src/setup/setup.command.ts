@@ -29,13 +29,13 @@ async function showUpdateError(
 
   const action = await vscode.window.showErrorMessage(
     vscode.l10n.t('{0} failed via {1}.', vscode.l10n.t('Update'), methodName),
-    vscode.l10n.t('Copy Details'),
+    vscode.l10n.t('View Details'),
     vscode.l10n.t('OK'),
   )
 
-  if (action === vscode.l10n.t('Copy Details')) {
-    await vscode.env.clipboard.writeText(details)
-    await vscode.window.showInformationMessage(vscode.l10n.t('Error details copied to clipboard.'))
+  if (action === vscode.l10n.t('View Details')) {
+    const document = await vscode.workspace.openTextDocument({ content: details, language: 'text' })
+    await vscode.window.showTextDocument(document, { preview: false })
   }
 }
 
@@ -164,14 +164,14 @@ export function registerInstallCommand(ctx: vscode.ExtensionContext): void {
     logger.error(`Automatic installation failed via ${lastFailure.methodName}:`, details)
     const action = await vscode.window.showErrorMessage(
       vscode.l10n.t('Automatic installation failed. Please install Ruyi manually.'),
-      vscode.l10n.t('Copy Details'),
+      vscode.l10n.t('View Details'),
       vscode.l10n.t('Open Installation Guide'),
       vscode.l10n.t('Cancel'),
     )
 
-    if (action === vscode.l10n.t('Copy Details')) {
-      await vscode.env.clipboard.writeText(details)
-      await vscode.window.showInformationMessage(vscode.l10n.t('Error details copied to clipboard.'))
+    if (action === vscode.l10n.t('View Details')) {
+      const document = await vscode.workspace.openTextDocument({ content: details, language: 'text' })
+      await vscode.window.showTextDocument(document, { preview: false })
     }
     else if (action === vscode.l10n.t('Open Installation Guide')) {
       await vscode.env.openExternal(vscode.Uri.parse(INSTALLATION_GUIDE_URL))

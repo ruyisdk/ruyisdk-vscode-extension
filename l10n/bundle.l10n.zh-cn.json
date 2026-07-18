@@ -55,7 +55,7 @@
   "https://ruyisdk.org/en/docs/Package-Manager/installation": "https://ruyisdk.org/docs/Package-Manager/installation",
   "{0} failed via {1}.": "通过 {1} 进行 {0} 失败。",
   "Update": "更新",
-  "Copy Details": "复制详情",
+  "View Details": "查看详情",
   "OK": "确定",
   "Error details copied to clipboard.": "错误详情已复制到剪贴板。",
   "Installation completed, but Ruyi installation could not be verified. Please reload the window manually.": "安装已完成，但无法验证 Ruyi 是否安装成功。请手动重新加载窗口。",
