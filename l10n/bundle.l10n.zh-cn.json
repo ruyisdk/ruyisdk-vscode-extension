@@ -69,7 +69,7 @@
   "Later": "稍后",
   "A new version of Ruyi is available: {0} (current: {1})": "Ruyi 有新版本可用：{0}（当前版本：{1}）",
   "Update now": "立即更新",
-  "Automatic installation is only supported on Linux. Please install Ruyi manually.": "自动安装仅支持 Linux 系统。请手动安装 Ruyi。",
+  "Automatic installation is only supported on Linux and macOS. Please install Ruyi manually.": "自动安装仅支持 Linux 和 macOS 操作系统。请手动安装 Ruyi。",
   "Open Installation Guide": "打开安装指南",
   "Ruyi already installed: {0}": "Ruyi 已安装：{0}",
   "Installing Ruyi via {0}...": "正在通过 {0} 安装 Ruyi...",
