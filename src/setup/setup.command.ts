@@ -115,9 +115,9 @@ export async function checkRuyiUpdate(currentVersion: string): Promise<void> {
 
 export function registerInstallCommand(ctx: vscode.ExtensionContext): void {
   const disposable = vscode.commands.registerCommand('ruyi.setup.install', async () => {
-    if (process.platform !== 'linux') {
+    if (!['linux', 'darwin'].includes(process.platform)) {
       const choice = await vscode.window.showWarningMessage(
-        vscode.l10n.t('Automatic installation is only supported on Linux. Please install Ruyi manually.'),
+        vscode.l10n.t('Automatic installation is only supported on Linux and macOS. Please install Ruyi manually.'),
         vscode.l10n.t('Open Installation Guide'),
         vscode.l10n.t('Cancel'),
       )
