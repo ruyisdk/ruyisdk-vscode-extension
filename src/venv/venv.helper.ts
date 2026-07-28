@@ -10,6 +10,20 @@ import type { PkgInfo, Toolchain } from './types'
 export type { Toolchain }
 
 /**
+ * Sort items alphabetically by name, then by a version string extracted via getVersion.
+ */
+function sortByNameThenVersion<T extends { name: string }>(
+  items: T[],
+  getVersion: (item: T) => string,
+): T[] {
+  return items.sort((a, b) => {
+    const nameCmp = a.name.localeCompare(b.name)
+    if (nameCmp !== 0) return nameCmp
+    return getVersion(a).localeCompare(getVersion(b))
+  })
+}
+
+/**
  * Resolve venv path from VS Code command argument payload.
  * Supports direct string arguments and tree items that expose `venvPath`.
  */
@@ -54,6 +68,8 @@ export function parseToolchains(output: string): Toolchain[] {
       })
     }
   }
+
+  sortByNameThenVersion(result, t => t.version)
 
   return result
 }
@@ -122,6 +138,8 @@ export function parsePkgs(output: string): PkgInfo[] {
       }
     }
   }
+
+  sortByNameThenVersion(result, p => p.semver)
 
   return result
 }
