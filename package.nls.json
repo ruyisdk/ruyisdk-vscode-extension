@@ -49,6 +49,7 @@
     "contributes.commands.ruyi.repo.enable.title": "Enable Repository",
     "contributes.commands.ruyi.repo.disable.title": "Disable Repository",
     "contributes.commands.ruyi.repo.set-priority.title": "Set Repository Priority",
+    "contributes.commands.ruyi.clean.title": "Clean RuyiSDK resources",
     "contributes.configuration.properties.ruyi.checkForUpdates.description": "Automatically check for Ruyi updates when running detect command.",
     "contributes.configuration.properties.ruyi.ruyiPath.description": "Path to RuyiSDK installation. If not set, will try to detect automatically.",
     "contributes.configuration.properties.ruyi.telemetry.description": "Enable telemetry collection to help improve RuyiSDK. Leave unset to be prompted on first use.",
