@@ -276,6 +276,12 @@
         "icon": "$(repo)"
       },
       {
+        "command": "ruyi.clean",
+        "title": "%contributes.commands.ruyi.clean.title%",
+        "category": "Ruyi",
+        "icon": "$(trash)"
+      },
+      {
         "command": "ruyi.repo.add",
         "title": "%contributes.commands.ruyi.repo.add.title%",
         "category": "Ruyi",
@@ -310,6 +316,10 @@
       "view/title": [
         {
           "command": "ruyi.repo.manage",
+          "when": "view == ruyiPackagesView"
+        },
+        {
+          "command": "ruyi.clean",
           "when": "view == ruyiPackagesView"
         },
         {
