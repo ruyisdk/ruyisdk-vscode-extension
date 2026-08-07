@@ -38,6 +38,8 @@ export interface Toolchain {
   remarks: string[]
   /** Included sysroot of the package */
   included_sysroot?: string
+  /** Quirks included in the package */
+  quirks: string[]
 }
 
 /**
@@ -67,13 +69,6 @@ export interface RuyiProfile {
   /** Common toolchain flags for this profile */
   toolchainCommonFlagsStr: string
 }
-
-/**
- * Map of profile display names to their optional descriptions.
- * Key is the profile display name for QuickPick label.
- * Value is the description (e.g., quirks info) or undefined if none.
- */
-export type ProfilesMap = Record<string, string | undefined>
 
 /**
  * Result type for emulator fetching that can be either success or error.

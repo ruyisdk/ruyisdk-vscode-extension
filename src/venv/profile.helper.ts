@@ -10,9 +10,9 @@ import { logger } from '../common/logger'
 import ruyi from '../ruyi'
 import type { RuyiResult } from '../ruyi'
 
-import type { ProfilesMap, RuyiProfile } from './types'
+import type { RuyiProfile } from './types'
 
-export type { ProfilesMap, RuyiProfile }
+export type { RuyiProfile }
 
 /**
  * Parse the JSON Lines output from entity list command into RuyiProfile array
@@ -55,19 +55,11 @@ function parseProfilesOutput(result: RuyiResult): RuyiProfile[] {
  * @param profiles - Array of structured profile objects
  * @returns Dictionary mapping profile display names to descriptions (or undefined)
  */
-export function parseProfiles(profiles: RuyiProfile[]): ProfilesMap {
-  const dict: Record<string, string | undefined> = {}
-
-  for (const profile of profiles) {
-    // Build description only if quirks exist
-    const description = profile.neededToolchainQuirks.length > 0
-      ? `(needs quirks: ${profile.neededToolchainQuirks.join(', ')})`
-      : undefined
-
-    dict[profile.displayName] = description
-  }
-
-  return dict
+export function profileTexts(profile: RuyiProfile): [string, string | undefined] {
+  const description = profile.neededToolchainQuirks.length > 0
+    ? `(needs quirks: ${profile.neededToolchainQuirks.join(', ')})`
+    : undefined
+  return [profile.displayName, description]
 }
 
 /**
@@ -76,11 +68,10 @@ export function parseProfiles(profiles: RuyiProfile[]): ProfilesMap {
  * @returns Promise resolving to a dictionary of profiles
  * @throws Error if the ruyi command fails
  */
-export async function getProfilesFromRuyi(): Promise<ProfilesMap> {
+export async function getProfilesFromRuyi(): Promise<RuyiProfile[]> {
   try {
     const result = await ruyi.listProfiles()
-    const profiles = parseProfilesOutput(result)
-    return parseProfiles(profiles)
+    return parseProfilesOutput(result)
   }
   catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error)
