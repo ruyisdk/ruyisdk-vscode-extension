@@ -22,8 +22,8 @@ import type {
   VenvInfo,
   Toolchain,
   EmulatorResult,
-  ProfilesMap,
   SysrootPkgResult,
+  RuyiProfile,
 } from './types'
 import { getToolchainsFromRuyi } from './venv.helper'
 
@@ -94,7 +94,7 @@ export class VenvService implements vscode.Disposable {
   /**
    * Gets available Ruyi profiles.
    */
-  public async getProfiles(): Promise<ProfilesMap> {
+  public async getProfiles(): Promise<RuyiProfile[]> {
     return getProfilesFromRuyi()
   }
 

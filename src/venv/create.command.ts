@@ -12,6 +12,7 @@ type ToolchainPick = vscode.QuickPickItem & {
   version: string
   latest: boolean
   installed: boolean
+  quirks: string[]
 }
 
 type EmulatorPick = vscode.QuickPickItem & {
@@ -109,9 +110,11 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
 
   // 2. Select Profile
   const allProfiles = await service.getProfiles()
-  const profileItems = Object.entries(allProfiles).map(([label, description]) => ({
-    label,
-    description,
+  const profileItems = allProfiles.map(profile => ({
+    label: profile.displayName,
+    description: profile.neededToolchainQuirks.length > 0
+      ? `(needs quirks: ${profile.neededToolchainQuirks.join(', ')})`
+      : undefined,
   }))
 
   const pickedProfile = await vscode.window.showQuickPick(profileItems, {
@@ -122,6 +125,7 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
     return
   }
   const profile = pickedProfile.label
+  const neededQuirks = allProfiles.find(p => p.displayName === profile)?.neededToolchainQuirks ?? []
 
   // 3. Select Toolchains
   const toolchains = await service.getToolchains()
@@ -137,7 +141,8 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
     version: toolchain.version,
     latest: toolchain.latest,
     installed: toolchain.installed,
-  }))
+    quirks: toolchain.quirks,
+  })).filter(tc => neededQuirks.every(quirk => tc.quirks.includes(quirk)))
 
   const pickedToolchains = await vscode.window.showQuickPick(toolchainItems, {
     placeHolder: vscode.l10n.t('Select one or more toolchains for the new venv'),

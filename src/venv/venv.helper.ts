@@ -65,6 +65,7 @@ export function parseToolchains(output: string): Toolchain[] {
         slug: v.pm?.metadata?.slug || null,
         remarks,
         included_sysroot: v.pm?.toolchain?.included_sysroot,
+        quirks: v.pm?.toolchain?.quirks || [],
       })
     }
   }

@@ -57,7 +57,7 @@ export { VenvService } from './venv.service'
 
 // Export Helpers
 export { scanWorkspaceForVenvs as detectVenvs } from './detection.helper'
-export { getProfilesFromRuyi as getProfiles, type ProfilesMap } from './profile.helper'
+export { getProfilesFromRuyi as getProfiles } from './profile.helper'
 export { getToolchainsFromRuyi as getToolchains, type Toolchain } from './venv.helper'
 export { getEmulatorsFromRuyi as getEmulators, type EmulatorInfo } from './emulator.helper'
 

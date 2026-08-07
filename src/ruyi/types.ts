@@ -15,6 +15,7 @@ export interface RuyiVersionInfo {
     }
     toolchain?: {
       included_sysroot?: string
+      quirks?: string[]
     }
   }
 }
