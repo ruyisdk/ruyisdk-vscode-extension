@@ -21,6 +21,11 @@ export function activateVenvCommand(
     return
   }
 
+  if (!vscode.workspace.isTrusted) {
+    vscode.window.showErrorMessage(vscode.l10n.t('Cannot activate virtual environment in an untrusted workspace.'))
+    return
+  }
+
   const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
   if (!workspaceRoot) {
     vscode.window.showWarningMessage(vscode.l10n.t('Open a workspace folder before activating a Ruyi venv.'))
