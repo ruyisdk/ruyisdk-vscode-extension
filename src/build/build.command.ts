@@ -13,6 +13,10 @@ import { BuildService } from './build.service'
 export default function registerBuildCommand(ctx: vscode.ExtensionContext): void {
   ctx.subscriptions.push(
     vscode.commands.registerCommand('ruyi.build.run', async () => {
+      if (!vscode.workspace.isTrusted) {
+        vscode.window.showErrorMessage(vscode.l10n.t('Cannot run build in an untrusted workspace.'))
+        return
+      }
       await BuildService.instance.build(ctx.extensionUri)
     }),
   )

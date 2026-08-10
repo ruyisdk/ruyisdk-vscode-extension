@@ -423,6 +423,16 @@
       }
     }
   },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "%capabilities.untrustedWorkspaces.description%",
+      "restrictedConfigurations": [
+        "ruyi.ruyiPath",
+        "ruyi.ruyiTelemetry"
+      ]
+    }
+  },
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
