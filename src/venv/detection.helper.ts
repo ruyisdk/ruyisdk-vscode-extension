@@ -10,6 +10,7 @@
 import * as path from 'path'
 import * as vscode from 'vscode'
 
+import { isVirtualWorkspace } from '../common/helpers'
 import { logger } from '../common/logger'
 
 import type { VenvInfo } from './types'
@@ -27,6 +28,9 @@ const VENV_ACTIVATE_PATTERN = '{*,*/*}/bin/ruyi-activate'
 export async function scanWorkspaceForVenvs(): Promise<VenvInfo[]> {
   const workspaceFolder = vscode.workspace.workspaceFolders?.[0]
   if (!workspaceFolder) {
+    return []
+  }
+  if (isVirtualWorkspace()) {
     return []
   }
 

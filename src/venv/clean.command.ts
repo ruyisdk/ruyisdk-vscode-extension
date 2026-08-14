@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 import * as vscode from 'vscode'
 
+import { isVirtualWorkspace } from '../common/helpers'
+
 import { resolveVenvPathArg } from './venv.helper'
 import type { VenvService } from './venv.service'
 
@@ -45,6 +47,11 @@ export default function registerCleanCommand(ctx: vscode.ExtensionContext, servi
 
       if (!venvPath) {
         vscode.window.showErrorMessage(vscode.l10n.t('No virtual environment selected.'))
+        return
+      }
+
+      if (isVirtualWorkspace()) {
+        vscode.window.showErrorMessage(vscode.l10n.t('Virtual environments are not supported in virtual workspaces'))
         return
       }
 

@@ -2,6 +2,8 @@
 import * as path from 'path'
 import * as vscode from 'vscode'
 
+import { isVirtualWorkspace } from '../common/helpers'
+
 import { resolveVenvPathArg } from './venv.helper'
 import type { VenvService } from './venv.service'
 
@@ -54,6 +56,11 @@ export default function registerActivateCommand(ctx: vscode.ExtensionContext, se
 
       if (venvPath === undefined) {
         vscode.window.showErrorMessage(vscode.l10n.t('No virtual environment selected.'))
+        return
+      }
+
+      if (isVirtualWorkspace()) {
+        vscode.window.showErrorMessage(vscode.l10n.t('Virtual environments are not supported in virtual workspaces'))
         return
       }
 
