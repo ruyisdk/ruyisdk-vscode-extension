@@ -431,6 +431,10 @@
         "ruyi.ruyiPath",
         "ruyi.ruyiTelemetry"
       ]
+    },
+    "virtualWorkspaces": {
+      "supported": "limited",
+      "description": "%capabilities.virtualWorkspaces.description%"
     }
   },
   "scripts": {

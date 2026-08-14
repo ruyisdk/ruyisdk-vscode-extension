@@ -54,5 +54,6 @@
     "contributes.configuration.properties.ruyi.ruyiPath.description": "Path to RuyiSDK installation. If not set, will try to detect automatically.",
     "contributes.configuration.properties.ruyi.telemetry.description": "Enable telemetry collection to help improve RuyiSDK. Leave unset to be prompted on first use.",
     "contributes.configuration.properties.ruyi.quietRuyiPath.description": "Suppress successful Ruyi path check message on every VSCode start.",
-    "capabilities.untrustedWorkspaces.description": "Venvs and build may execute code from your workspace, which may lead to security issues in untrusted workspaces."
+    "capabilities.untrustedWorkspaces.description": "Venvs and build may execute code from your workspace, which may lead to security issues in untrusted workspaces.",
+    "capabilities.virtualWorkspaces.description": "Some functions are not supported in virtual workspaces"
 }

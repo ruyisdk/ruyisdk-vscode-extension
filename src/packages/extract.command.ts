@@ -2,7 +2,7 @@
 import * as path from 'path'
 import * as vscode from 'vscode'
 
-import { createProgressTracker, parseNDJSON } from '../common/helpers'
+import { createProgressTracker, isVirtualWorkspace, parseNDJSON } from '../common/helpers'
 import ruyi from '../ruyi'
 import type { RuyiListOutput } from '../ruyi/types'
 
@@ -104,6 +104,13 @@ async function extractSelectedPackage(
  * @param provider - The packages tree provider
  */
 export async function extractPackage(provider: PackagesTreeProvider, uri?: vscode.Uri): Promise<void> {
+  if (isVirtualWorkspace()) {
+    // This module depends on the URL scheme is `file://` (since we use `Url.fsPath`, etc.), which
+    // is not expected in virtual workspaces.
+    vscode.window.showErrorMessage(vscode.l10n.t('Extracting RuyiSDK packages is not supported in virtual workspaces.'))
+    return
+  }
+
   try {
     let targetDir = await getTargetDirectory(uri)
 
