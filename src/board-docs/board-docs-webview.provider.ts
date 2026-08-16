@@ -47,7 +47,7 @@ function getHtml(): string {
   </style>
 </head>
 <body>
-  <iframe src="https://board-docs-frontend.pages.dev/" id="board-docs-iframe"></iframe>
+  <iframe src="https://boards.ruyisdk.org/" id="board-docs-iframe"></iframe>
   <script lang="javascript">
     const vscode = acquireVsCodeApi();
     window.addEventListener('message', event => {
