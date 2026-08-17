@@ -2,7 +2,7 @@
 import * as path from 'path'
 import * as vscode from 'vscode'
 
-import { getWorkspaceFolderPath } from '../common/helpers'
+import { getWorkspaceFolderPath, isVirtualWorkspace } from '../common/helpers'
 
 import { ruyiVersionIsAbove } from './venv.helper'
 import type { VenvService } from './venv.service'
@@ -105,6 +105,11 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
     if (action === vscode.l10n.t('Open Folder')) {
       await vscode.commands.executeCommand('vscode.openFolder')
     }
+    return
+  }
+
+  if (isVirtualWorkspace()) {
+    vscode.window.showErrorMessage(vscode.l10n.t('Virtual environments are not supported in virtual workspaces'))
     return
   }
 

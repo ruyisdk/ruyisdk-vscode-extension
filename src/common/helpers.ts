@@ -152,3 +152,8 @@ export async function isNetworkAvailable(): Promise<boolean> {
     return false
   }
 }
+
+export function isVirtualWorkspace(): boolean {
+  const folders = vscode.workspace.workspaceFolders
+  return !!folders && folders.every(f => f.uri.scheme !== 'file')
+}

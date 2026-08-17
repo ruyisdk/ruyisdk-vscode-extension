@@ -54,5 +54,6 @@
     "contributes.configuration.properties.ruyi.ruyiPath.description": "RuyiSDK 安装路径。如果未设置，将尝试自动检测。",
     "contributes.configuration.properties.ruyi.telemetry.description": "启用遥测收集以帮助改进 RuyiSDK。未设置时将在首次使用时提示。",
     "contributes.configuration.properties.ruyi.quietRuyiPath.description": "如果 Ruyi 路径检查成功，不要在每次 VSCode 启动时显示消息。",
-    "capabilities.untrustedWorkspaces.description": "虚拟环境和构建可能会执行来自工作区的代码，在不受信任的工作区中可能造成安全问题。"
+    "capabilities.untrustedWorkspaces.description": "虚拟环境和构建可能会执行来自工作区的代码，在不受信任的工作区中可能造成安全问题。",
+    "capabilities.virtualWorkspaces.description": "部分功能在虚拟工作区内不受支持"
 }
