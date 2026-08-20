@@ -356,6 +356,8 @@ which fails on Windows. Now using path.join for cross-platform support.
 
 要了解如何在 TypeScript 代码中添加新消息，请参阅 [vscode-l10n-dev](https://github.com/microsoft/vscode-l10n/tree/main/l10n-dev)。
 
+你可以使用 `tools/sync-l10n.js` 脚本来检查翻译中的差异，并完成你的翻译。
+
 `package.json` 中面向用户的字符串通过以下文件进行本地化：
 
 - `package.nls.json` — 英文
