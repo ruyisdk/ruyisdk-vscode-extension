@@ -373,6 +373,8 @@ Message files are in the `l10n/` directory:
 To learn how to add new messages in TypeScript code, see
 [vscode-l10n-dev](https://github.com/microsoft/vscode-l10n/tree/main/l10n-dev).
 
+You can use the `tools/sync-l10n.js` script to diff and complete your translation.
+
 User-visible strings in `package.json` are localized via:
 
 - `package.nls.json` — English
