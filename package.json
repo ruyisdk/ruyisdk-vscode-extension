@@ -206,6 +206,12 @@
         "icon": "$(clear-all)"
       },
       {
+        "command": "ruyi.packages.copyPackageId",
+        "title": "%contributes.commands.ruyi.packages.copyPackageId.title%",
+        "category": "Ruyi",
+        "icon": "$(copy)"
+      },
+      {
         "command": "ruyi.packages.install",
         "title": "%contributes.commands.ruyi.packages.install.title%",
         "category": "Ruyi",
@@ -373,6 +379,10 @@
           "command": "ruyi.venv.clean",
           "when": "view == ruyiVenvsView && viewItem == ruyiVenv.itemNonCurrent",
           "group": "inline@2"
+        },
+        {
+          "command": "ruyi.packages.copyPackageId",
+          "when": "view == ruyiPackagesView && viewItem == ruyiPackage.installing || viewItem == ruyiPackage.installed || viewItem == ruyiPackage.available || viewItem == ruyiPackage.unavailable"
         }
       ],
       "editor/title": [

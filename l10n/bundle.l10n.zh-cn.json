@@ -187,6 +187,7 @@
   "Extracting {0}...": "正在解压 {0}...",
   "Successfully extracted {0} to {1}": "成功将 {0} 解压到 {1}",
   "Error occurred during extraction: {0}": "解压过程中出错：{0}",
+  "Package ID \"{0}\" copied to clipboard!": "软件包 ID \"{0}\" 已复制到剪切板！",
   "Read RuyiNews": "阅读 Ruyi 新闻",
   "Open Ruyi News Cards": "打开 Ruyi 新闻卡片",
   "Ruyi News Cards": "Ruyi 新闻卡片",

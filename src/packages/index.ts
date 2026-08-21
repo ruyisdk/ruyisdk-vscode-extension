@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import * as vscode from 'vscode'
 
+import registerCopyPackageIdCommand from './copy-package-id.command'
 import registerExtractCommand from './extract.command'
 import registerInstallCommand from './install.command'
 import { PackagesTreeProvider } from './package-tree.provider'
@@ -22,6 +23,7 @@ export default function registerPackagesModule(ctx: vscode.ExtensionContext) {
 
   void packagesTreeProvider.shallowRefresh()
 
+  registerCopyPackageIdCommand(ctx)
   registerInstallCommand(ctx, packagesTreeProvider)
   registerUninstallCommand(ctx, packagesTreeProvider)
   registerRefreshCommand(ctx, packagesTreeProvider)
