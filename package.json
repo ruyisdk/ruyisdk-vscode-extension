@@ -16,7 +16,7 @@
   "engines": {
     "vscode": "^1.88.0"
   },
-  "icon": "icon.png",
+  "icon": "media/icon.png",
   "categories": [
     "Other",
     "Programming Languages",
@@ -120,7 +120,7 @@
         {
           "id": "ruyi",
           "title": "Ruyi",
-          "icon": "icon.png"
+          "icon": "media/icon-no-bg.png"
         }
       ]
     },
