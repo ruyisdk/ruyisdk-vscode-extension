@@ -1,9 +1,11 @@
 name: Code Check
+
 on:
-  pull_request:
   push:
     branches:
-      - main
+  pull_request:
+  workflow_dispatch:
+
 jobs:
   eslint:
     runs-on: ubuntu-latest
