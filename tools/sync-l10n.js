@@ -3,6 +3,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const readline = require('node:readline');
+const { execSync } = require('node:child_process');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 const EN_FILE = path.join(ROOT_DIR, 'l10n', 'bundle.l10n.json');
@@ -54,6 +55,19 @@ function askYesNo(prompt, defaultValue = false) {
     }
     console.log('Please answer yes (y) or no (n).');
     return askYesNo(prompt, defaultValue);
+  });
+}
+
+function refreshL10nBundle() {
+  const command = 'npx @vscode/l10n-dev export --outDir ./l10n ./src';
+
+  console.log(`\n${style('=== Refreshing l10n bundle ===', ANSI.cyan, true)}`);
+  console.log(`${style('Command:', ANSI.cyan, true)} ${style(command, ANSI.magenta)}`);
+
+  execSync(command, {
+    cwd: ROOT_DIR,
+    stdio: 'inherit',
+    env: process.env,
   });
 }
 
@@ -118,6 +132,8 @@ function buildAlignedEntries(defaultEntries, localizedEntries, missingValues) {
 }
 
 async function main() {
+  refreshL10nBundle();
+
   const defaultEntries = readJson(EN_FILE);
   const localizedEntries = readJson(ZH_FILE);
   const diff = compareEntries(defaultEntries, localizedEntries);
