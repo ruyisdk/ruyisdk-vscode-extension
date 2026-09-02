@@ -86,9 +86,9 @@ export class PackagesTreeProvider implements
       return
     }
 
-    this.treeView.description = this.searchQuery
+    this.treeView.title = this.searchQuery
       ? vscode.l10n.t(`Searching '{0}'`, this.searchQuery)
-      : undefined
+      : vscode.l10n.t('RuyiSDK Packages')
   }
 
   getTreeItem(element: TreeElement): vscode.TreeItem {

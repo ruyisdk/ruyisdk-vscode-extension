@@ -155,6 +155,7 @@
   "Failed to update package index.": "无法更新包管理器索引。",
   "Package index updated successfully.": "包管理器索引更新成功。",
   "Searching '{0}'": "正在搜索 “{0}”",
+  "RuyiSDK Packages": "RuyiSDK 软件包",
   " (Analyzer)": "（分析器）",
   " (Board Image)": "（开发板镜像）",
   " (Emulator)": "（模拟器）",
