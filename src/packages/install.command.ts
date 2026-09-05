@@ -43,7 +43,7 @@ export async function installPackage(
   await vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Notification,
-      title: vscode.l10n.t('Installing {0}...', packageName),
+      title: vscode.l10n.t('Installing {0}', packageName),
       cancellable: false,
     },
     async (progress) => {

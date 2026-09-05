@@ -210,6 +210,8 @@ function executeCommand(
     let timedOut = false
     let timer: NodeJS.Timeout | undefined
     let lastOutputLine = ''
+    let stdoutProgressBuffer = ''
+    let stderrProgressBuffer = ''
 
     // Setup timeout
     if (timeout > 0) {
@@ -219,23 +221,30 @@ function executeCommand(
       }, timeout)
     }
 
-    // Helper function to extract and report the last line
-    const updateLastLine = (newChunk: string) => {
+    // Curl writes progress updates separated by carriage returns. A data event
+    // may contain a partial update, so keep the unfinished part for the next event.
+    const updateLastLine = (newChunk: string, stream: 'stdout' | 'stderr') => {
       if (!options?.onProgress) return
 
-      // Split by both \n and \r to handle different line ending styles
-      // curl uses \r for progress updates on the same line
-      const lines = newChunk.split(/[\r\n]+/).filter(line => line.trim())
+      const buffer = stream === 'stdout' ? stdoutProgressBuffer : stderrProgressBuffer
+      const chunks = `${buffer}${newChunk}`.split(/[\r\n]/)
+      const incompleteLine = chunks.pop() ?? ''
+      if (stream === 'stdout') stdoutProgressBuffer = incompleteLine
+      else stderrProgressBuffer = incompleteLine
 
-      if (lines.length > 0) {
-        // Get the last non-empty line from this chunk
-        const newLastLine = lines[lines.length - 1].trim()
-        // Only update if the line has changed to avoid redundant updates
-        if (newLastLine && newLastLine !== lastOutputLine) {
-          lastOutputLine = newLastLine
-          options.onProgress(newLastLine)
-        }
+      const newLastLine = chunks
+        .map(line => line.trim())
+        .filter(line => line)
+        .pop()
+      if (newLastLine && newLastLine !== lastOutputLine) {
+        lastOutputLine = newLastLine
+        options.onProgress(newLastLine)
       }
+    }
+
+    const flushProgressBuffer = () => {
+      updateLastLine('\n', 'stdout')
+      updateLastLine('\n', 'stderr')
     }
 
     // Collect output
@@ -243,14 +252,14 @@ function executeCommand(
       const text = chunk.toString()
       stdout += text
       // Update with the new chunk, not the entire accumulated output
-      updateLastLine(text)
+      updateLastLine(text, 'stdout')
     })
 
     child.stderr?.on('data', (chunk: Buffer | string) => {
       const text = chunk.toString()
       stderr += text
       // Also check stderr for progress information
-      updateLastLine(text)
+      updateLastLine(text, 'stderr')
     })
 
     // Handle errors
@@ -268,6 +277,7 @@ function executeCommand(
 
     // Handle completion
     child.on('close', (code: number | null) => {
+      flushProgressBuffer()
       if (settled) return
       settled = true
       if (timer) clearTimeout(timer)
