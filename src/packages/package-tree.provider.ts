@@ -320,9 +320,6 @@ export class VersionItem extends vscode.TreeItem {
     if (!this.versionInfo.isBinaryAvailable) {
       tags.push(vscode.l10n.t('no binary'))
     }
-    if (this.versionInfo.slug) {
-      tags.push(`slug: ${this.versionInfo.slug}`)
-    }
     return tags.join(', ')
   }
 
