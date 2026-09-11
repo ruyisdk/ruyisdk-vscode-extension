@@ -351,6 +351,9 @@ export class VersionItem extends vscode.TreeItem {
     if (this.isInstalling) {
       tooltip += '🕙 ' + vscode.l10n.t('Installing...') + '\n'
     }
+    if (this.versionInfo.slug) {
+      tooltip += '🔖 ' + vscode.l10n.t('Slug: {0}', this.versionInfo.slug) + '\n'
+    }
 
     return tooltip.trim()
   }
