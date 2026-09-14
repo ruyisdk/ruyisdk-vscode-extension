@@ -82,6 +82,7 @@ async function promptForClean(): Promise<void> {
     telemetry: entries.some(entry => entry.id === 'telemetry'),
   }
   const result = await ruyi.selfClean(selfCleanOptions)
+  vscode.commands.executeCommand('ruyi.packages.shallow-refresh')
   if (result.code === 0) {
     vscode.window.showInformationMessage(vscode.l10n.t('RuyiSDK resources cleaned successfully.'))
   }
