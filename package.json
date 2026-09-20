@@ -279,6 +279,7 @@
         "command": "ruyi.build.run",
         "title": "%contributes.commands.ruyi.build.run.title%",
         "category": "Ruyi",
+        "enablement": "isWorkspaceTrusted",
         "icon": "$(play)"
       },
       {
