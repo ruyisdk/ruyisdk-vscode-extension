@@ -40,16 +40,18 @@ async function executeRuyiPackageCommand(
   methodKey: PackageMethodKey,
   operation: PackageOperation,
 ): Promise<void> {
+  let allErrors = ''
   for (const args of PACKAGE_METHODS[methodKey][operation]) {
     try {
       await execFileAsync(args[0], [...args.slice(1)], { timeout: 60_000 })
       return
     }
     catch (error) {
+      allErrors += `Failed to execute \`${args.join(' ')}\`:\n${error}\n\n`
       logger.log(`Not executed ${args.join(' ')}: ${error}, trying next command if available.`)
     }
   }
-  throw new Error(`Failed to execute any command for ${methodKey} ${operation}.`)
+  throw new Error(`Failed to execute any command for ${methodKey} ${operation}. Tried:\n${allErrors}`)
 }
 
 export function executeRuyiInstall(methodKey: PackageMethodKey): Promise<void> {
