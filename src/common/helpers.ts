@@ -118,26 +118,6 @@ export function createProgressTracker(
   return [progressCallback, getLastPercent]
 }
 
-/**
- * Parse download progress percentage from curl/ruyi output.
- *
- * Extracts the percentage from curl progress output lines like:
- * "  5  123M    5 6789k    0     0  1234k      0  0:01:40  0:00:05  0:01:35 1234k"
- * The first number (5 in this example) is the download percentage.
- *
- * @param line The output line to parse
- * @returns The percentage (0-100) or null if not found
- *
- * @example
- * ```typescript
- * const percent = parseDownloadProgress("  15  123M   15  18M...")
- * // Returns: 15
- * ```
- */
-export function parseDownloadProgress(line: string): number | null {
-  return parseDownloadProgressDetails(line)?.percent ?? parseDownloadProgressPercent(line)
-}
-
 function parseDownloadProgressPercent(line: string): number | null {
   const match = line.match(/^\s*(\d{1,3})\s+\d+/)
   if (!match) return null

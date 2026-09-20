@@ -66,13 +66,6 @@ class ConfigurationService implements vscode.Disposable {
     await this.config.update(CONFIG_KEYS.QUIET_RUYI_PATH, enabled, true)
   }
 
-  public reload(): void {
-    const syntheticEvent: vscode.ConfigurationChangeEvent = {
-      affectsConfiguration: (section: string) => section.startsWith('ruyi'),
-    }
-    this.emitter.fire(syntheticEvent)
-  }
-
   private handleRuyiPathChange(event: vscode.ConfigurationChangeEvent): void {
     if (event.affectsConfiguration(fullKey(CONFIG_KEYS.RUYI_PATH))) {
       // Just log the change, reload prompt is handled by the command that made the change

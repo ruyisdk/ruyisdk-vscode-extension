@@ -16,11 +16,6 @@ export interface VenvInfo {
 }
 
 /**
- * Event listener for venv state changes.
- */
-export type VenvStateListener = (venvPath: string | null) => void
-
-/**
  * Represents a Ruyi toolchain package.
  */
 export interface Toolchain extends PkgInfo {

@@ -8,7 +8,6 @@ const { execSync } = require('node:child_process');
 const ROOT_DIR = path.resolve(__dirname, '..');
 const EN_FILE = path.join(ROOT_DIR, 'l10n', 'bundle.l10n.json');
 const ZH_FILE = path.join(ROOT_DIR, 'l10n', 'bundle.l10n.zh-cn.json');
-const CHECK_MODE_FLAGS = new Set(['--check', '--compare-only', '--no-prompt']);
 
 const ANSI = {
   reset: '\u001b[0m',
