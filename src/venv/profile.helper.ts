@@ -49,20 +49,6 @@ function parseProfilesOutput(result: RuyiResult): RuyiProfile[] {
 }
 
 /**
- * Converts structured RuyiProfile array to ProfilesMap format.
- * Returns a map of display names to optional descriptions.
- *
- * @param profiles - Array of structured profile objects
- * @returns Dictionary mapping profile display names to descriptions (or undefined)
- */
-export function profileTexts(profile: RuyiProfile): [string, string | undefined] {
-  const description = profile.neededToolchainQuirks.length > 0
-    ? `(needs quirks: ${profile.neededToolchainQuirks.join(', ')})`
-    : undefined
-  return [profile.displayName, description]
-}
-
-/**
  * Fetches all available Ruyi profiles from the ruyi CLI.
  *
  * @returns Promise resolving to a dictionary of profiles
