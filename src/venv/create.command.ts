@@ -65,32 +65,12 @@ async function ensureDependencyInstalled(
     return true
   }
 
-  const selection = await vscode.window.showWarningMessage(
-    vscode.l10n.t(
-      'The selected {0} "{1}" is not installed.\nWould you like to install it now?',
-      dependencyType, item.rawName,
-    ),
-    vscode.l10n.t('Install'),
-    vscode.l10n.t('Cancel'),
-  )
-  if (selection !== vscode.l10n.t('Install')) {
-    return false
-  }
-
   const installableName = buildInstallablePackageName(dependencyType, item.rawName)
-  const success = await vscode.commands.executeCommand(
+  const success = await vscode.commands.executeCommand<boolean>(
     'ruyi.packages.install',
     [installableName, item.latest ? undefined : item.version],
   )
-  if (!success) {
-    vscode.window.showErrorMessage(vscode.l10n.t(
-      'Failed to install {0} "{1}". Venv creation cancelled.',
-      dependencyType, item.rawName,
-    ))
-    return false
-  }
-
-  return true
+  return success ?? false
 }
 
 /**
