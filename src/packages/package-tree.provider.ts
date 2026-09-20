@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 import * as vscode from 'vscode'
 
+import { formatSize } from '../common/format.helper'
 import { logger } from '../common/logger.js'
 import type { PackageCategory } from '../ruyi'
 
-import { formatSize } from './package.helper.js'
 import { RuyiPackage, RuyiPackageVersion, PackageService } from './package.service'
 
 // Define tree node types
