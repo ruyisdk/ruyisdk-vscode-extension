@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
+/** Formats a byte count using decimal units. */
 export function formatSize(bytes: number): string {
   if (!isFinite(bytes)) return String(bytes)
   const units = ['B', 'kB', 'MB', 'GB', 'TB', 'PB']

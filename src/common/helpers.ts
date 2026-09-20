@@ -8,6 +8,7 @@
 import * as vscode from 'vscode'
 
 import { ConfigKey } from './constants'
+import { formatSize } from './format.helper'
 
 /** Get the path of the first workspace folder,
  *  or return an error message if none is open.
@@ -171,20 +172,11 @@ function formatDownloadProgress(details: DownloadProgressDetails): string {
   const remaining = details.remainingSeconds === 0 ? '0s' : formatDuration(details.remainingSeconds)
   return `${vscode.l10n.t(
     'Downloaded {0} of {1} ({2}/s, {3} remaining)',
-    formatBytes(details.downloadedBytes),
-    formatBytes(details.totalBytes),
-    formatBytes(details.speedBytesPerSecond),
+    formatSize(details.downloadedBytes),
+    formatSize(details.totalBytes),
+    formatSize(details.speedBytesPerSecond),
     remaining,
   )}`
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 B'
-  const units = ['B', 'kB', 'MB', 'GB', 'TB', 'PB']
-  const unitIndex = Math.min(Math.floor(Math.log10(bytes) / 3), units.length - 1)
-  const value = bytes / Math.pow(1000, unitIndex)
-  const formatted = Number.isInteger(value) ? value.toString() : value.toFixed(2).replace(/\.?0+$/, '')
-  return `${formatted} ${units[unitIndex]}`
 }
 
 function formatDuration(seconds: number): string {
