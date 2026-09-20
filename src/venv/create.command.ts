@@ -283,17 +283,14 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
 
   // 7. Extra Commands (Optional)
   const extraCommands: string[] = []
-  let addingCommands = true
-  while (addingCommands) {
+  while (true) {
     const cmd = await vscode.window.showInputBox({
       placeHolder: vscode.l10n.t('(Optional) Specifier of extra package to add commands. Press ESC to finish.'),
     })
-    if (cmd) {
-      extraCommands.push(cmd)
+    if (!cmd) {
+      break
     }
-    else {
-      addingCommands = false
-    }
+    extraCommands.push(cmd)
   }
 
   // 8. Create Venv
@@ -384,28 +381,12 @@ async function selectSysroot(service: VenvService): Promise<SelectedSysroot | un
     { placeHolder: vscode.l10n.t('Include a sysroot in the new venv?') },
   )
 
-  if (withSysroot?.id === 'copy-dir') {
-    const path = await selectSysrootDir()
-
+  if (withSysroot?.id === 'copy-dir'
+    || withSysroot?.id === 'symlink-dir'
+    || withSysroot?.id === 'project-dir') {
     return {
-      kind: 'copy-dir',
-      data: path,
-    }
-  }
-  else if (withSysroot?.id === 'symlink-dir') {
-    const path = await selectSysrootDir()
-
-    return {
-      kind: 'symlink-dir',
-      data: path,
-    }
-  }
-  else if (withSysroot?.id === 'project-dir') {
-    const path = await selectSysrootDir()
-
-    return {
-      kind: 'project-dir',
-      data: path,
+      kind: withSysroot.id,
+      data: await selectSysrootDir(),
     }
   }
   else if (withSysroot?.id === 'pkg') {
@@ -476,7 +457,7 @@ async function selectSysrootDir(): Promise<string> {
     canSelectMany: false,
   })
 
-  if (!dir || dir?.length !== 1) {
+  if (!dir || dir.length !== 1) {
     throw new CancelledError()
   }
 
