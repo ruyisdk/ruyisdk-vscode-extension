@@ -41,6 +41,8 @@
   "Select a sysroot (Star=Latest, Check=Installed)": "选择 sysroot（星标=最新版，对勾=已安装）",
   "Invalid virtual environment: no path found.": "无效的虚拟环境：未找到路径。",
   "Delete the selected venv? This action cannot be undone.": "确认删除所选虚拟环境？此操作不可撤销。",
+  "Cannot delete this directory as a virtual environment: {0}": "无法将此目录作为虚拟环境删除：{0}",
+  "Failed to delete virtual environment: {0}": "删除虚拟环境失败：{0}",
   "Delete": "删除",
   "No virtual environment selected.": "未选择任何虚拟环境。",
   "Cannot activate virtual environment in an untrusted workspace.": "无法在不受信任的工作区中激活虚拟环境。",

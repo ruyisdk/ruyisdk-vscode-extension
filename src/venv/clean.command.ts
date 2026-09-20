@@ -22,17 +22,24 @@ export async function cleanVenvCommand(
     return
   }
 
-  const confirm = await vscode.window.showWarningMessage(
-    vscode.l10n.t('Delete the selected venv? This action cannot be undone.'),
-    { modal: true },
-    vscode.l10n.t('Delete'),
-  )
+  try {
+    const target = await service.resolveVenvRemovalPath(venvPath)
+    const confirm = await vscode.window.showWarningMessage(
+      vscode.l10n.t('Delete the selected venv? This action cannot be undone.'),
+      { modal: true, detail: target },
+      vscode.l10n.t('Delete'),
+    )
 
-  if (confirm !== vscode.l10n.t('Delete')) {
-    return
+    if (confirm !== vscode.l10n.t('Delete')) {
+      return
+    }
+
+    await service.removeVenv(target)
   }
-
-  await service.removeVenv(venvPath)
+  catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    vscode.window.showErrorMessage(vscode.l10n.t('Failed to delete virtual environment: {0}', message))
+  }
 }
 
 /**

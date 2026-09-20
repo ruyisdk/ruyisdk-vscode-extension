@@ -27,6 +27,11 @@ import type {
 } from './types'
 import { getToolchainsFromRuyi } from './venv.helper'
 
+function containsPath(directory: string, target: string): boolean {
+  const relative = path.relative(directory, target)
+  return relative !== '..' && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative)
+}
+
 export interface VenvCreateParams {
   profile: string
   path: string
@@ -202,20 +207,49 @@ export class VenvService implements vscode.Disposable {
     }
   }
 
-  /**
-   * Removes a virtual environment by deleting its directory.
-   */
-  public async removeVenv(venvPath: string): Promise<void> {
-    const absPath = path.isAbsolute(venvPath)
-      ? venvPath
-      : path.resolve(getWorkspaceFolderPath(), venvPath)
+  /** Resolves a venv directory that can be removed without deleting workspace folders. */
+  public async resolveVenvRemovalPath(venvPath: string): Promise<string> {
+    const folders = vscode.workspace.workspaceFolders?.filter(folder => folder.uri.scheme === 'file') ?? []
+    const invalidTarget = () => new Error(vscode.l10n.t(
+      'Cannot delete this directory as a virtual environment: {0}', venvPath,
+    ))
 
-    if (this._currentVenv && path.normalize(this._currentVenv) === path.normalize(absPath)) {
+    if (!venvPath.trim() || folders.length === 0) {
+      throw invalidTarget()
+    }
+
+    const [target, roots] = await Promise.all([
+      fs.promises.realpath(path.resolve(folders[0].uri.fsPath, venvPath)),
+      Promise.all(folders.map(folder => fs.promises.realpath(folder.uri.fsPath))),
+    ])
+
+    if (!roots.some(root => containsPath(root, target))
+      || roots.some(root => containsPath(target, root))) {
+      throw invalidTarget()
+    }
+
+    const activateScript = await fs.promises.stat(path.join(target, 'bin', 'ruyi-activate'))
+    if (!activateScript.isFile()) {
+      throw invalidTarget()
+    }
+
+    return target
+  }
+
+  /** Removes a validated virtual environment directory. */
+  public async removeVenv(venvPath: string): Promise<void> {
+    const absPath = await this.resolveVenvRemovalPath(venvPath)
+    const currentVenv = this._currentVenv
+    const currentPath = currentVenv
+      ? await fs.promises.realpath(currentVenv).catch(() => currentVenv)
+      : null
+
+    if (currentPath === absPath) {
       await this.deactivateVenv()
     }
 
     try {
-      await fs.promises.rm(absPath, { recursive: true, force: true })
+      await fs.promises.rm(absPath, { recursive: true })
       logger.info(`Removed venv at ${absPath}`)
       // Notify UI to refresh the venv list
       this._onDidChangeVenv.fire(this._currentVenv)
