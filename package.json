@@ -2,7 +2,7 @@
   "name": "ruyisdk-vscode-extension",
   "displayName": "RuyiSDK",
   "description": "all-in-one development environment for RISC-V developers.",
-  "version": "0.1.6-beta.1",
+  "version": "0.1.7-beta.1",
   "publisher": "RuyiSDK",
   "license": "Apache-2.0",
   "repository": {
