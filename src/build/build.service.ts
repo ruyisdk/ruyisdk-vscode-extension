@@ -248,11 +248,17 @@ export class BuildService implements vscode.Disposable {
   public async build(extensionUri: vscode.Uri): Promise<void> {
     const detected = await this.detectBuildSystem(extensionUri)
     if (!detected) {
-      vscode.window.showWarningMessage(
+      const action = await vscode.window.showWarningMessage(
         vscode.l10n.t('No supported build system found in the workspace. ')
         + vscode.l10n.t('Supported: CMake (CMakeLists.txt), GNU Make (Makefile), GCC (*.c). ')
         + vscode.l10n.t('You can also add a .ruyi-build-rules.json to the workspace root to define custom rules.'),
+        vscode.l10n.t('View Example'),
       )
+      if (action == vscode.l10n.t('View Example')) {
+        const documentPath = vscode.Uri.joinPath(extensionUri, 'media', 'build-rules.json')
+        const document = await vscode.workspace.openTextDocument(documentPath)
+        await vscode.window.showTextDocument(document, { preview: false })
+      }
       return
     }
 
