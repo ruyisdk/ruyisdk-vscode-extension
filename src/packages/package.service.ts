@@ -136,7 +136,7 @@ export class PackageService {
       .map((item) => {
         const category = item.category as PackageCategory
         const versions: RuyiPackageVersion[] = item.vers.map((v) => {
-          const isPrerelease = v.semver.includes('-')
+          const isPrerelease = v.remarks.includes('prerelease')
           const isLatest = v.remarks.includes('latest')
           const isLatestPrerelease = v.remarks.includes('latest-prerelease')
           // Check both locations for slug: pm.metadata.slug and remarks array
