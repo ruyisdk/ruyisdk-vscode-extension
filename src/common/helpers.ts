@@ -159,7 +159,9 @@ function parseCurlSize(value: string): number {
 
   const units = ['', 'k', 'm', 'g', 't', 'p']
   const unitIndex = units.indexOf(match[2].toLowerCase())
-  return Number.parseFloat(match[1]) * Math.pow(1000, unitIndex)
+  if (unitIndex === -1) return Number.NaN
+
+  return Number.parseFloat(match[1]) * Math.pow(1024, unitIndex)
 }
 
 function parseCurlDuration(value: string): number {
