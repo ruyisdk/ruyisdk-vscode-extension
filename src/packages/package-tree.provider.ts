@@ -14,7 +14,16 @@ export class PackagesTreeProvider implements
   vscode.TreeDataProvider<TreeElement> {
   private _onDidChangeTreeData = new vscode.EventEmitter<void>()
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event
+  /**
+   * Normalized (lower-cased, trimmed) query used for filtering and cache keys.
+   */
   private searchQuery = ''
+  /**
+   * The user input exactly as typed, used for display and pre-filling the
+   * search input box. Kept separate from {@link searchQuery} so that the
+   * original casing is never lost.
+   */
+  private rawSearchQuery = ''
   private treeView?: vscode.TreeView<TreeElement>
   private categoryCache: Map<string, RuyiPackage[]> = new Map()
   private installingPackages: Set<string> = new Set()
@@ -47,17 +56,18 @@ export class PackagesTreeProvider implements
    * Set search query and refresh the tree view.
    */
   setSearchQuery(query: string): void {
-    this.searchQuery = query.trim().toLowerCase()
+    this.rawSearchQuery = query.trim()
+    this.searchQuery = this.rawSearchQuery.toLowerCase()
     this.categoryCache.clear() // Clear cache when search changes
-    this.updateTreeViewTitle()
+    this.updateTreeViewSearchMessage()
     this._onDidChangeTreeData.fire()
   }
 
   /**
-   * Get current search query.
+   * Get current search query as typed by the user (original casing preserved).
    */
   getSearchQuery(): string {
-    return this.searchQuery
+    return this.rawSearchQuery
   }
 
   /**
@@ -81,14 +91,17 @@ export class PackagesTreeProvider implements
     }
   }
 
-  private updateTreeViewTitle(): void {
+  private updateTreeViewSearchMessage(): void {
     if (!this.treeView) {
       return
     }
 
-    this.treeView.title = this.searchQuery
-      ? vscode.l10n.t(`Searching '{0}'`, this.searchQuery)
-      : vscode.l10n.t('RuyiSDK Packages')
+    // Keep the static view title untouched and surface the search state through
+    // `message` instead. VS Code applies title-casing to the view title, which
+    // would otherwise mangle the user's original input (e.g. "ABC" -> "Abc").
+    this.treeView.message = this.rawSearchQuery
+      ? vscode.l10n.t(`Searching '{0}'`, this.rawSearchQuery)
+      : ''
   }
 
   getTreeItem(element: TreeElement): vscode.TreeItem {

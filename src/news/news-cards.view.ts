@@ -25,7 +25,7 @@ function createCardHtml(row: NewsRow): string {
     </div>`
 }
 
-export function getCardsHtml(webview: vscode.Webview, searchQuery: string, rows: NewsRow[], showUnreadOnly: boolean): string {
+export function getCardsHtml(webview: vscode.Webview, displaySearchQuery: string, rows: NewsRow[], showUnreadOnly: boolean): string {
   const nonce = randomUUID()
   const csp = [
     `default-src 'none';`,
@@ -34,8 +34,8 @@ export function getCardsHtml(webview: vscode.Webview, searchQuery: string, rows:
   ].join(' ')
 
   let mainTitle: string
-  if (searchQuery) {
-    mainTitle = vscode.l10n.t('Search results for "{0}"', escapeHtml(searchQuery))
+  if (displaySearchQuery) {
+    mainTitle = vscode.l10n.t('Search results for "{0}"', escapeHtml(displaySearchQuery))
   }
   else {
     mainTitle = vscode.l10n.t('Ruyi News')
