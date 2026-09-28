@@ -25,7 +25,16 @@ type NewsWebviewMessage
 export class NewsWebviewProvider {
   private panel: vscode.WebviewPanel | undefined
   private showUnreadOnly = false
+  /**
+   * Normalized (lower-cased, trimmed) query used for filtering.
+   */
   private searchQuery = ''
+  /**
+   * The user input exactly as typed, used for display and pre-filling the
+   * search input box. Kept separate from {@link searchQuery} so that the
+   * original casing is never lost.
+   */
+  private rawSearchQuery = ''
 
   constructor(
     private readonly context: vscode.ExtensionContext,
@@ -74,7 +83,7 @@ export class NewsWebviewProvider {
     const query = await vscode.window.showInputBox({
       prompt: vscode.l10n.t('Search news by title, date, or ID'),
       placeHolder: vscode.l10n.t('Enter search term...'),
-      value: this.searchQuery,
+      value: this.rawSearchQuery,
       ignoreFocusOut: true,
     })
     if (query !== undefined) {
@@ -146,7 +155,8 @@ export class NewsWebviewProvider {
   }
 
   private setSearchQuery(query: string): void {
-    this.searchQuery = query.trim().toLowerCase()
+    this.rawSearchQuery = query.trim()
+    this.searchQuery = this.rawSearchQuery.toLowerCase()
     void this.updateContent()
   }
 
@@ -168,7 +178,7 @@ export class NewsWebviewProvider {
         ? sortedRows.filter(row => this.matchesSearch(row))
         : sortedRows
 
-      this.panel.webview.html = getCardsHtml(this.panel.webview, this.searchQuery, filteredRows, this.showUnreadOnly)
+      this.panel.webview.html = getCardsHtml(this.panel.webview, this.rawSearchQuery, filteredRows, this.showUnreadOnly)
     }
     catch (error) {
       if (!this.panel) return
