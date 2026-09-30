@@ -165,6 +165,7 @@
   "prerelease": "预览版",
   "latest-prerelease": "最新预览版",
   "no binary": "不适用",
+  "Description: {0}": "描述：{0}",
   "Latest version": "最新版本",
   "Prerelease version": "预发布版本",
   "No binary available for current platform": "当前平台无可用二进制文件",

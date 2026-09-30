@@ -165,6 +165,7 @@
   "prerelease": "prerelease",
   "latest-prerelease": "latest-prerelease",
   "no binary": "no binary",
+  "Description: {0}": "Description: {0}",
   "Latest version": "Latest version",
   "Prerelease version": "Prerelease version",
   "No binary available for current platform": "No binary available for current platform",

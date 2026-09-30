@@ -5,6 +5,7 @@ import ruyi, { PACKAGE_CATEGORIES, type PackageCategory } from '../ruyi'
 import type { RuyiListOutput } from '../ruyi/types'
 
 export interface RuyiPackageVersion {
+  desc?: string
   version: string
   isLatest: boolean
   isPrerelease: boolean
@@ -145,6 +146,7 @@ export class PackageService {
             || (slugRemark ? slugRemark.substring(5).trim() : undefined)
 
           return {
+            desc: v.pm?.metadata?.desc,
             version: v.semver,
             isInstalled: v.is_installed,
             isLatest,
