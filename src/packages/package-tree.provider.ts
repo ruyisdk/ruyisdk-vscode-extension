@@ -326,6 +326,9 @@ export class VersionItem extends vscode.TreeItem {
   private buildTooltip(): string {
     let tooltip = `${this.pkg.name}@${this.versionInfo.version}\n`
 
+    if (this.versionInfo.desc) {
+      tooltip += '📜 ' + vscode.l10n.t('Description: {0}', this.versionInfo.desc) + '\n'
+    }
     if (this.versionInfo.isInstalled) {
       tooltip += '✓ ' + vscode.l10n.t('Installed')
       if (this.versionInfo.installSize) {
