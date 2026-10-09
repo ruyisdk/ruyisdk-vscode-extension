@@ -4,14 +4,17 @@ const esbuild = require('esbuild')
 const watch = process.argv.includes('--watch')
 
 const buildOptions = {
-  entryPoints: ['src/extension.ts'],
+  entryPoints: {
+    extension: 'src/extension.ts',
+    'test/build.test': 'src/test/build.test.js',
+  },
   bundle: true,
   format: 'cjs',
   platform: 'node',
   target: 'node18',
-  outfile: 'out/extension.js',
+  outdir: 'out',
   sourcemap: true,
-  external: ['vscode'],
+  external: ['vscode', 'mocha'],
   logLevel: 'info',
 }
 

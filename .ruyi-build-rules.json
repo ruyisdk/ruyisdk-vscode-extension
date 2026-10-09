@@ -1,0 +1,27 @@
+{
+  "version": "1",
+  "description": "Build rules for the RuyiSDK VSCode Extension itself. Useful for automated testing.",
+  "rules": [
+    {
+      "id": "npm",
+      "name": "npm",
+      "priority": 1,
+      "indicators": ["package.json"],
+      "steps": [
+        {
+          "name": "TypeScript Compile",
+          "command": "npm",
+          "args": ["run", "compile"],
+          "workdir": ".",
+          "useShell": true
+        },
+        {
+          "name": "ESLint Check",
+          "command": "npm",
+          "args": ["run", "lint"],
+          "workdir": "."
+        }
+      ]
+    }
+  ]
+}
