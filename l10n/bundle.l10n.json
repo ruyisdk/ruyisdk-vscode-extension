@@ -93,6 +93,7 @@
   "Install RuyiSDK": "Install RuyiSDK",
   "Enter Path Manually": "Enter Path Manually",
   "Ruyi found at {0} but version check failed. Please check your installation.": "Ruyi found at {0} but version check failed. Please check your installation.",
+  "Ruyi version {0} is below the minimum supported version {1}. Some functions may not work properly. It is strongly recommended to update.": "Ruyi version {0} is below the minimum supported version {1}. Some functions may not work properly. It is strongly recommended to update.",
   "Ruyi detected: {0} ({1})": "Ruyi detected: {0} ({1})",
   "Don't show again": "Don't show again",
   "Downloaded Dist Files": "Downloaded Dist Files",
