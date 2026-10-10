@@ -8,6 +8,8 @@ import { registerInstallCommand, registerUpdateCommand } from './setup.command'
 import registerTelemetryCommand from './telemetry.command'
 import { telemetryService } from './telemetry.service'
 
+export const MINIMUM_SUPPORTED_RUYI_VERSION = '0.48.0'
+
 export default function registerSetupModule(ctx: vscode.ExtensionContext): void {
   // Register commands
   registerCleanCommand(ctx)

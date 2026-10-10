@@ -207,3 +207,21 @@ export function isVirtualWorkspace(): boolean {
   const folders = vscode.workspace.workspaceFolders
   return !!folders && folders.every(f => f.uri.scheme !== 'file')
 }
+
+export function ruyiVersionIsAbove(current: string, expected: string): boolean {
+  if (!current) {
+    return false
+  }
+
+  const actual = current.split('-')[0].split('+')[0]
+  const [actualMajor, actualMinor, actualPatch] = actual.split('.').map(Number)
+  const [expectedMajor, expectedMinor, expectedPatch] = expected.split('.').map(Number)
+
+  if (actualMajor > expectedMajor) return true
+  if (actualMajor < expectedMajor) return false
+
+  if (actualMinor > expectedMinor) return true
+  if (actualMinor < expectedMinor) return false
+
+  return actualPatch >= expectedPatch
+}

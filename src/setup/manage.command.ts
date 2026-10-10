@@ -3,12 +3,15 @@ import * as path from 'path'
 import * as vscode from 'vscode'
 
 import { configuration } from '../common/configuration'
+import { ruyiVersionIsAbove } from '../common/helpers'
 import { logger } from '../common/logger'
 
 import type { RuyiInstallation } from './manage.service'
 import { detectRuyiInstallation, listAllInstallations, manageService } from './manage.service'
 import { checkRuyiUpdate } from './setup.command'
 import { telemetryService } from './telemetry.service'
+
+import { MINIMUM_SUPPORTED_RUYI_VERSION } from '.'
 
 interface RuyiPathQuickPickItem extends vscode.QuickPickItem {
   targetPath: string
@@ -137,6 +140,14 @@ export function registerDetectCommand(ctx: vscode.ExtensionContext): void {
         vscode.l10n.t('Ruyi found at {0} but version check failed. Please check your installation.', installation.path),
       )
       return
+    }
+
+    if (!ruyiVersionIsAbove(installation.version, MINIMUM_SUPPORTED_RUYI_VERSION)) {
+      vscode.window.showWarningMessage(vscode.l10n.t(
+        'Ruyi version {0} is below the minimum supported version {1}. Some functions may not work properly. It is strongly recommended to update.',
+        installation.version,
+        MINIMUM_SUPPORTED_RUYI_VERSION,
+      ))
     }
 
     if (!auto || !configuration.quietRuyiPath) {
