@@ -18,7 +18,18 @@ export default function registerRefreshCommand(ctx: vscode.ExtensionContext, pro
         async () => {
           const result = await ruyi.update()
           if (result.code !== 0) {
-            vscode.window.showErrorMessage(vscode.l10n.t('Failed to update package index.'))
+            const errorMsg = result.stderr || result.stdout || vscode.l10n.t('Unknown error')
+            const choice = await vscode.window.showErrorMessage(
+              vscode.l10n.t('Failed to update package index.'),
+              vscode.l10n.t('View Details'),
+            )
+            if (choice === vscode.l10n.t('View Details')) {
+              const document = await vscode.workspace.openTextDocument({
+                content: errorMsg,
+                language: 'text',
+              })
+              await vscode.window.showTextDocument(document, { preview: false })
+            }
             return
           }
           vscode.window.showInformationMessage(vscode.l10n.t('Package index updated successfully.'))
