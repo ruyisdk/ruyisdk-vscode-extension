@@ -177,7 +177,7 @@
   "Starting installation...": "Starting installation...",
   "Installation complete": "Installation complete",
   "Successfully installed {0} {1}": "Successfully installed {0} {1}",
-  "Failed to install {0}: {1}": "Failed to install {0}: {1}",
+  "Failed to install package \"{0}\".": "Failed to install package \"{0}\".",
   "Extracting RuyiSDK packages is not supported in virtual workspaces.": "Extracting RuyiSDK packages is not supported in virtual workspaces.",
   "Fetching available source packages...": "Fetching available source packages...",
   "Select a package version to extract": "Select a package version to extract",

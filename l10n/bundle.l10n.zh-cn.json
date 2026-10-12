@@ -177,7 +177,7 @@
   "Starting installation...": "开始安装...",
   "Installation complete": "安装完成",
   "Successfully installed {0} {1}": "已成功安装 {0} {1}",
-  "Failed to install {0}: {1}": "安装 {0} 失败：{1}",
+  "Failed to install package \"{0}\".": "安装 \"{0}\" 失败。",
   "Extracting RuyiSDK packages is not supported in virtual workspaces.": "虚拟工作区内不支持提取 RuyiSDK 包。",
   "Fetching available source packages...": "正在获取可用的源码包...",
   "Select a package version to extract": "选择要解压的软件包版本",
