@@ -73,7 +73,14 @@ export async function installPackage(
       }
       else {
         const errorMsg = result.stderr || result.stdout || vscode.l10n.t('Unknown error')
-        vscode.window.showErrorMessage(vscode.l10n.t('Failed to install {0}: {1}', packageName, errorMsg))
+        const choice = await vscode.window.showErrorMessage(
+          vscode.l10n.t('Failed to install package "{0}".', packageName),
+          vscode.l10n.t('View Details'),
+        )
+        if (choice === vscode.l10n.t('View Details')) {
+          const document = await vscode.workspace.openTextDocument({ content: errorMsg, language: 'text' })
+          await vscode.window.showTextDocument(document, { preview: false })
+        }
       }
     },
   )
