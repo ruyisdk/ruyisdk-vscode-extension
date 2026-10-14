@@ -93,6 +93,7 @@
   "Install RuyiSDK": "安装 RuyiSDK",
   "Enter Path Manually": "手动输入路径",
   "Ruyi found at {0} but version check failed. Please check your installation.": "在 {0} 找到 Ruyi，但版本检查失败。请检查您的安装。",
+  "Ruyi version {0} is below the minimum supported version {1}. Some functions may not work properly. It is strongly recommended to update.": "您当前使用的 Ruyi 版本 {0} 不被扩展支持（最低支持版本：{1}），一些功能可能无法正常工作，强烈建议进行更新。",
   "Ruyi detected: {0} ({1})": "检测到 Ruyi：{0}（{1}）",
   "Don't show again": "不再提示",
   "Downloaded Dist Files": "已下载的发行文件",

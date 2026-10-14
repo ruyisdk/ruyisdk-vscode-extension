@@ -2,10 +2,10 @@
 import * as path from 'path'
 import * as vscode from 'vscode'
 
-import { getWorkspaceFolderPath, isVirtualWorkspace } from '../common/helpers'
+import { getWorkspaceFolderPath, isVirtualWorkspace, ruyiVersionIsAbove } from '../common/helpers'
+import ruyi from '../ruyi'
 
 import { PkgInfo } from './types'
-import { ruyiVersionIsAbove } from './venv.helper'
 import type { VenvService } from './venv.service'
 
 type ToolchainPick = vscode.QuickPickItem & {
@@ -352,7 +352,7 @@ async function selectSysroot(service: VenvService): Promise<SelectedSysroot | un
     { id: 'copy-dir', label: vscode.l10n.t('Copy from Directory') },
     { id: 'symlink-dir', label: vscode.l10n.t('Symlink from Directory') },
   ]
-  if (await ruyiVersionIsAbove('0.49.0')) {
+  if (await ruyiVersionIsAbove(await ruyi.version() || '0.0.0', '0.49.0')) {
     availableWays.push({ id: 'project-dir', label: vscode.l10n.t('Project from Directory') })
   }
 
