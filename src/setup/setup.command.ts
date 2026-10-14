@@ -102,6 +102,24 @@ export async function checkRuyiUpdate(currentVersion: string): Promise<void> {
     return
   }
 
+  const [major, patch] = [latestStableCoerced.major, latestStableCoerced.patch]
+  let minor = latestStableCoerced.minor
+  if (minor >= 2) {
+    minor -= 2
+  }
+  else {
+    minor = 0
+  }
+  const minimumSupportedVersion = new semver.SemVer(`${major}.${minor}.${patch}`)
+
+  if (semver.lt(latestInstalledVersion, minimumSupportedVersion)) {
+    vscode.window.showWarningMessage(vscode.l10n.t(
+      'Ruyi version {0} is below the minimum supported version {1}. Some functions may not work properly. It is strongly recommended to update.',
+      currentVersion,
+      minimumSupportedVersion.toString(),
+    ))
+  }
+
   const choice = await vscode.window.showInformationMessage(
     vscode.l10n.t('A new version of Ruyi is available: {0} (current: {1})', latestVersion, currentCoerced.version),
     vscode.l10n.t('Update now'),
