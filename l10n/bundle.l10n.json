@@ -152,6 +152,7 @@
   "Updating package index...": "Updating package index...",
   "Failed to update package index.": "Failed to update package index.",
   "Package index updated successfully.": "Package index updated successfully.",
+  "Searching '{0}': No results found.": "Searching '{0}': No results found.",
   "Searching '{0}'": "Searching '{0}'",
   " (Analyzer)": " (Analyzer)",
   " (Board Image)": " (Board Image)",

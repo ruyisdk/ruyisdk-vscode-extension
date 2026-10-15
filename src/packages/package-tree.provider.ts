@@ -132,6 +132,10 @@ export class PackagesTreeProvider implements
       packages = await this.packageService.getPackagesByCategory(category as PackageCategory)
     }
 
+    if (packages.length === 0 && this.treeView && this.rawSearchQuery) {
+      this.treeView.message = vscode.l10n.t(`Searching '{0}': No results found.`, this.rawSearchQuery)
+    }
+
     // Cache the result
     this.categoryCache.set(cacheKey, packages)
     return packages
