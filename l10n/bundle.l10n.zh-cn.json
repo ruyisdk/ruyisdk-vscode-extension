@@ -153,6 +153,7 @@
   "Updating package index...": "正在更新包管理器索引...",
   "Failed to update package index.": "无法更新包管理器索引。",
   "Package index updated successfully.": "包管理器索引更新成功。",
+  "Searching '{0}': No results found.": "正在搜索'{0}'：未找到结果。",
   "Searching '{0}'": "正在搜索 “{0}”",
   " (Analyzer)": "（分析器）",
   " (Board Image)": "（开发板镜像）",
