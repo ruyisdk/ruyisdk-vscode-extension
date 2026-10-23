@@ -139,7 +139,7 @@ export class NewsService {
     const result = await ruyi.newsList({ newOnly: false, porcelain: true })
 
     if (result.code !== 0) {
-      throw new Error(result.stderr || 'ruyi news list failed')
+      throw new Error(result.stderr || vscode.l10n.t('ruyi news list failed'))
     }
 
     let fullData = parseNewsListPorcelain(result.stdout, vscode.env.language)
@@ -199,7 +199,7 @@ export class NewsService {
     try {
       const { id, entries } = await this.getNewsEntries(no)
       if (entries.length === 0) {
-        throw new Error('No news files found')
+        throw new Error(vscode.l10n.t('No news files found'))
       }
       const availableLocales = entries.map(e => e.locale)
       const vscodeLang = vscode.env.language
@@ -219,7 +219,7 @@ export class NewsService {
       }
 
       if (content === null) {
-        throw new Error('News file not found in local cache and no GitHub URL available')
+        throw new Error(vscode.l10n.t('News file not found in local cache and no GitHub URL available'))
       }
 
       // Success — mark as read locally; sync to ruyi in background (non-blocking)
@@ -236,7 +236,7 @@ export class NewsService {
       logger.warn('Failed to read news, falling back to ruyi CLI:', error)
       const result = await ruyi.newsRead(no)
       if (result.code !== 0) {
-        throw new Error(result.stderr || 'ruyi news read failed')
+        throw new Error(result.stderr || vscode.l10n.t('ruyi news read failed'))
       }
       await this.markAsRead(no)
       this.pendingSyncReads.delete(no)
@@ -248,7 +248,7 @@ export class NewsService {
     const { id, entries } = await this.getNewsEntries(no)
     const entry = entries.find(e => e.locale === locale)
     if (!entry) {
-      throw new Error(`Locale "${locale}" not found`)
+      throw new Error(vscode.l10n.t('Locale "{0}" not found', locale))
     }
 
     // Priority 1: read from local ruyi news cache
@@ -264,7 +264,7 @@ export class NewsService {
       return stripLeadingFrontMatter(Buffer.from(cleaned, 'base64').toString('utf8'))
     }
 
-    throw new Error(`Locale "${locale}" not available in local cache and no GitHub URL`)
+    throw new Error(vscode.l10n.t('Locale "{0}" not available in local cache and no GitHub URL', locale))
   }
 
   /**
@@ -312,7 +312,7 @@ export class NewsService {
     const cache = await this.loadCache(true)
     const newsItem = cache?.data.find(item => item.no === no)
     if (!newsItem?.id) {
-      throw new Error('News item not found in cache')
+      throw new Error(vscode.l10n.t('News item not found in cache'))
     }
     const cached = this.newsEntriesCache.get(no)
     if (cached) {
@@ -349,7 +349,7 @@ export class NewsService {
     })
 
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status} for ${url}`)
+      throw new Error(vscode.l10n.t('HTTP {0} for {1}', response.status, url))
     }
 
     return (await response.json()) as T
@@ -375,7 +375,7 @@ export class NewsService {
   private async refreshNewsRepo(): Promise<void> {
     const result = await ruyi.update()
     if (result.code !== 0) {
-      throw new Error(result.stderr || 'ruyi update failed')
+      throw new Error(result.stderr || vscode.l10n.t('ruyi update failed'))
     }
   }
 }

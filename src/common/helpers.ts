@@ -18,7 +18,9 @@ import { formatSize } from './format.helper'
 export function getWorkspaceFolderPath(): string {
   const workspaceFolder = vscode.workspace.workspaceFolders?.[0]
   if (!workspaceFolder) {
-    throw new Error('No workspace folder is open in VSCode. A workspace folder is needed to run the command.')
+    throw new Error(vscode.l10n.t(
+      'No workspace folder is open in VSCode. A workspace folder is needed to run the command.',
+    ))
   }
   const workspacePath = workspaceFolder.uri.fsPath
   return workspacePath

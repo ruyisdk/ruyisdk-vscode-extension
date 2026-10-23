@@ -196,7 +196,7 @@ export class VenvService implements vscode.Disposable {
       }
 
       if (ruyiResult.code !== 0) {
-        throw new Error(ruyiResult.stderr || 'Unknown error during venv creation')
+        throw new Error(ruyiResult.stderr || vscode.l10n.t('Unknown error during venv creation'))
       }
 
       return true

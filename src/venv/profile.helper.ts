@@ -6,6 +6,8 @@
  * These functions return data only and do NOT update global state or UI.
  */
 
+import * as vscode from 'vscode'
+
 import { logger } from '../common/logger'
 import ruyi from '../ruyi'
 import type { RuyiResult } from '../ruyi'
@@ -19,7 +21,7 @@ export type { RuyiProfile }
  */
 function parseProfilesOutput(result: RuyiResult): RuyiProfile[] {
   if (result.code !== 0) {
-    throw new Error(`Failed to list profiles: ${result.stderr}`)
+    throw new Error(vscode.l10n.t('Failed to list profiles: {0}', result.stderr))
   }
 
   const profiles: RuyiProfile[] = []
@@ -62,6 +64,6 @@ export async function getProfilesFromRuyi(): Promise<RuyiProfile[]> {
   catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error)
     logger.error(`Failed to get profiles: ${errorMsg}`)
-    throw new Error(`Failed to get profiles: ${errorMsg}`)
+    throw new Error(vscode.l10n.t('Failed to get profiles: {0}', errorMsg))
   }
 }
