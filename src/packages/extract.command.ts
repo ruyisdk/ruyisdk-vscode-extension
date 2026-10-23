@@ -205,14 +205,9 @@ export async function extractPackage(provider: PackagesTreeProvider, uri?: vscod
   catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
 
-    if (errorMessage.includes('No downloaded source packages found')) {
-      await vscode.window.showInformationMessage(errorMessage)
-    }
-    else {
-      await vscode.window.showErrorMessage(
-        vscode.l10n.t('Error occurred during extraction: {0}', errorMessage),
-      )
-    }
+    await vscode.window.showErrorMessage(
+      vscode.l10n.t('Error occurred during extraction: {0}', errorMessage),
+    )
   }
 }
 
