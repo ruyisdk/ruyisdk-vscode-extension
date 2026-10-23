@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
+import * as vscode from 'vscode'
+
 import * as semver from 'semver'
 
 import { parseNDJSON } from '../common/helpers'
@@ -109,7 +111,7 @@ export async function getToolchainsFromRuyi(): Promise<Toolchain[]> {
   }
 
   logger.error(`Failed to get toolchains: ${result.stderr}`)
-  throw new Error(`Failed to get toolchains: ${result.stderr}`)
+  throw new Error(vscode.l10n.t('Failed to get toolchains: {0}', result.stderr))
 }
 
 /**

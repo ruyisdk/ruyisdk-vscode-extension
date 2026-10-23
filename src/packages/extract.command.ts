@@ -49,7 +49,7 @@ async function getTargetDirectory(uri?: vscode.Uri): Promise<string> {
 
   const workspaceFolder = vscode.workspace.workspaceFolders?.[0]
   if (!workspaceFolder) {
-    throw new Error('Please open a workspace folder first')
+    throw new Error(vscode.l10n.t('Please open a workspace folder first'))
   }
   return workspaceFolder.uri.fsPath
 }
@@ -58,13 +58,13 @@ async function fetchSourcePackages(): Promise<SourcePackage[]> {
   const listResult = await ruyi.list({ nameContains: '' })
 
   if (listResult.code !== 0) {
-    throw new Error(`Failed to fetch package list: ${listResult.stderr}`)
+    throw new Error(vscode.l10n.t('Failed to fetch package list: {0}', listResult.stderr))
   }
 
   const sourcePackages = parseSourcePackages(listResult.stdout)
 
   if (sourcePackages.length === 0) {
-    throw new Error('No downloaded source packages found. Please download some first.')
+    throw new Error(vscode.l10n.t('No downloaded source packages found. Please download some first.'))
   }
 
   return sourcePackages
@@ -86,9 +86,9 @@ async function extractSelectedPackage(
     })
 
   if (extractResult.code !== 0) {
-    throw new Error(
-      `Failed to extract: ${extractResult.stderr || extractResult.stdout}`,
-    )
+    throw new Error(vscode.l10n.t(
+      'Failed to extract: {0}', extractResult.stderr || extractResult.stdout,
+    ))
   }
 
   // Ensure progress reaches 100%
@@ -138,7 +138,7 @@ export async function extractPackage(provider: PackagesTreeProvider, uri?: vscod
     const selectedPackage = sourcePackages.find(p => p.label === selectedLabel)
 
     if (!selectedPackage) {
-      throw new Error('Selected package not found')
+      throw new Error(vscode.l10n.t('Selected package not found'))
     }
 
     // Suggest destination directory based on package name/version

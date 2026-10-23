@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
+
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
+import * as vscode from 'vscode'
 
 import { logger } from '../common/logger'
 
@@ -51,7 +53,11 @@ async function executeRuyiPackageCommand(
       logger.log(`Not executed ${args.join(' ')}: ${error}, trying next command if available.`)
     }
   }
-  throw new Error(`Failed to execute any command for ${methodKey} ${operation}. Tried:\n${allErrors}`)
+
+  throw new Error(vscode.l10n.t(
+    'Failed to execute any command for {0} {1}. Tried:\n{2}',
+    methodKey, operation, allErrors,
+  ))
 }
 
 export function executeRuyiInstall(methodKey: PackageMethodKey): Promise<void> {
