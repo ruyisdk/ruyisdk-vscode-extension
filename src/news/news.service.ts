@@ -109,18 +109,12 @@ export class NewsService {
     }
   }
 
-  async list(unread = false, forceRefresh = false): Promise<NewsRow[]> {
+  async list(unread = false, forceRefresh = false, quiet = false): Promise<NewsRow[]> {
     // forceRefresh implies trying to update the repo from remote
     if (forceRefresh) {
       const isOnline = await isNetworkAvailable()
       if (isOnline) {
-        try {
-          await this.refreshNewsRepo()
-        }
-        catch (error) {
-          logger.warn('Failed to update news repo:', error)
-          // Proceed to list local news anyway
-        }
+        await vscode.commands.executeCommand('ruyi.packages.refresh', quiet)
       }
     }
 
@@ -180,7 +174,7 @@ export class NewsService {
     try {
       const isOnline = await isNetworkAvailable()
       if (isOnline) {
-        await this.list(false, true)
+        await this.list(false, true, true)
         logger.log('News service initialized')
       }
       else {
@@ -369,13 +363,6 @@ export class NewsService {
     }
     catch (error) {
       logger.warn('Failed to mark news as read:', error)
-    }
-  }
-
-  private async refreshNewsRepo(): Promise<void> {
-    const result = await ruyi.update()
-    if (result.code !== 0) {
-      throw new Error(result.stderr || vscode.l10n.t('ruyi update failed'))
     }
   }
 }
