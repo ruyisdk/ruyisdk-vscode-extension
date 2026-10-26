@@ -2,7 +2,7 @@
 /**
  * Configuration Service
  *
- * Manages all configuration for the Ruyi SDK extension.
+ * Manages all configuration for the RuyiSDK extension.
  * Provides type-safe accessors and emits events on configuration changes.
  */
 

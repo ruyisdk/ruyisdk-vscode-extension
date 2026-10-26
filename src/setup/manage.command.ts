@@ -24,8 +24,8 @@ async function promptManualInput(): Promise<void> {
     defaultUri: vscode.Uri.file(
       configuration.ruyiPath ? path.dirname(configuration.ruyiPath) : '/',
     ),
-    title: vscode.l10n.t('Select RuyiSDK installation'),
-    openLabel: vscode.l10n.t('Select RuyiSDK installation'),
+    title: vscode.l10n.t('Select Ruyi installation'),
+    openLabel: vscode.l10n.t('Select Ruyi installation'),
   }))?.[0]
   if (!selected) {
     return
@@ -72,19 +72,19 @@ export function registerManageCommand(ctx: vscode.ExtensionContext): void {
       const installations = await vscode.window.withProgress(
         {
           location: vscode.ProgressLocation.Notification,
-          title: vscode.l10n.t('Detecting RuyiSDK installations...'),
+          title: vscode.l10n.t('Detecting Ruyi installations...'),
         },
         () => listAllInstallations(),
       )
 
       if (installations.length === 0) {
         const choice = await vscode.window.showInformationMessage(
-          vscode.l10n.t('RuyiSDK not found. Choose an option:'),
-          vscode.l10n.t('Install RuyiSDK'),
+          vscode.l10n.t('Ruyi not found. Choose an option:'),
+          vscode.l10n.t('Install Ruyi'),
           vscode.l10n.t('Enter Path Manually'),
         )
 
-        if (choice === vscode.l10n.t('Install RuyiSDK')) {
+        if (choice === vscode.l10n.t('Install Ruyi')) {
           await vscode.commands.executeCommand('ruyi.setup.install')
         }
         else if (choice === vscode.l10n.t('Enter Path Manually')) {
@@ -96,7 +96,7 @@ export function registerManageCommand(ctx: vscode.ExtensionContext): void {
       const items = buildQuickPickItems(installations)
 
       const selection = await vscode.window.showQuickPick(items, {
-        placeHolder: vscode.l10n.t('Select RuyiSDK installation'),
+        placeHolder: vscode.l10n.t('Select Ruyi installation'),
         matchOnDescription: true,
         matchOnDetail: true,
       })
@@ -115,7 +115,7 @@ export function registerManageCommand(ctx: vscode.ExtensionContext): void {
     catch (error) {
       logger.error('Failed to manage Ruyi path', error)
       const reason = error instanceof Error ? error.message : String(error)
-      vscode.window.showErrorMessage(`Failed to manage RuyiSDK path: ${reason}`)
+      vscode.window.showErrorMessage(`Failed to manage Ruyi path: ${reason}`)
     }
   })
 

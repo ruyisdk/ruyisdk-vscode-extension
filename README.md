@@ -47,8 +47,8 @@ Right-click on a folder in the Explorer and select **Extract RuyiSDK Package** t
 
 ## Getting Started
 
-1. After installing the extension, click the **Ruyi** icon in the sidebar to access the main interface
-2. If RuyiSDK is not installed, you will be guided through a one-click automatic installation
+1. After installing the extension, click the **RuyiSDK** icon in the sidebar to access the main interface
+2. If Ruyi is not installed, you will be guided through a one-click automatic installation
 3. Browse and install the required toolchains and packages in the **Packages** view
 4. Create a virtual environment in the **Virtual Environments** view and start your RISC-V development
 
@@ -59,7 +59,7 @@ Available settings in VS Code:
 | Setting | Description | Default |
 |---------|-------------|---------|
 | `ruyi.checkForUpdates` | Automatically check for updates on startup | `true` |
-| `ruyi.ruyiPath` | Custom RuyiSDK path | Auto-detect |
+| `ruyi.ruyiPath` | Custom Ruyi path | Auto-detect |
 | `ruyi.telemetry` | Telemetry data collection | Prompted on first use |
 | `ruyi.quietRuyiPath` | Disable Ruyi path prompt on VS Code launch | Prompted on VS Code launch |
 

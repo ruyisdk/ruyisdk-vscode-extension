@@ -55,7 +55,7 @@ async function promptForClean(): Promise<void> {
     },
   ]
   const entries = await vscode.window.showQuickPick(items, {
-    title: vscode.l10n.t('Select the RuyiSDK resources to clean'),
+    title: vscode.l10n.t('Select the Ruyi resources to clean'),
     canPickMany: true,
   })
   if (entries?.some(entry => entry.dangerous)) {
@@ -84,11 +84,11 @@ async function promptForClean(): Promise<void> {
   const result = await ruyi.selfClean(selfCleanOptions)
   vscode.commands.executeCommand('ruyi.packages.shallow-refresh')
   if (result.code === 0) {
-    vscode.window.showInformationMessage(vscode.l10n.t('RuyiSDK resources cleaned successfully.'))
+    vscode.window.showInformationMessage(vscode.l10n.t('Ruyi resources cleaned successfully.'))
   }
   else {
     vscode.window.showErrorMessage(
-      vscode.l10n.t('Failed to clean RuyiSDK resources: {0}', result.stderr),
+      vscode.l10n.t('Failed to clean Ruyi resources: {0}', result.stderr),
     )
   }
 }

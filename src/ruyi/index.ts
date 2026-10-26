@@ -482,7 +482,7 @@ export class Ruyi {
   // ============================================================================
 
   /**
-   * Update RuyiSDK repo and packages
+   * Update Ruyi repo and packages
    */
   async update(): Promise<RuyiResult> {
     return this.run(['update'])

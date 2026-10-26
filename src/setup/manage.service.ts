@@ -24,7 +24,7 @@ export interface GitHubRelease {
 }
 
 /**
- * Represents a RuyiSDK installation
+ * Represents a Ruyi installation
  */
 export interface RuyiInstallation {
   path: string
@@ -145,11 +145,11 @@ function getRuyiSearchDirectories(): string[] {
 }
 
 /**
- * List all RuyiSDK installations with version information
+ * List all Ruyi installations with version information
  * Installations are sorted by version (newest first)
  */
 export async function listAllInstallations(options: ListInstallationsOptions = {}): Promise<RuyiInstallation[]> {
-  logger.info('Scanning for RuyiSDK installations...')
+  logger.info('Scanning for Ruyi installations...')
 
   const includeTags = options.includeTags ?? true
 
@@ -194,12 +194,12 @@ export async function listAllInstallations(options: ListInstallationsOptions = {
     return a.path.localeCompare(b.path)
   })
 
-  logger.info(`Found ${installations.length} RuyiSDK installation(s)`)
+  logger.info(`Found ${installations.length} Ruyi installation(s)`)
   return installations
 }
 
 /**
- * Check if RuyiSDK is installed
+ * Check if Ruyi is installed
  * @returns Installation info or null if not found
  */
 export async function detectRuyiInstallation(): Promise<RuyiInstallation | null> {
@@ -232,8 +232,8 @@ export class ManageService implements vscode.Disposable {
       1000,
     )
     this.statusBarItem.command = 'ruyi.setup.manage'
-    this.statusBarItem.text = '$(tools) ' + vscode.l10n.t('<No RuyiSDK>')
-    this.statusBarItem.tooltip = vscode.l10n.t('Click to select RuyiSDK installation')
+    this.statusBarItem.text = '$(tools) ' + vscode.l10n.t('<No Ruyi>')
+    this.statusBarItem.tooltip = vscode.l10n.t('Click to select Ruyi installation')
     this.statusBarItem.show()
 
     const configListener = configuration.registerConfigChangeHandler((event) => {
@@ -261,8 +261,8 @@ export class ManageService implements vscode.Disposable {
       )
 
       const message = newPath
-        ? vscode.l10n.t('RuyiSDK path set to: {0}', newPath)
-        : vscode.l10n.t('RuyiSDK path cleared. Using automatic detection.')
+        ? vscode.l10n.t('Ruyi path set to: {0}', newPath)
+        : vscode.l10n.t('Ruyi path cleared. Using automatic detection.')
 
       const choice = await vscode.window.showInformationMessage(
         message,
@@ -290,8 +290,8 @@ export class ManageService implements vscode.Disposable {
     const currentPath = configuredPath ?? await resolveActiveRuyi()
 
     if (!currentPath) {
-      this.statusBarItem.text = '$(tools) ' + vscode.l10n.t('<No RuyiSDK>')
-      this.statusBarItem.tooltip = vscode.l10n.t('Click to select RuyiSDK installation')
+      this.statusBarItem.text = '$(tools) ' + vscode.l10n.t('<No Ruyi>')
+      this.statusBarItem.tooltip = vscode.l10n.t('Click to select Ruyi installation')
       return
     }
 
@@ -303,11 +303,11 @@ export class ManageService implements vscode.Disposable {
       const pathInfo = configuredPath
         ? vscode.l10n.t('Path: {0}', path.dirname(currentPath))
         : vscode.l10n.t('Auto-detected: {0}', path.dirname(currentPath))
-      this.statusBarItem.text = `$(tools) RuyiSDK ${versionLabel}`
-      this.statusBarItem.tooltip = `RuyiSDK ${version}\n${pathInfo}`
+      this.statusBarItem.text = `$(tools) Ruyi ${versionLabel}`
+      this.statusBarItem.tooltip = `Ruyi ${version}\n${pathInfo}`
     }
     else {
-      const pathInfo = configuredPath ? 'RuyiSDK' : vscode.l10n.t('RuyiSDK (Auto-detected)')
+      const pathInfo = configuredPath ? 'Ruyi' : vscode.l10n.t('Ruyi (Auto-detected)')
       this.statusBarItem.text = `$(tools) ${path.basename(currentPath)}`
       this.statusBarItem.tooltip = `${pathInfo}: ${path.dirname(currentPath)}`
     }

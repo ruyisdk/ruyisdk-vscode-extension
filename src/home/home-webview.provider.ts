@@ -139,7 +139,7 @@ function getHtml(): string {
     <article class="card">
       <div>
         <h2>${vscode.l10n.t('Forum')}</h2>
-        <p>${vscode.l10n.t('Visit the Ruyi community forum and discover more resources')}</p>
+        <p>${vscode.l10n.t('Visit the RuyiSDK community forum and discover more resources')}</p>
       </div>
       <button onclick="vscode.postMessage({type:'openForum'})">${vscode.l10n.t('Go to Forum')}</button>
     </article>
