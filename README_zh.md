@@ -47,7 +47,7 @@ RuyiSDK 官方 VS Code 扩展，为 RISC-V 开发者提供一站式的开发环�
 
 ## 快速上手
 
-1. 安装扩展后，点击侧边栏的 **Ruyi** 图标进入主界面
+1. 安装扩展后，点击侧边栏的 **RuyiSDK** 图标进入主界面
 2. 如未安装将引导用户一键自动安装
 3. 在 **软件包** 视图浏览并安装所需的工具链和软件包
 4. 在 **虚拟环境** 视图创建虚拟环境，开始 RISC-V 开发
@@ -59,7 +59,7 @@ RuyiSDK 官方 VS Code 扩展，为 RISC-V 开发者提供一站式的开发环�
 | 设置项 | 说明 | 默认值 |
 |--------|------|--------|
 | `ruyi.checkForUpdates` | 启动时自动检查更新 | `true` |
-| `ruyi.ruyiPath` | 自定义 RuyiSDK 路径 | 自动检测 |
+| `ruyi.ruyiPath` | 自定义 Ruyi 路径 | 自动检测 |
 | `ruyi.telemetry` | 遥测数据收集 | 首次使用时询问 |
 | `ruyi.quietRuyiPath` | 禁用启动 VS Code 时的 Ruyi 路径提示 | 每次启动 VS Code 时询问 |
 

@@ -55,7 +55,7 @@ When submitting an issue, please include:
   - VS Code version (`Help > About`)
   - Operating system and version
   - RuyiSDK extension version
-  - RuyiSDK CLI version (`ruyi --version`)
+  - Ruyi CLI version (`ruyi --version`)
 - **Screenshots/Logs**: Attach relevant screenshots or log output if available
 
 ### Submitting Code
@@ -177,7 +177,7 @@ For more information, see the [Developer Certificate of Origin](https://develope
 - [Node.js](https://nodejs.org/) >= 18.x
 - [npm](https://www.npmjs.com/) >= 9.x
 - [Visual Studio Code](https://code.visualstudio.com/) >= 1.88.0
-- [RuyiSDK CLI](https://github.com/ruyisdk/ruyi) (optional, for full feature testing)
+- [Ruyi CLI](https://github.com/ruyisdk/ruyi) (optional, for full feature testing)
 
 Refer to the [VS Code Extension API](https://code.visualstudio.com/api) documentation
 for official guidance on developing VS Code extensions.
@@ -230,7 +230,7 @@ ruyisdk-vscode-extension/
 │   ├── packages/             # Package management module
 │   ├── repo/                 # Repository management module
 │   ├── ruyi/                 # Ruyi CLI type definitions
-│   ├── setup/                # RuyiSDK installation/detection module
+│   ├── setup/                # Ruyi installation/detection module
 │   └── venv/                 # Virtual environment management module
 ├── eslint.config.mjs         # ESLint configuration
 ├── package.json              # Extension manifest

@@ -51,7 +51,7 @@
   - VS Code 版本（`Help > About`）
   - 操作系统及版本
   - RuyiSDK 扩展版本
-  - RuyiSDK CLI 版本（`ruyi --version`）
+  - Ruyi CLI 版本（`ruyi --version`）
 - **截图/日志**：如有，请附上相关截图或日志输出
 
 ### 提交代码
@@ -166,7 +166,7 @@ git config --global user.email "your.email@example.com"
 - [Node.js](https://nodejs.org/) >= 18.x
 - [npm](https://www.npmjs.com/) >= 9.x
 - [Visual Studio Code](https://code.visualstudio.com/) >= 1.88.0
-- [RuyiSDK CLI](https://github.com/ruyisdk/ruyi)（可选，用于完整功能测试）
+- [Ruyi CLI](https://github.com/ruyisdk/ruyi)（可选，用于完整功能测试）
 
 请参阅 [VS Code 扩展 API](https://code.visualstudio.com/api) 官方文档，了解 VS Code 扩展开发的相关指导。
 
@@ -218,7 +218,7 @@ ruyisdk-vscode-extension/
 │   ├── packages/             # 软件包管理模块
 │   ├── repo/                 # 仓库管理模块
 │   ├── ruyi/                 # Ruyi CLI 类型定义
-│   ├── setup/                # 安装/检测 RuyiSDK 模块
+│   ├── setup/                # 安装/检测 Ruyi 模块
 │   └── venv/                 # 虚拟环境管理模块
 ├── eslint.config.mjs         # ESLint 配置
 ├── package.json              # 扩展清单（manifest）

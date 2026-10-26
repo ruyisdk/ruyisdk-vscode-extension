@@ -119,7 +119,7 @@
       "activitybar": [
         {
           "id": "ruyi",
-          "title": "Ruyi",
+          "title": "RuyiSDK",
           "icon": "media/icon-no-bg.png"
         }
       ]
@@ -148,180 +148,180 @@
       {
         "command": "ruyi.board-docs",
         "title": "%contributes.commands.ruyi.board-docs.title%",
-        "category": "Ruyi"
+        "category": "RuyiSDK"
       },
       {
         "command": "ruyi.setup.detect",
         "title": "%contributes.commands.ruyi.setup.detect.title%",
-        "category": "Ruyi"
+        "category": "RuyiSDK"
       },
       {
         "command": "ruyi.setup.install",
         "title": "%contributes.commands.ruyi.setup.install.title%",
-        "category": "Ruyi"
+        "category": "RuyiSDK"
       },
       {
         "command": "ruyi.setup.update",
         "title": "%contributes.commands.ruyi.setup.update.title%",
-        "category": "Ruyi"
+        "category": "RuyiSDK"
       },
       {
         "command": "ruyi.setup.manage",
         "title": "%contributes.commands.ruyi.setup.manage.title%",
-        "category": "Ruyi"
+        "category": "RuyiSDK"
       },
       {
         "command": "ruyi.home.show",
         "title": "%contributes.commands.ruyi.home.show.title%",
-        "category": "Ruyi"
+        "category": "RuyiSDK"
       },
       {
         "command": "ruyi.news.search",
         "title": "%contributes.commands.ruyi.news.search.title%",
-        "category": "Ruyi",
+        "category": "RuyiSDK",
         "icon": "$(search)"
       },
       {
         "command": "ruyi.news.clearSearch",
         "title": "%contributes.commands.ruyi.news.clearSearch.title%",
-        "category": "Ruyi",
+        "category": "RuyiSDK",
         "icon": "$(clear-all)"
       },
       {
         "command": "ruyi.news.showCards",
         "title": "%contributes.commands.ruyi.news.showCards.title%",
-        "category": "Ruyi",
+        "category": "RuyiSDK",
         "icon": "$(layout)"
       },
       {
         "command": "ruyi.packages.search",
         "title": "%contributes.commands.ruyi.packages.search.title%",
-        "category": "Ruyi",
+        "category": "RuyiSDK",
         "icon": "$(search)"
       },
       {
         "command": "ruyi.packages.clearSearch",
         "title": "%contributes.commands.ruyi.packages.clearSearch.title%",
-        "category": "Ruyi",
+        "category": "RuyiSDK",
         "icon": "$(clear-all)"
       },
       {
         "command": "ruyi.packages.copyPackageId",
         "title": "%contributes.commands.ruyi.packages.copyPackageId.title%",
-        "category": "Ruyi",
+        "category": "RuyiSDK",
         "icon": "$(copy)"
       },
       {
         "command": "ruyi.packages.install",
         "title": "%contributes.commands.ruyi.packages.install.title%",
-        "category": "Ruyi",
+        "category": "RuyiSDK",
         "icon": "$(cloud-download)"
       },
       {
         "command": "ruyi.packages.uninstall",
         "title": "%contributes.commands.ruyi.packages.uninstall.title%",
-        "category": "Ruyi",
+        "category": "RuyiSDK",
         "icon": "$(trash)"
       },
       {
         "command": "ruyi.packages.shallow-refresh",
         "title": "%contributes.commands.ruyi.packages.shallow-refresh.title%",
-        "category": "Ruyi",
+        "category": "RuyiSDK",
         "icon": "$(refresh)"
       },
       {
         "command": "ruyi.packages.refresh",
         "title": "%contributes.commands.ruyi.packages.refresh.title%",
-        "category": "Ruyi",
+        "category": "RuyiSDK",
         "icon": "$(refresh)"
       },
       {
         "command": "ruyi.venv.refresh",
         "title": "%contributes.commands.ruyi.venv.refresh.title%",
-        "category": "Ruyi",
+        "category": "RuyiSDK",
         "icon": "$(refresh)"
       },
       {
         "command": "ruyi.venv.create",
         "title": "%contributes.commands.ruyi.venv.create.title%",
-        "category": "Ruyi",
+        "category": "RuyiSDK",
         "icon": "$(plus)"
       },
       {
         "command": "ruyi.venv.clean",
         "title": "%contributes.commands.ruyi.venv.clean.title%",
-        "category": "Ruyi",
+        "category": "RuyiSDK",
         "icon": "$(trash)"
       },
       {
         "command": "ruyi.venv.activate",
         "title": "%contributes.commands.ruyi.venv.activate.title%",
-        "category": "Ruyi",
+        "category": "RuyiSDK",
         "icon": "$(check)"
       },
       {
         "command": "ruyi.venv.deactivate",
         "title": "%contributes.commands.ruyi.venv.deactivate.title%",
-        "category": "Ruyi",
+        "category": "RuyiSDK",
         "icon": "$(close)"
       },
       {
         "command": "ruyi.extract",
         "title": "%contributes.commands.ruyi.extract.title%",
-        "category": "Ruyi"
+        "category": "RuyiSDK"
       },
       {
         "command": "ruyi.telemetry.configure",
         "title": "%contributes.commands.ruyi.telemetry.configure.title%",
-        "category": "Ruyi"
+        "category": "RuyiSDK"
       },
       {
         "command": "ruyi.build.run",
         "title": "%contributes.commands.ruyi.build.run.title%",
-        "category": "Ruyi",
+        "category": "RuyiSDK",
         "enablement": "isWorkspaceTrusted",
         "icon": "$(play)"
       },
       {
         "command": "ruyi.repo.manage",
         "title": "%contributes.commands.ruyi.repo.manage.title%",
-        "category": "Ruyi",
+        "category": "RuyiSDK",
         "icon": "$(repo)"
       },
       {
         "command": "ruyi.clean",
         "title": "%contributes.commands.ruyi.clean.title%",
-        "category": "Ruyi",
+        "category": "RuyiSDK",
         "icon": "$(trash)"
       },
       {
         "command": "ruyi.repo.add",
         "title": "%contributes.commands.ruyi.repo.add.title%",
-        "category": "Ruyi",
+        "category": "RuyiSDK",
         "icon": "$(plus)"
       },
       {
         "command": "ruyi.repo.set-priority",
         "title": "%contributes.commands.ruyi.repo.set-priority.title%",
-        "category": "Ruyi",
+        "category": "RuyiSDK",
         "icon": "$(symbol-numeric)"
       },
       {
         "command": "ruyi.repo.disable",
         "title": "%contributes.commands.ruyi.repo.disable.title%",
-        "category": "Ruyi",
+        "category": "RuyiSDK",
         "icon": "$(chevron-right)"
       },
       {
         "command": "ruyi.repo.enable",
         "title": "%contributes.commands.ruyi.repo.enable.title%",
-        "category": "Ruyi",
+        "category": "RuyiSDK",
         "icon": "$(chevron-right)"
       },
       {
         "command": "ruyi.repo.remove",
         "title": "%contributes.commands.ruyi.repo.remove.title%",
-        "category": "Ruyi",
+        "category": "RuyiSDK",
         "icon": "$(chevron-right)"
       }
     ],
@@ -416,7 +416,7 @@
       ]
     },
     "configuration": {
-      "title": "Ruyi SDK",
+      "title": "RuyiSDK",
       "properties": {
         "ruyi.checkForUpdates": {
           "type": "boolean",
