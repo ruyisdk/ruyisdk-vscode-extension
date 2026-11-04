@@ -29,6 +29,10 @@ export class PackageService {
   private hasLoaded = false
   private loadingPromise: Promise<void> | null = null
 
+  public hasLoadedPackages(): boolean {
+    return this.hasLoaded
+  }
+
   private async loadPackages(forceRefresh: boolean = false): Promise<void> {
     if (this.loadingPromise) {
       await this.loadingPromise

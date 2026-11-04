@@ -24,6 +24,7 @@ export class PackagesTreeProvider implements
    * original casing is never lost.
    */
   private rawSearchQuery = ''
+  private searchGeneration = 0
   private treeView?: vscode.TreeView<TreeElement>
   private categoryCache: Map<string, RuyiPackage[]> = new Map()
   private installingPackages: Set<string> = new Set()
@@ -58,6 +59,7 @@ export class PackagesTreeProvider implements
   setSearchQuery(query: string): void {
     this.rawSearchQuery = query.trim()
     this.searchQuery = this.rawSearchQuery.toLowerCase()
+    this.searchGeneration++
     this.categoryCache.clear() // Clear cache when search changes
     this.updateTreeViewSearchMessage()
     this._onDidChangeTreeData.fire()
@@ -111,8 +113,11 @@ export class PackagesTreeProvider implements
   /**
    * Get packages for a specific category (with caching and search filtering).
    */
-  private async getPackagesForCategory(category: string): Promise<RuyiPackage[]> {
-    const cacheKey = `${category}:${this.searchQuery}`
+  private async getPackagesForCategory(
+    category: string,
+    searchQuery: string = this.searchQuery,
+  ): Promise<RuyiPackage[]> {
+    const cacheKey = `${category}:${searchQuery}`
 
     // Check cache first
     if (this.categoryCache.has(cacheKey)) {
@@ -121,19 +126,15 @@ export class PackagesTreeProvider implements
 
     // If searching, we need all packages to filter
     let packages: RuyiPackage[]
-    if (this.searchQuery) {
+    if (searchQuery) {
       packages = await this.packageService.getPackages()
       packages = packages.filter(p =>
-        p.category === category && this.matchesSearch(p),
+        p.category === category && this.matchesSearch(p, searchQuery),
       )
     }
     else {
       // Lazy load only this category's packages
       packages = await this.packageService.getPackagesByCategory(category as PackageCategory)
-    }
-
-    if (packages.length === 0 && this.treeView && this.rawSearchQuery) {
-      this.treeView.message = vscode.l10n.t(`Searching '{0}': No results found.`, this.rawSearchQuery)
     }
 
     // Cache the result
@@ -144,18 +145,25 @@ export class PackagesTreeProvider implements
   async getChildren(element?: TreeElement): Promise<TreeElement[]> {
     if (!element) {
       // Root node: show categories (lightweight, no full package loading)
+      const searchQuery = this.searchQuery
+      const searchGeneration = this.searchGeneration
       try {
         const categories = await this.packageService.getCategories()
 
-        if (categories.length === 0) {
+        if (searchQuery && categories.length === 0) {
+          if (this.treeView && this.searchGeneration === searchGeneration) {
+            this.treeView.message = this.packageService.hasLoadedPackages()
+              ? vscode.l10n.t(`Searching '{0}': No results found.`, this.rawSearchQuery)
+              : vscode.l10n.t('Failed to load packages.')
+          }
           return []
         }
 
         // If searching, filter categories that have matching packages
-        if (this.searchQuery) {
+        if (searchQuery) {
           const categoriesWithMatches: typeof categories = []
           for (const catInfo of categories) {
-            const packages = await this.getPackagesForCategory(catInfo.category)
+            const packages = await this.getPackagesForCategory(catInfo.category, searchQuery)
             if (packages.length > 0) {
               categoriesWithMatches.push({
                 category: catInfo.category,
@@ -163,7 +171,20 @@ export class PackagesTreeProvider implements
               })
             }
           }
+          if (this.searchGeneration === searchGeneration
+            && categoriesWithMatches.length === 0
+            && this.treeView
+            && this.rawSearchQuery) {
+            this.treeView.message = vscode.l10n.t(`Searching '{0}': No results found.`, this.rawSearchQuery)
+          }
+          else if (this.searchGeneration === searchGeneration) {
+            this.updateTreeViewSearchMessage()
+          }
           return categoriesWithMatches.map(c => new PackageCategoryItem(c.category, c.count))
+        }
+
+        if (categories.length === 0) {
+          return []
         }
 
         return categories.map(c => new PackageCategoryItem(c.category, c.count))
@@ -199,12 +220,12 @@ export class PackagesTreeProvider implements
   /**
    * Check if a package matches the current search query.
    */
-  private matchesSearch(pkg: RuyiPackage): boolean {
-    if (!this.searchQuery) {
+  private matchesSearch(pkg: RuyiPackage, searchQuery: string = this.searchQuery): boolean {
+    if (!searchQuery) {
       return true
     }
 
-    const query = this.searchQuery.toLowerCase()
+    const query = searchQuery.toLowerCase()
     const name = pkg.name.toLowerCase()
     const category = pkg.category.toLowerCase()
 

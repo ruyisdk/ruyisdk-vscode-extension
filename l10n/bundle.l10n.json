@@ -161,6 +161,7 @@
   "Failed to update package index.": "Failed to update package index.",
   "Searching '{0}'": "Searching '{0}'",
   "Searching '{0}': No results found.": "Searching '{0}': No results found.",
+  "Failed to load packages.": "Failed to load packages.",
   " (Analyzer)": " (Analyzer)",
   " (Board Image)": " (Board Image)",
   " (Emulator)": " (Emulator)",
