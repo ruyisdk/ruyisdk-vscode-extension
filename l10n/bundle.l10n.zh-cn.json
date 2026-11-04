@@ -167,6 +167,7 @@
   " (Emulator)": "（模拟器）",
   " (Extra)": "（附加）",
   " (Toolchain)": "（工具链）",
+  " (Board Utility)": "（开发板工具）",
   "{0} package(s)": "{0} 个软件包",
   "({0}/{1} installed)": "（已安装 {0}/{1}）",
   "({0} version[s])": "（{0} 个版本）",

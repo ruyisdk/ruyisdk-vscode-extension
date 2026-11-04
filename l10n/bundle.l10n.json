@@ -167,6 +167,7 @@
   " (Emulator)": " (Emulator)",
   " (Extra)": " (Extra)",
   " (Toolchain)": " (Toolchain)",
+  " (Board Utility)": " (Board Utility)",
   "{0} package(s)": "{0} package(s)",
   "({0}/{1} installed)": "({0}/{1} installed)",
   "({0} version[s])": "({0} version[s])",

@@ -62,6 +62,7 @@ export const PACKAGE_CATEGORIES = [
   'board-image',
   'analyzer',
   'extra',
+  'board-util',
 ] as const
 
 /**

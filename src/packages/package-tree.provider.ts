@@ -275,6 +275,9 @@ class PackageCategoryItem extends vscode.TreeItem {
         case 'toolchain':
           categoryDisplayName += vscode.l10n.t(' (Toolchain)')
           break
+        case 'board-util':
+          categoryDisplayName += vscode.l10n.t(' (Board Utility)')
+          break
         default:
           break
       }
