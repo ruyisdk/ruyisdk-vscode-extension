@@ -19,4 +19,9 @@ export default tseslint.config(
       'import/no-unresolved': ['error', { ignore: ['^vscode$', '^\\.'] }],
     },
   },
+  {
+    files: ['tools/*.js'],
+    languageOptions: { globals: globals.node },
+    rules: { '@typescript-eslint/no-require-imports': 'off' },
+  },
 )
