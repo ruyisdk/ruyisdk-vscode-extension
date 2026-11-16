@@ -99,6 +99,34 @@ export function getReaderHtml(
     opacity: 0.6;
   }
   .lang-bar.hidden { display: none; }
+  .context-menu {
+    position: fixed;
+    z-index: 200;
+    min-width: 120px;
+    padding: 4px;
+    background: var(--vscode-menu-background, var(--md-bg));
+    color: var(--vscode-menu-foreground, var(--md-fg));
+    border: 1px solid var(--vscode-menu-border, var(--md-border));
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  }
+  .context-menu[hidden] { display: none; }
+  .context-menu button {
+    width: 100%;
+    padding: 6px 10px;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
+  }
+  .context-menu button:hover,
+  .context-menu button:focus {
+    outline: none;
+    background: var(--vscode-menu-selectionBackground, var(--vscode-list-hoverBackground));
+    color: var(--vscode-menu-selectionForeground, inherit);
+  }
   #content { padding: 14px 32px 24px; }
   h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
@@ -200,6 +228,9 @@ export function getReaderHtml(
 <body>
   <div class="lang-bar" id="langBar"></div>
   <div id="content"></div>
+  <div class="context-menu" id="contextMenu" role="menu" hidden>
+    <button id="copySelection" type="button" role="menuitem">${vscode.l10n.t('Copy')}</button>
+  </div>
   <script nonce="${nonce}" src="${highlightJs}"></script>
   <script nonce="${nonce}" src="${markdownItJs}"></script>
   <script nonce="${nonce}">
@@ -208,6 +239,49 @@ export function getReaderHtml(
     const AVAILABLE_LOCALES = ${JSON.stringify(availableLocales)};
     const INITIAL_LOCALE = ${JSON.stringify(Object.keys(versions)[0])};
     const LANG_LABELS = { en_US: 'EN', zh_CN: '中文' };
+    const contextMenu = document.getElementById('contextMenu');
+    let selectedText = '';
+
+    function hideContextMenu() {
+      contextMenu.hidden = true;
+    }
+
+    document.addEventListener('contextmenu', event => {
+      event.preventDefault();
+      const content = document.getElementById('content');
+      if (!content.contains(event.target)) {
+        hideContextMenu();
+        return;
+      }
+      const selection = window.getSelection();
+      selectedText = selection && content.contains(selection.anchorNode)
+        ? selection.toString()
+        : '';
+      if (!selectedText.trim()) {
+        hideContextMenu();
+        return;
+      }
+
+      contextMenu.hidden = false;
+      const left = Math.min(event.clientX, window.innerWidth - contextMenu.offsetWidth);
+      const top = Math.min(event.clientY, window.innerHeight - contextMenu.offsetHeight);
+      contextMenu.style.left = Math.max(0, left) + 'px';
+      contextMenu.style.top = Math.max(0, top) + 'px';
+    });
+
+    document.getElementById('copySelection').addEventListener('click', () => {
+      vscode.postMessage({ type: 'copy', text: selectedText });
+      hideContextMenu();
+    });
+
+    document.addEventListener('click', event => {
+      if (!contextMenu.contains(event.target)) hideContextMenu();
+    });
+    document.addEventListener('scroll', hideContextMenu, true);
+    window.addEventListener('blur', hideContextMenu);
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') hideContextMenu();
+    });
 
     const md = window.markdownit({
       html: false,

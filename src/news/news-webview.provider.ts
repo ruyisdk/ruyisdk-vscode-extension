@@ -210,7 +210,7 @@ export class NewsWebviewProvider {
 
     panel.webview.html = getReaderHtml(panel.webview, this.context.extensionUri, versions, availableLocales, title)
 
-    panel.webview.onDidReceiveMessage(async (msg: { type: string, locale?: string }) => {
+    panel.webview.onDidReceiveMessage(async (msg: { type: string, locale?: string, text?: string }) => {
       if (msg.type === 'fetchLocale' && typeof msg.locale === 'string') {
         try {
           const localeContent = await this.service.readLocale(no, msg.locale)
@@ -219,6 +219,15 @@ export class NewsWebviewProvider {
         catch (error) {
           const errMsg = error instanceof Error ? error.message : String(error)
           void panel.webview.postMessage({ type: 'localeError', locale: msg.locale, error: errMsg })
+        }
+      }
+      else if (msg.type === 'copy' && typeof msg.text === 'string') {
+        try {
+          await vscode.env.clipboard.writeText(msg.text)
+        }
+        catch (error) {
+          const errMsg = error instanceof Error ? error.message : String(error)
+          vscode.window.showErrorMessage(vscode.l10n.t('Failed to copy news text: {0}', errMsg))
         }
       }
     })
