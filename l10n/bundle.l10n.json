@@ -222,6 +222,8 @@
   "News data refreshed successfully": "News data refreshed successfully",
   "Failed to refresh news: {0}": "Failed to refresh news: {0}",
   "Failed to read news: {0}": "Failed to read news: {0}",
+  "Failed to copy news text: {0}": "Failed to copy news text: {0}",
+  "Copy": "Copy",
   "Search results for \"{0}\"": "Search results for \"{0}\"",
   "Ruyi News": "Ruyi News",
   "Search": "Search",

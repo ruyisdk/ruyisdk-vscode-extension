@@ -192,6 +192,9 @@ export function getCardsHtml(webview: vscode.Webview, displaySearchQuery: string
   </div>
   <script nonce="${nonce}">
     const vscode = acquireVsCodeApi();
+    document.addEventListener('contextmenu', event => {
+      event.preventDefault();
+    });
     document.getElementById('searchBtn').addEventListener('click', () => {
       vscode.postMessage({ type: 'openSearch' });
     });
