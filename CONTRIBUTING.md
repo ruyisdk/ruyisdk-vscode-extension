@@ -232,6 +232,7 @@ ruyisdk-vscode-extension/
 │   ├── ruyi/                 # Ruyi CLI type definitions
 │   ├── setup/                # Ruyi installation/detection module
 │   └── venv/                 # Virtual environment management module
+├── tools/                    # Scripts for helping development
 ├── eslint.config.mjs         # ESLint configuration
 ├── package.json              # Extension manifest
 ├── package.nls.json          # English localization strings
