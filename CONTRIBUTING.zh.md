@@ -220,6 +220,7 @@ ruyisdk-vscode-extension/
 │   ├── ruyi/                 # Ruyi CLI 类型定义
 │   ├── setup/                # 安装/检测 Ruyi 模块
 │   └── venv/                 # 虚拟环境管理模块
+├── tools/                    # 用于帮助开发的工具脚本
 ├── eslint.config.mjs         # ESLint 配置
 ├── package.json              # 扩展清单（manifest）
 ├── package.nls.json          # 英文本地化字符串
