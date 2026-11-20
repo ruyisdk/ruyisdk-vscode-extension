@@ -55,7 +55,7 @@ async function executeRuyiPackageCommand(
   }
 
   throw new Error(vscode.l10n.t(
-    'Failed to execute any command for {0} {1}. Tried:\n{2}',
+    'Failed to {1} Ruyi using {0}. All candidate commands failed:\n{2}',
     methodKey, operation, allErrors,
   ))
 }

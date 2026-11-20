@@ -211,7 +211,7 @@ export class VenvService implements vscode.Disposable {
   public async resolveVenvRemovalPath(venvPath: string): Promise<string> {
     const folders = vscode.workspace.workspaceFolders?.filter(folder => folder.uri.scheme === 'file') ?? []
     const invalidTarget = () => new Error(vscode.l10n.t(
-      'Cannot delete this directory as a virtual environment: {0}', venvPath,
+      'Cannot remove {0} as a virtual environment: the target must be inside the workspace, must not contain a workspace folder, and bin/ruyi-activate must be a file.', venvPath,
     ))
 
     if (!venvPath.trim() || folders.length === 0) {

@@ -111,7 +111,7 @@ async function getRuyiVersion(ruyiPath: string): Promise<string | undefined> {
   try {
     const result = await execFileAsync(ruyiPath, ['--version'])
     const versionLine = result.stdout.split(/\r?\n/, 1)[0]?.trim()
-    return versionLine || undefined
+    return versionLine?.replace(/^Ruyi\s+/i, '') || undefined
   }
   catch (error) {
     logger.warn(`Failed to get version for ${ruyiPath}`, error)
