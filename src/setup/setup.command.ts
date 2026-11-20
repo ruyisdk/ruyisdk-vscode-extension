@@ -6,7 +6,7 @@ import * as semver from 'semver'
 
 import { logger } from '../common/logger'
 
-import { detectRuyiInstallation, fetchGitHubReleases, listAllInstallations } from './manage.service'
+import { detectRuyiInstallation, fetchGitHubReleases, listAllInstallations, manageService } from './manage.service'
 import {
   executeRuyiInstall,
   executeRuyiUpdate,
@@ -58,6 +58,10 @@ async function handleSuccessAndPromptReload(
     ? vscode.l10n.t('Ruyi installed via {0}: {1}', methodName, version)
     : vscode.l10n.t('Ruyi updated via {0}: {1}', methodName, version)
 
+  if (action === 'update') {
+    manageService.clearAvailableRuyiUpdate()
+  }
+
   await vscode.commands.executeCommand('ruyi.packages.refresh')
   const userAction = await vscode.window.showInformationMessage(
     message,
@@ -101,6 +105,8 @@ export async function checkRuyiUpdate(currentVersion: string): Promise<void> {
   if (!semver.gt(latestStableCoerced, latestInstalledVersion)) {
     return
   }
+
+  manageService.setAvailableRuyiUpdate(latestVersion)
 
   const [major, patch] = [latestStableCoerced.major, latestStableCoerced.patch]
   let minor = latestStableCoerced.minor

@@ -15,6 +15,7 @@ interface RuyiPathQuickPickItem extends vscode.QuickPickItem {
 }
 
 const MANUAL_TOKEN = '__manual__'
+const UPDATE_TOKEN = '__update__'
 
 async function promptManualInput(): Promise<void> {
   const selected = (await vscode.window.showOpenDialog({
@@ -46,6 +47,16 @@ function buildQuickPickItems(installations: RuyiInstallation[]): RuyiPathQuickPi
       targetPath: installation.path,
     }
   })
+
+  const availableUpdate = manageService.getAvailableRuyiUpdate()
+  if (availableUpdate) {
+    items.unshift({
+      label: `$(cloud-download) ${vscode.l10n.t('Update Ruyi to {0}', availableUpdate)}`,
+      description: vscode.l10n.t('A newer version of Ruyi is available'),
+      detail: '',
+      targetPath: UPDATE_TOKEN,
+    })
+  }
 
   if (configuration.ruyiPath) {
     items.unshift({
@@ -107,6 +118,11 @@ export function registerManageCommand(ctx: vscode.ExtensionContext): void {
 
       if (selection.targetPath === MANUAL_TOKEN) {
         await promptManualInput()
+        return
+      }
+
+      if (selection.targetPath === UPDATE_TOKEN) {
+        await vscode.commands.executeCommand('ruyi.setup.update')
         return
       }
 

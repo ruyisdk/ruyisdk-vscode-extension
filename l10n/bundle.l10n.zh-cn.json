@@ -89,6 +89,8 @@
   "Auto-detected: {0}": "自动检测到：{0}",
   "Ruyi (Auto-detected)": "Ruyi（自动检测）",
   "Select Ruyi installation": "选择 Ruyi 安装位置",
+  "Update Ruyi to {0}": "更新 Ruyi 至 {0}",
+  "A newer version of Ruyi is available": "有可用的 Ruyi 新版本",
   "Version: {0}": "版本：{0}",
   "Clear Setting (Use Auto-detection)": "清除设置（使用自动检测）",
   "Remove custom path and use automatic detection": "移除自定义路径，使用自动检测",
