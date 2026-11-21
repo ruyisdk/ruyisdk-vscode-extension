@@ -87,7 +87,7 @@ async function extractSelectedPackage(
 
   if (extractResult.code !== 0) {
     throw new Error(vscode.l10n.t(
-      'Failed to extract: {0}', extractResult.stderr || extractResult.stdout,
+      'Ruyi failed to unpack the files: {0}', extractResult.stderr || extractResult.stdout,
     ))
   }
 
@@ -206,7 +206,7 @@ export async function extractPackage(provider: PackagesTreeProvider, uri?: vscod
     const errorMessage = error instanceof Error ? error.message : String(error)
 
     await vscode.window.showErrorMessage(
-      vscode.l10n.t('Error occurred during extraction: {0}', errorMessage),
+      vscode.l10n.t('RuyiSDK failed to extract the source package: {0}', errorMessage),
     )
   }
 }
