@@ -3,6 +3,7 @@ import * as path from 'path'
 import * as vscode from 'vscode'
 
 import { createProgressTracker, isVirtualWorkspace, parseNDJSON } from '../common/helpers'
+import { showErrorWithDetails } from '../common/notification.helper'
 import ruyi from '../ruyi'
 import type { RuyiListOutput } from '../ruyi/types'
 
@@ -203,11 +204,8 @@ export async function extractPackage(provider: PackagesTreeProvider, uri?: vscod
     await provider.shallowRefresh()
   }
   catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error)
-
-    await vscode.window.showErrorMessage(
-      vscode.l10n.t('RuyiSDK failed to extract the source package: {0}', errorMessage),
-    )
+    const details = error instanceof Error ? error.message : String(error)
+    await showErrorWithDetails(vscode.l10n.t('RuyiSDK failed to extract the source package'), details)
   }
 }
 

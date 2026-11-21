@@ -2,6 +2,7 @@
 import * as vscode from 'vscode'
 
 import { createProgressTracker } from '../common/helpers'
+import { showErrorWithDetails } from '../common/notification.helper'
 import ruyi from '../ruyi'
 
 import { PackagesTreeProvider, VersionItem } from './package-tree.provider'
@@ -73,14 +74,10 @@ export async function installPackage(
       }
       else {
         const errorMsg = result.stderr || result.stdout || vscode.l10n.t('Unknown error')
-        const choice = await vscode.window.showErrorMessage(
+        await showErrorWithDetails(
           vscode.l10n.t('Failed to install package "{0}".', packageName),
-          vscode.l10n.t('View Details'),
+          errorMsg,
         )
-        if (choice === vscode.l10n.t('View Details')) {
-          const document = await vscode.workspace.openTextDocument({ content: errorMsg, language: 'text' })
-          await vscode.window.showTextDocument(document, { preview: false })
-        }
       }
     },
   )

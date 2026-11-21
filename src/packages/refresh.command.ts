@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import * as vscode from 'vscode'
 
+import { showErrorWithDetails } from '../common/notification.helper'
 import ruyi from '../ruyi'
 
 import { PackagesTreeProvider } from './package-tree.provider'
@@ -43,16 +44,5 @@ async function doUpdate(provider: PackagesTreeProvider): Promise<boolean> {
 }
 
 async function onError(errorMsg: string): Promise<void> {
-  const choice = await vscode.window.showErrorMessage(
-    vscode.l10n.t('Failed to update package index.'),
-    vscode.l10n.t('View Details'),
-  )
-  if (choice === vscode.l10n.t('View Details')) {
-    const document = await vscode.workspace.openTextDocument({
-      content: errorMsg,
-      language: 'text',
-    })
-    await vscode.window.showTextDocument(document, { preview: false })
-  }
-  return
+  await showErrorWithDetails(vscode.l10n.t('Failed to update package index.'), errorMsg)
 }
