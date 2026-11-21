@@ -21,7 +21,7 @@ export type { RuyiProfile }
  */
 function parseProfilesOutput(result: RuyiResult): RuyiProfile[] {
   if (result.code !== 0) {
-    throw new Error(vscode.l10n.t('Failed to list profiles: {0}', result.stderr))
+    throw new Error(vscode.l10n.t('Ruyi failed to list virtual environment profiles: {0}', result.stderr))
   }
 
   const profiles: RuyiProfile[] = []
@@ -64,6 +64,6 @@ export async function getProfilesFromRuyi(): Promise<RuyiProfile[]> {
   catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error)
     logger.error(`Failed to get profiles: ${errorMsg}`)
-    throw new Error(vscode.l10n.t('Failed to get profiles: {0}', errorMsg))
+    throw new Error(vscode.l10n.t('Unable to load virtual environment profiles: {0}', errorMsg))
   }
 }

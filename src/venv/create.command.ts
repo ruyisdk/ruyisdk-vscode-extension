@@ -325,20 +325,22 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
   if (workspaceRoot) {
     const fullVenvPath = path.resolve(workspaceRoot, venvPath)
 
+    const relativePath = path.relative(workspaceRoot, fullVenvPath)
+    const isInsideWorkspace = relativePath !== ''
+      && relativePath.split(path.sep)[0] !== '..'
+      && !path.isAbsolute(relativePath)
+    const depth = relativePath.split(path.sep).length - 1
+
     let autoDetected = false
-    if (fullVenvPath.startsWith(workspaceRoot)) {
-      const relativePath = path.relative(workspaceRoot, fullVenvPath)
-      const depth = relativePath.split(path.sep).length - 1
-      if (depth <= 2) {
-        autoDetected = true
-        // Trigger refresh
-        await vscode.commands.executeCommand('ruyi.venv.refresh')
-      }
+    if (isInsideWorkspace && depth <= 1) {
+      autoDetected = true
+      // Trigger refresh
+      await vscode.commands.executeCommand('ruyi.venv.refresh')
     }
 
     if (!autoDetected) {
       vscode.window.showWarningMessage(vscode.l10n.t(
-        'The newly created venv is outside the workspace or too deep (>2 levels). It will not be detected automatically.',
+        'The newly created venv will not be detected automatically. Only venvs directly inside the workspace root or a first-level subdirectory are scanned.',
       ))
     }
   }
