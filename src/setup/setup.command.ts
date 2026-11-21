@@ -5,6 +5,7 @@ import * as vscode from 'vscode'
 import * as semver from 'semver'
 
 import { logger } from '../common/logger'
+import { showErrorWithDetails } from '../common/notification.helper'
 
 import { detectRuyiInstallation, fetchGitHubReleases, listAllInstallations } from './manage.service'
 import {
@@ -27,16 +28,10 @@ async function showUpdateError(
   const details = getErrorDetails(error)
   logger.error(`update failed via ${methodName}:`, details)
 
-  const action = await vscode.window.showErrorMessage(
+  await showErrorWithDetails(
     vscode.l10n.t('{0} failed via {1}.', vscode.l10n.t('Update'), methodName),
-    vscode.l10n.t('View Details'),
-    vscode.l10n.t('OK'),
+    details,
   )
-
-  if (action === vscode.l10n.t('View Details')) {
-    const document = await vscode.workspace.openTextDocument({ content: details, language: 'text' })
-    await vscode.window.showTextDocument(document, { preview: false })
-  }
 }
 
 async function handleSuccessAndPromptReload(

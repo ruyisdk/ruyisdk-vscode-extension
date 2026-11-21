@@ -3,6 +3,7 @@ import * as path from 'path'
 import * as vscode from 'vscode'
 
 import { getWorkspaceFolderPath, isVirtualWorkspace, ruyiVersionIsAbove } from '../common/helpers'
+import { showErrorWithDetails } from '../common/notification.helper'
 import ruyi from '../ruyi'
 
 import { PkgInfo } from './types'
@@ -95,7 +96,15 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
   }
 
   // 2. Select Profile
-  const allProfiles = await service.getProfiles()
+  const allProfiles = await service.getProfiles().catch(async (error: unknown) => {
+    const details = error instanceof Error ? error.message : String(error)
+    await showErrorWithDetails(vscode.l10n.t('Failed to create venv'), details)
+    return undefined
+  })
+  if (!allProfiles) {
+    return
+  }
+
   const profileItems = allProfiles.map(profile => ({
     label: profile.displayName,
     description: profile.neededToolchainQuirks.length > 0
@@ -301,12 +310,8 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
         created = true
       }
       catch (error) {
-        if (error instanceof Error) {
-          vscode.window.showErrorMessage(vscode.l10n.t('Failed to create venv: {0}', error.message))
-        }
-        else {
-          vscode.window.showErrorMessage(vscode.l10n.t('Failed to create venv: {0}', `${error}`))
-        }
+        const details = error instanceof Error ? error.message : String(error)
+        await showErrorWithDetails(vscode.l10n.t('Failed to create venv'), details)
       }
     },
   )
