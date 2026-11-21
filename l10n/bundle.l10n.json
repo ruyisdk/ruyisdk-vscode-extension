@@ -31,7 +31,7 @@
   "Initializing...": "Initializing...",
   "Venv created successfully.": "Venv created successfully.",
   "Failed to create venv: {0}": "Failed to create venv: {0}",
-  "The newly created venv is outside the workspace or too deep (>2 levels). It will not be detected automatically.": "The newly created venv is outside the workspace or too deep (>2 levels). It will not be detected automatically.",
+  "The newly created venv will not be detected automatically. Only venvs directly inside the workspace root or a first-level subdirectory are scanned.": "The newly created venv will not be detected automatically. Only venvs directly inside the workspace root or a first-level subdirectory are scanned.",
   "Disabled": "Disabled",
   "Default": "Default",
   "Select a Package": "Select a Package",
