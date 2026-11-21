@@ -31,7 +31,7 @@
   "Initializing...": "初始化中...",
   "Venv created successfully.": "虚拟环境创建成功。",
   "Failed to create venv: {0}": "创建虚拟环境失败：{0}",
-  "The newly created venv is outside the workspace or too deep (>2 levels). It will not be detected automatically.": "新建的虚拟环境位于工作区之外或层级过深（超过 2 层），将无法自动检测到。",
+  "The newly created venv will not be detected automatically. Only venvs directly inside the workspace root or a first-level subdirectory are scanned.": "新建的虚拟环境将无法被自动检测到。仅自动扫描直接位于工作区根目录或一级子目录中的虚拟环境。",
   "Disabled": "已禁用",
   "Default": "默认",
   "Select a Package": "选择一个软件包",
