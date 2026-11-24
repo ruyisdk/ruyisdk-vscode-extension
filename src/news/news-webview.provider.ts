@@ -227,7 +227,7 @@ export class NewsWebviewProvider {
         }
         catch (error) {
           const errMsg = error instanceof Error ? error.message : String(error)
-          vscode.window.showErrorMessage(vscode.l10n.t('Failed to copy news text: {0}', errMsg))
+          vscode.window.showErrorMessage(vscode.l10n.t('Failed to copy text: {0}', errMsg))
         }
       }
     })

@@ -23,7 +23,7 @@ export function showHomePanel(ctx: vscode.ExtensionContext) {
   panel.webview.html = getHtml()
 }
 
-async function handleMessage(msg: { type: string }) {
+async function handleMessage(msg: { type: string, text?: string }) {
   if (msg.type === 'openWalkthrough') {
     await vscode.commands.executeCommand('workbench.action.openWalkthrough', `${extensionId}#ruyi.welcome`, false)
   }
@@ -38,6 +38,15 @@ async function handleMessage(msg: { type: string }) {
   }
   else if (msg.type === 'openBoardDocs') {
     await vscode.commands.executeCommand('ruyi.board-docs')
+  }
+  else if (msg.type === 'copy' && typeof msg.text === 'string' && msg.text.trim()) {
+    try {
+      await vscode.env.clipboard.writeText(msg.text)
+    }
+    catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      vscode.window.showErrorMessage(vscode.l10n.t('Failed to copy text: {0}', errorMessage))
+    }
   }
 }
 
@@ -100,6 +109,34 @@ function getHtml(): string {
       outline: 1px solid var(--vscode-focusBorder);
       outline-offset: 2px;
     }
+    .context-menu {
+      position: fixed;
+      z-index: 1;
+      min-width: 120px;
+      padding: 4px;
+      background: var(--vscode-menu-background, var(--vscode-editor-background));
+      color: var(--vscode-menu-foreground, var(--vscode-editor-foreground));
+      border: 1px solid var(--vscode-menu-border, var(--vscode-panel-border));
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    }
+    .context-menu[hidden] { display: none; }
+    .context-menu button {
+      width: 100%;
+      padding: 6px 10px;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      text-align: left;
+      font: inherit;
+      cursor: pointer;
+    }
+    .context-menu button:hover,
+    .context-menu button:focus {
+      outline: none;
+      background: var(--vscode-menu-selectionBackground, var(--vscode-list-hoverBackground));
+      color: var(--vscode-menu-selectionForeground, inherit);
+    }
   </style>
 </head>
 <body>
@@ -144,7 +181,55 @@ function getHtml(): string {
       <button onclick="vscode.postMessage({type:'openForum'})">${vscode.l10n.t('Go to Forum')}</button>
     </article>
   </section>
-  <script>const vscode = acquireVsCodeApi();</script>
+  <div class="context-menu" id="contextMenu" role="menu" hidden>
+    <button id="copySelection" type="button" role="menuitem">${vscode.l10n.t('Copy')}</button>
+  </div>
+  <script>
+    const vscode = acquireVsCodeApi();
+    const contextMenu = document.getElementById('contextMenu');
+    let selectedText = '';
+
+    function hideContextMenu() {
+      contextMenu.hidden = true;
+    }
+
+    document.addEventListener('contextmenu', event => {
+      event.preventDefault();
+      const selection = window.getSelection();
+      selectedText = selection && document.body.contains(selection.anchorNode)
+        ? selection.toString()
+        : '';
+      if (!selectedText.trim()) {
+        hideContextMenu();
+        return;
+      }
+
+      contextMenu.hidden = false;
+      const left = Math.min(event.clientX, window.innerWidth - contextMenu.offsetWidth);
+      const top = Math.min(event.clientY, window.innerHeight - contextMenu.offsetHeight);
+      contextMenu.style.left = Math.max(0, left) + 'px';
+      contextMenu.style.top = Math.max(0, top) + 'px';
+    });
+    document.addEventListener('cut', event => event.preventDefault());
+    document.addEventListener('paste', event => event.preventDefault());
+    document.addEventListener('copy', event => {
+      if (!window.getSelection()?.toString().trim()) {
+        event.preventDefault();
+      }
+    });
+    document.getElementById('copySelection').addEventListener('click', () => {
+      vscode.postMessage({ type: 'copy', text: selectedText });
+      hideContextMenu();
+    });
+    document.addEventListener('click', event => {
+      if (!contextMenu.contains(event.target)) hideContextMenu();
+    });
+    document.addEventListener('scroll', hideContextMenu, true);
+    window.addEventListener('blur', hideContextMenu);
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') hideContextMenu();
+    });
+  </script>
 </body>
 </html>`
 }
