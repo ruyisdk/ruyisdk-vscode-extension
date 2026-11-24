@@ -6,7 +6,7 @@ import * as semver from 'semver'
 
 import { logger } from '../common/logger'
 
-import { detectRuyiInstallation, fetchGitHubReleases, listAllInstallations } from './manage.service'
+import { detectRuyiInstallation, fetchGitHubReleases, listAllInstallations, manageService } from './manage.service'
 import {
   executeRuyiInstall,
   executeRuyiUpdate,
@@ -14,6 +14,9 @@ import {
 } from './setup.helper'
 
 const INSTALLATION_GUIDE_URL = vscode.l10n.t('https://ruyisdk.org/en/docs/Package-Manager/installation')
+
+let updateInProgress = false
+let updateGeneration = 0
 
 function getErrorDetails(error: unknown): string {
   const execError = error as ExecException
@@ -43,10 +46,23 @@ async function handleSuccessAndPromptReload(
   action: 'install' | 'update',
   methodName: string,
 ): Promise<void> {
-  const installation = await detectRuyiInstallation()
+  if (action === 'update') {
+    updateGeneration++
+  }
+
+  const installation = await detectRuyiInstallation().catch((error: unknown) => {
+    if (action === 'update') {
+      manageService.clearAvailableRuyiUpdate()
+    }
+    throw error
+  })
   const version = installation?.version
 
   if (!version) {
+    if (action === 'update') {
+      manageService.clearAvailableRuyiUpdate()
+    }
+
     const message = action === 'install'
       ? vscode.l10n.t('Installation completed, but Ruyi installation could not be verified. Please reload the window manually.')
       : vscode.l10n.t('Update completed, but the local Ruyi version could not be verified. Please reload the window manually.')
@@ -57,6 +73,19 @@ async function handleSuccessAndPromptReload(
   const message = action === 'install'
     ? vscode.l10n.t('Ruyi installed via {0}: {1}', methodName, version)
     : vscode.l10n.t('Ruyi updated via {0}: {1}', methodName, version)
+
+  if (action === 'update') {
+    const availableUpdate = manageService.getAvailableRuyiUpdate()
+    const installedVersion = semver.coerce(version)
+    const advertisedVersion = availableUpdate ? semver.coerce(availableUpdate) : null
+    if (
+      installedVersion
+      && advertisedVersion
+      && semver.gte(installedVersion, advertisedVersion)
+    ) {
+      manageService.clearAvailableRuyiUpdate()
+    }
+  }
 
   await vscode.commands.executeCommand('ruyi.packages.refresh')
   const userAction = await vscode.window.showInformationMessage(
@@ -69,7 +98,18 @@ async function handleSuccessAndPromptReload(
   }
 }
 
-export async function checkRuyiUpdate(currentVersion: string): Promise<void> {
+export async function checkRuyiUpdate(
+  currentVersion: string,
+  options: { notifyUser?: boolean } = {},
+): Promise<void> {
+  const notifyUser = options.notifyUser ?? true
+  const checkGeneration = updateGeneration
+  const clearCachedUpdateIfCurrent = () => {
+    if (checkGeneration === updateGeneration) {
+      manageService.clearAvailableRuyiUpdate()
+    }
+  }
+
   const currentCoerced = semver.coerce(currentVersion)
   if (!currentCoerced) {
     logger.warn(`Unable to parse version from: ${currentVersion}`)
@@ -78,12 +118,14 @@ export async function checkRuyiUpdate(currentVersion: string): Promise<void> {
 
   const releases = await fetchGitHubReleases()
   if (releases.length === 0) {
+    clearCachedUpdateIfCurrent()
     return
   }
 
   const latestRelease = releases.find(r => !r.prerelease)
   if (!latestRelease) {
     logger.warn('No stable release found on GitHub')
+    clearCachedUpdateIfCurrent()
     return
   }
 
@@ -91,6 +133,7 @@ export async function checkRuyiUpdate(currentVersion: string): Promise<void> {
   const latestStableCoerced = semver.coerce(latestVersion)
   if (!latestStableCoerced) {
     logger.warn(`Unable to parse latest stable version from GitHub tag: ${latestRelease.tag_name}`)
+    clearCachedUpdateIfCurrent()
     return
   }
 
@@ -98,9 +141,16 @@ export async function checkRuyiUpdate(currentVersion: string): Promise<void> {
   const latestInstalledVersion = installations.find(item => item.parsedVersion)?.parsedVersion
     ?? currentCoerced
 
-  if (!semver.gt(latestStableCoerced, latestInstalledVersion)) {
+  if (checkGeneration !== updateGeneration) {
     return
   }
+
+  if (!semver.gt(latestStableCoerced, latestInstalledVersion)) {
+    clearCachedUpdateIfCurrent()
+    return
+  }
+
+  manageService.setAvailableRuyiUpdate(latestVersion)
 
   const [major, patch] = [latestStableCoerced.major, latestStableCoerced.patch]
   let minor = latestStableCoerced.minor
@@ -112,12 +162,16 @@ export async function checkRuyiUpdate(currentVersion: string): Promise<void> {
   }
   const minimumSupportedVersion = new semver.SemVer(`${major}.${minor}.${patch}`)
 
-  if (semver.lt(latestInstalledVersion, minimumSupportedVersion)) {
+  if (notifyUser && semver.lt(latestInstalledVersion, minimumSupportedVersion)) {
     vscode.window.showWarningMessage(vscode.l10n.t(
       'Ruyi version {0} is below the minimum supported version {1}. Some functions may not work properly. It is strongly recommended to update.',
       currentVersion,
       minimumSupportedVersion.toString(),
     ))
+  }
+
+  if (!notifyUser) {
+    return
   }
 
   const choice = await vscode.window.showInformationMessage(
@@ -201,29 +255,45 @@ export function registerInstallCommand(ctx: vscode.ExtensionContext): void {
 
 export function registerUpdateCommand(ctx: vscode.ExtensionContext): void {
   const disposable = vscode.commands.registerCommand('ruyi.setup.update', async () => {
-    const selection = await vscode.window.showQuickPick(
-      PACKAGE_METHOD_KEYS.map(method => ({ label: method, method })),
-      { placeHolder: vscode.l10n.t('Select the installation method you used to install Ruyi') },
-    )
-    if (!selection) {
+    if (updateInProgress) {
+      await vscode.window.showInformationMessage(vscode.l10n.t('An Ruyi update is already in progress.'))
       return
     }
-    const selectedMethod = selection.method
+    updateInProgress = true
 
+    let updateFailure: { methodName: string, error: unknown } | undefined
     try {
-      await vscode.window.withProgress(
-        {
-          location: vscode.ProgressLocation.Notification,
-          title: vscode.l10n.t('Updating Ruyi via {0}...', selectedMethod),
-          cancellable: false,
-        },
-        () => executeRuyiUpdate(selectedMethod),
+      const selection = await vscode.window.showQuickPick(
+        PACKAGE_METHOD_KEYS.map(method => ({ label: method, method })),
+        { placeHolder: vscode.l10n.t('Select the installation method you used to install Ruyi') },
       )
+      if (!selection) {
+        return
+      }
+      const selectedMethod = selection.method
 
-      await handleSuccessAndPromptReload('update', selectedMethod)
+      try {
+        await vscode.window.withProgress(
+          {
+            location: vscode.ProgressLocation.Notification,
+            title: vscode.l10n.t('Updating Ruyi via {0}...', selectedMethod),
+            cancellable: false,
+          },
+          () => executeRuyiUpdate(selectedMethod),
+        )
+
+        await handleSuccessAndPromptReload('update', selectedMethod)
+      }
+      catch (error) {
+        updateFailure = { methodName: selectedMethod, error }
+      }
     }
-    catch (error) {
-      await showUpdateError(selectedMethod, error)
+    finally {
+      updateInProgress = false
+    }
+
+    if (updateFailure) {
+      await showUpdateError(updateFailure.methodName, updateFailure.error)
     }
   })
 

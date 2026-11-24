@@ -15,6 +15,7 @@ interface RuyiPathQuickPickItem extends vscode.QuickPickItem {
 }
 
 const MANUAL_TOKEN = '__manual__'
+const UPDATE_TOKEN = '__update__'
 
 async function promptManualInput(): Promise<void> {
   const selected = (await vscode.window.showOpenDialog({
@@ -47,6 +48,16 @@ function buildQuickPickItems(installations: RuyiInstallation[]): RuyiPathQuickPi
     }
   })
 
+  const availableUpdate = manageService.getAvailableRuyiUpdate()
+  if (availableUpdate) {
+    items.unshift({
+      label: `$(cloud-download) ${vscode.l10n.t('Update Ruyi to {0}', availableUpdate)}`,
+      description: vscode.l10n.t('A newer version of Ruyi is available'),
+      detail: '',
+      targetPath: UPDATE_TOKEN,
+    })
+  }
+
   if (configuration.ruyiPath) {
     items.unshift({
       label: '$(clear-all) ' + vscode.l10n.t('Clear Setting (Use Auto-detection)'),
@@ -72,10 +83,23 @@ export function registerManageCommand(ctx: vscode.ExtensionContext): void {
       const installations = await vscode.window.withProgress(
         {
           location: vscode.ProgressLocation.Notification,
-          title: vscode.l10n.t('Detecting Ruyi installations...'),
+          title: vscode.l10n.t('Checking Ruyi installations and updates...'),
         },
-        () => listAllInstallations(),
+        async () => {
+          const foundInstallations = await listAllInstallations()
+          const activeInstallation = await detectRuyiInstallation()
+          if (activeInstallation?.version) {
+            try {
+              await checkRuyiUpdate(activeInstallation.version, { notifyUser: false })
+            }
+            catch (error) {
+              logger.error('Update check failed', error)
+            }
+          }
+          return foundInstallations
+        },
       )
+      const items = buildQuickPickItems(installations)
 
       if (installations.length === 0) {
         const choice = await vscode.window.showInformationMessage(
@@ -93,8 +117,6 @@ export function registerManageCommand(ctx: vscode.ExtensionContext): void {
         return
       }
 
-      const items = buildQuickPickItems(installations)
-
       const selection = await vscode.window.showQuickPick(items, {
         placeHolder: vscode.l10n.t('Select Ruyi installation'),
         matchOnDescription: true,
@@ -107,6 +129,11 @@ export function registerManageCommand(ctx: vscode.ExtensionContext): void {
 
       if (selection.targetPath === MANUAL_TOKEN) {
         await promptManualInput()
+        return
+      }
+
+      if (selection.targetPath === UPDATE_TOKEN) {
+        await vscode.commands.executeCommand('ruyi.setup.update')
         return
       }
 
