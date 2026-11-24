@@ -220,6 +220,19 @@ export class ManageService implements vscode.Disposable {
   private statusBarItem?: vscode.StatusBarItem
   private readonly disposables: vscode.Disposable[] = []
   private initialized = false
+  private availableRuyiUpdate?: string
+
+  public getAvailableRuyiUpdate(): string | undefined {
+    return this.availableRuyiUpdate
+  }
+
+  public setAvailableRuyiUpdate(version: string): void {
+    this.availableRuyiUpdate = version
+  }
+
+  public clearAvailableRuyiUpdate(): void {
+    this.availableRuyiUpdate = undefined
+  }
 
   public initialize(): void {
     if (this.initialized) {
