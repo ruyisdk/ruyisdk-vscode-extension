@@ -311,7 +311,7 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
       }
       catch (error) {
         const details = error instanceof Error ? error.message : String(error)
-        await showErrorWithDetails(vscode.l10n.t('Failed to create venv'), details)
+        showErrorWithDetails(vscode.l10n.t('Failed to create venv'), details)
       }
     },
   )
