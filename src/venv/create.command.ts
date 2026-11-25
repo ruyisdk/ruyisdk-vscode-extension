@@ -166,7 +166,7 @@ export async function createVenvCommand(service: VenvService): Promise<void> {
   if (includeEmulator?.label === vscode.l10n.t('Yes')) {
     const emulatorsResult = await service.getEmulators()
     if ('errorMsg' in emulatorsResult) {
-      vscode.window.showErrorMessage(emulatorsResult.errorMsg)
+      showErrorWithDetails(vscode.l10n.t('Failed to create venv'), emulatorsResult.errorMsg)
       return
     }
 
@@ -400,7 +400,7 @@ async function selectSysroot(service: VenvService): Promise<SelectedSysroot | un
 async function selectSysrootPkg(service: VenvService): Promise<string> {
   const sysrootPkgsResult = await service.getSysrootPkgs()
   if ('errorMsg' in sysrootPkgsResult) {
-    vscode.window.showErrorMessage(sysrootPkgsResult.errorMsg)
+    showErrorWithDetails(vscode.l10n.t('Failed to create venv'), sysrootPkgsResult.errorMsg)
     throw new CancelledError()
   }
 
