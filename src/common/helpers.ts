@@ -7,7 +7,10 @@
  */
 import * as vscode from 'vscode'
 
+import ruyi from '../ruyi'
+
 import { ConfigKey } from './constants'
+import { parseCurlProgressDetails } from './curl.helper'
 import { formatSize } from './format.helper'
 
 /** Get the path of the first workspace folder,
@@ -94,24 +97,33 @@ export function parseNDJSON<T>(output: string): T[] {
  * }
  * ```
  */
-export function createProgressTracker(
+export async function createProgressTracker(
   progress: vscode.Progress<{ message?: string, increment?: number }>,
-): [progressCallback: (lastLine: string) => void, getLastPercent: () => number] {
+): Promise<[progressCallback: (lastLine: string) => void, getLastPercent: () => number]> {
   let lastPercent = 0
+  const ruyiVersion = await ruyi.version() || '0.0.0'
+  const startTime = Date.now()
 
   const progressCallback = (lastLine: string) => {
-    const details = parseDownloadProgressDetails(lastLine)
-    const percent = details?.percent ?? parseDownloadProgressPercent(lastLine)
-    if (percent !== null) {
+    let details = null
+    if (ruyiVersionIsAbove(ruyiVersion, '0.56.0')) {
+      details = parseRequestsProgress(startTime, lastLine)
+    }
+    else {
+      details = parseCurlProgressDetails(lastLine)
+    }
+    if (details) {
       // Clamp percent to 100 to prevent overflow
+      const percent = Math.min(100, (details.current / details.total) * 100)
       const clampedPercent = Math.min(percent, 100)
+      const message = formatProgress(details)
       if (clampedPercent > lastPercent) {
         const increment = clampedPercent - lastPercent
         lastPercent = clampedPercent
-        progress.report({ increment, ...(details && { message: formatDownloadProgress(details) }) })
+        progress.report({ increment, ...(message && { message }) })
       }
-      else if (details) {
-        progress.report({ message: formatDownloadProgress(details) })
+      else if (message) {
+        progress.report({ message })
       }
     }
   }
@@ -121,66 +133,39 @@ export function createProgressTracker(
   return [progressCallback, getLastPercent]
 }
 
-function parseDownloadProgressPercent(line: string): number | null {
-  const match = line.match(/^\s*(\d{1,3})\s+\d+/)
-  if (!match) return null
+export interface DownloadProgress {
+  // Bytes downloaded so far
+  current: number
 
-  const percent = Number.parseInt(match[1], 10)
-  return percent >= 0 && percent <= 100 ? percent : null
+  // Total bytes to download
+  total: number
+
+  // Download speed in bytes per second
+  speed: number
 }
 
-interface DownloadProgressDetails {
-  percent: number
-  totalBytes: number
-  downloadedBytes: number
-  speedBytesPerSecond: number
-  remainingSeconds: number
-}
-
-function parseDownloadProgressDetails(line: string): DownloadProgressDetails | null {
-  const fields = line.trim().split(/\s+/)
-  if (fields.length < 12) return null
-
-  const percent = Number.parseInt(fields[0], 10)
-  const totalBytes = parseCurlSize(fields[1])
-  const downloadedBytes = parseCurlSize(fields[3])
-  const speedBytesPerSecond = parseCurlSize(fields[11])
-  const remainingSeconds = parseCurlDuration(fields[10])
-
-  if ([percent, totalBytes, downloadedBytes, speedBytesPerSecond, remainingSeconds].some(Number.isNaN)
-    || percent < 0 || percent > 100) {
+function parseRequestsProgress(startTime: number, line: string): DownloadProgress | null {
+  const json = JSON.parse(line)
+  if (json.ty !== 'downloadprogress-v1') {
     return null
   }
-
-  return { percent, totalBytes, downloadedBytes, speedBytesPerSecond, remainingSeconds }
+  const speed = json.progress_bytes / ((Date.now() - startTime) / 1000)
+  return {
+    total: json.total_bytes || 0,
+    current: json.progress_bytes || 0,
+    speed,
+  }
 }
 
-function parseCurlSize(value: string): number {
-  const match = value.match(/^(\d+(?:\.\d+)?)([kKmMgGtTpP]?)$/)
-  if (!match) return Number.NaN
-
-  const units = ['', 'k', 'm', 'g', 't', 'p']
-  const unitIndex = units.indexOf(match[2].toLowerCase())
-  if (unitIndex === -1) return Number.NaN
-
-  return Number.parseFloat(match[1]) * Math.pow(1024, unitIndex)
-}
-
-function parseCurlDuration(value: string): number {
-  const parts = value.split(':').map(Number)
-  if (parts.length !== 3 || parts.some(Number.isNaN)) return Number.NaN
-  return parts[0] * 3600 + parts[1] * 60 + parts[2]
-}
-
-function formatDownloadProgress(details: DownloadProgressDetails): string {
-  const remaining = details.remainingSeconds === 0 ? '0s' : formatDuration(details.remainingSeconds)
-  return `${vscode.l10n.t(
+function formatProgress(progress: DownloadProgress): string {
+  const remaining = formatDuration(Math.ceil(progress.total / progress.speed))
+  return vscode.l10n.t(
     'Downloaded {0} of {1} ({2}/s, {3} remaining)',
-    formatSize(details.downloadedBytes),
-    formatSize(details.totalBytes),
-    formatSize(details.speedBytesPerSecond),
+    formatSize(progress.current),
+    formatSize(progress.total),
+    formatSize(progress.speed),
     remaining,
-  )}`
+  )
 }
 
 function formatDuration(seconds: number): string {

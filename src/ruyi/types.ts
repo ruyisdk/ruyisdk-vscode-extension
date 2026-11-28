@@ -28,6 +28,16 @@ export interface RuyiListOutput {
   vers: RuyiVersionInfo[]
 }
 
+export interface RuyiDownloadProgress {
+  ty: string
+  t: number
+  req_id: string
+  done: boolean
+  error: string | null
+  progress_bytes: number
+  total_bytes: number
+}
+
 /** Output line from `ruyi --porcelain repo list` */
 export interface RuyiRepoListOutput {
   ty: string

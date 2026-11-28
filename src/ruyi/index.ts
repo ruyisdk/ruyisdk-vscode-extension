@@ -437,7 +437,9 @@ export class Ruyi {
     packages: string | string[],
     options?: InstallOptions,
   ): Promise<RuyiResult> {
-    const args = ['install']
+    // Use --porcelain for machine-readable output (on newer versions)
+    // On older versions, it is silently ignored, so we can safely include it.
+    const args = ['--porcelain', 'install']
 
     if (options?.fetchOnly) {
       args.push('-f')
