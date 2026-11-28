@@ -437,7 +437,9 @@ export class Ruyi {
     packages: string | string[],
     options?: InstallOptions,
   ): Promise<RuyiResult> {
-    const args = ['install']
+    // Use --porcelain for machine-readable output (on newer versions)
+    // On older versions, it is silently ignored, so we can safely include it.
+    const args = ['--porcelain', 'install']
 
     if (options?.fetchOnly) {
       args.push('-f')
@@ -825,5 +827,10 @@ export default new Ruyi({
   env: {
     ...process.env,
     RUYI_EXPERIMENTAL: '1',
+
+    // This environment variable changes the fetcher to `requests` on newer versions, and is silently ignored
+    // on older releases. We will detect the actual version when we really need to use the output, and use different
+    // behaviors for progress tracking.
+    RUYI_OVERRIDE_FETCHER: 'requests',
   },
 })

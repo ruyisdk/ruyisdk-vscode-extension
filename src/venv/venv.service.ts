@@ -169,7 +169,7 @@ export class VenvService implements vscode.Disposable {
         .cwd(getWorkspaceFolderPath())
 
       if (progressReporter) {
-        const [onProgress, getProgress] = createProgressTracker(progressReporter)
+        const [onProgress, getProgress] = await createProgressTracker(progressReporter)
         getLastPercent = getProgress
         ruyiInvoker = ruyiInvoker.onProgress(onProgress)
       }

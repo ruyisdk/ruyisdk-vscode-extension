@@ -76,7 +76,7 @@ async function extractSelectedPackage(
   destDir: string,
   progress: vscode.Progress<{ message?: string, increment?: number }>,
 ): Promise<void> {
-  const [onProgress, getLastPercent] = createProgressTracker(progress)
+  const [onProgress, getLastPercent] = await createProgressTracker(progress)
 
   const extractResult = await ruyi
     .timeout(300_000)

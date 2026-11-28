@@ -52,7 +52,7 @@ export async function installPackage(
 
       progress.report({ message: vscode.l10n.t('Starting installation...'), increment: 0 })
 
-      const [onProgress, getLastPercent] = createProgressTracker(progress)
+      const [onProgress, getLastPercent] = await createProgressTracker(progress)
 
       const result = await ruyi
         .timeout(300_000)
