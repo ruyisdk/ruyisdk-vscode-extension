@@ -825,5 +825,10 @@ export default new Ruyi({
   env: {
     ...process.env,
     RUYI_EXPERIMENTAL: '1',
+
+    // This environment variable changes the fetcher to `requests` on newer versions, and is silently ignored
+    // on older releases. We will detect the actual version when we really need to use the output, and use different
+    // behaviors for progress tracking.
+    RUYI_OVERRIDE_FETCHER: 'requests',
   },
 })
